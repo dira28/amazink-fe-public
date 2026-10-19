@@ -44,30 +44,6 @@ npm run preview
 
 Selama backend belum siap, biarkan `VITE_USE_MOCK=true`.
 
-## Struktur Folder
-
-src/
-├── assets/            gambar dan aset statis
-├── components/
-│   ├── base/          komponen dasar reusable (BaseButton, BaseSection)
-│   └── layout/        TheHeader, TheFooter
-├── composables/       logic reusable lintas halaman (useSeo)
-├── mocks/             data dummy selama backend belum siap
-├── router/            konfigurasi route
-└── views/             halaman, dikelompokkan per fitur
-    ├── home/          landing page + components/ (section-section)
-    ├── printer-finder/  pencarian tinta berdasarkan seri printer
-    ├── shop/          katalog dan detail produk
-    ├── reseller/      form reseller
-    ├── membership/    seller/dropship
-    ├── payment/       upload bukti transfer
-    ├── about/         company profile
-    └── faq-contact/   FAQ dan kontak
-```
-
-Setiap fitur dapat memiliki subfolder `components/`, `composables/`, dan `services/` sendiri. Komunikasi API dipisah ke file `*.service.js`.
-
-
 ## Palet Warna
 
 | Token | Kegunaan |
