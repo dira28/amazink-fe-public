@@ -1,0 +1,22 @@
+.story-enter-active,
+.story-leave-active {
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.story-enter-from {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+.story-leave-to {
+    opacity: 0;
+    transform: translateY(-8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .story-enter-active,
+    .story-leave-active {
+        transition: none;
+    }
+}
