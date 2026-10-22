@@ -3,9 +3,14 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import GalleryCard from '../components/GalleryCard.vue'
 import GalleryLightbox from '../components/GalleryLightbox.vue'
-import { galleryItems as mockItems } from '../data/gallery'
 import { USE_MOCK } from '@/services/http'
 import { fetchGallery } from '@/services/galleryService'
+import { galleryItems } from '../data/gallery'
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { products, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
 
 const AUTOPLAY_MS = 4000
 const SHAPES = ['portrait', 'landscape', 'square']

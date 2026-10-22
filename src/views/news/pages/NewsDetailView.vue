@@ -7,8 +7,16 @@ import NewsImage from '../components/NewsImage.vue'
 import NewsSidebar from '../components/NewsSidebar.vue'
 import { fromApi, newsPosts as mockPosts } from '../data/news'
 import { getContent } from '../data/newsContent'
+<<<<<<< HEAD
 import { USE_MOCK } from '@/services/http'
 import { fetchNews, fetchNewsPost } from '@/services/newsService'
+=======
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { products, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
+>>>>>>> 91a784e22679298cc041a5b60ecf7671506235c4
 
 const route = useRoute()
 

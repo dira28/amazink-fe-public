@@ -2,7 +2,15 @@
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { newsPosts } from '../data/news'
+<<<<<<< HEAD
 import { sanitizeHtml } from '@/utils/sanitizeHtml'
+=======
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
+>>>>>>> 91a784e22679298cc041a5b60ecf7671506235c4
 
 const props = defineProps({
     blocks: { type: Array, default: () => [] },

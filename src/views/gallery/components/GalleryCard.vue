@@ -2,6 +2,11 @@
 import { computed } from 'vue'
 import { formatMonth } from '../data/gallery'
 import GalleryImage from './GalleryImage.vue'
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { products, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
 
 const props = defineProps({
     item: { type: Object, required: true },

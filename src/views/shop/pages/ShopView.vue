@@ -24,6 +24,11 @@ const help = usePageSection('catalog', 'help', {
     button_link: '/cari-tinta',
 })
 
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { products, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000) 
 
 const { products, loading, failed } = useProducts()
 

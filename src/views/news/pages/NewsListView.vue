@@ -8,6 +8,11 @@ import { formatShortDate, fromApi, newsPosts as mockPosts } from '../data/news'
 import { USE_MOCK } from '@/services/http'
 import { fetchNews } from '@/services/newsService'
 import NewsImage from '../components/NewsImage.vue'
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { products, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
 
 const PER_PAGE = 6
 

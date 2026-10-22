@@ -1,6 +1,11 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { resellerRegions } from '../data/resellers'
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { products, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
 
 const PAGE_SIZES = [5, 10, 15, 20]
 
