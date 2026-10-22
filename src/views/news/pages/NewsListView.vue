@@ -6,6 +6,11 @@ import NewsCard from '../components/NewsCard.vue'
 import NewsFeatured from '../components/NewsFeatured.vue'
 import { formatShortDate, newsPosts } from '../data/news'
 import NewsImage from '../components/NewsImage.vue'
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { products, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
 
 const PER_PAGE = 6
 

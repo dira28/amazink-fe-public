@@ -4,6 +4,12 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { shopProducts as products } from '@/data/products'
 
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { products, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
+
 const route = useRoute()
 const router = useRouter()
 const { add, qtyInCart } = useCart()

@@ -113,7 +113,7 @@ onBeforeUnmount(() => {
             <RouterLink to="/"
                 class="shrink-0 text-[23px] font-black tracking-[-0.07em] text-gray-950 transition-opacity hover:opacity-75"
                 aria-label="Amazink Beranda" @click="closeMenu">
-                AMAZ<span class="text-brand-red">I</span>NK
+                AMAZ<span class="text-brand-red">i</span>NK
                 <span class="ml-0.5 align-top text-[9px] font-semibold tracking-normal text-gray-400">
                     ®
                 </span>

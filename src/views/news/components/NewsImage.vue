@@ -1,5 +1,10 @@
 <script setup>
 import { computed, ref } from 'vue'
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { products, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
 
 const props = defineProps({
     post: { type: Object, required: true },

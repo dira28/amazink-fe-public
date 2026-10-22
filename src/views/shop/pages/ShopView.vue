@@ -7,6 +7,11 @@ import ProductCard from '../components/ProductCard.vue'
 import { shopProducts as products } from '@/data/products'
 import PrinterFinderMini from '../components/PrinterFinderMini.vue'
 
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { products, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000) 
 
 const categories = [
     { name: 'Semua Produk', slug: 'all' },

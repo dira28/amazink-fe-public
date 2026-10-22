@@ -7,6 +7,11 @@ import NewsImage from '../components/NewsImage.vue'
 import NewsSidebar from '../components/NewsSidebar.vue'
 import { newsPosts } from '../data/news'
 import { getContent } from '../data/newsContent'
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { products, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
 
 const route = useRoute()
 

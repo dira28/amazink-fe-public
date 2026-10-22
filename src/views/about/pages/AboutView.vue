@@ -1,4 +1,3 @@
-```vue
 <script setup>
 import AboutHero from '../components/AboutHero.vue'
 import AboutStory from '../components/AboutStory.vue'

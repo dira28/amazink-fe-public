@@ -1,6 +1,11 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import { newsPosts } from '../data/news'
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
+
+const { refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
 
 const props = defineProps({
     blocks: { type: Array, required: true },
