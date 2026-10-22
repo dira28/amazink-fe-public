@@ -1,144 +1,329 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { RouterLink } from 'vue-router'
+import GalleryCard from '../components/GalleryCard.vue'
+import GalleryLightbox from '../components/GalleryLightbox.vue'
+import { galleryItems as mockItems } from '../data/gallery'
 import { USE_MOCK } from '@/services/http'
 import { fetchGallery } from '@/services/galleryService'
 
-const categories = ref([])
+const AUTOPLAY_MS = 4000
+const SHAPES = ['portrait', 'landscape', 'square']
+
+// Mode dummy memakai data lokal; selain itu foto diambil dari API (/public/gallery).
+const items = ref(USE_MOCK ? mockItems : [])
 const loading = ref(!USE_MOCK)
 const failed = ref(false)
-const active = ref('all')
-const openIndex = ref(-1)
 
-onMounted(async () => {
+const total = computed(() => items.value.length)
+const active = ref(Math.max(0, Math.min(2, items.value.length - 1)))
+const openId = ref(null)
+
+const viewport = ref(null)
+const track = ref(null)
+const slides = []
+const offset = ref(0)
+const ready = ref(false)
+
+const hovering = ref(false)
+const dragging = ref(false)
+const dragX = ref(0)
+
+let timer
+let observer
+let pressed = false
+let moved = false
+let startX = 0
+
+const counter = computed(() =>
+    total.value
+        ? `${String(active.value + 1).padStart(2, '0')} / ${String(total.value).padStart(2, '0')}`
+        : ''
+)
+
+const emptyMessage = computed(() =>
+    loading.value ? 'Memuat galeri...' : failed.value ? 'Galeri gagal dimuat' : 'Belum ada foto'
+)
+
+// Bentuk data API disesuaikan dengan yang dipakai GalleryCard dan GalleryLightbox.
+function fromApi(categories) {
+    return categories
+        .flatMap((category) =>
+            category.items.map((photo) => ({
+                id: String(photo.id),
+                title: category.name,
+                categoryLabel: category.name,
+                description: '',
+                image: photo.image,
+                placeholder: '',
+                date: null,
+            }))
+        )
+        .map((item, index) => ({ ...item, shape: SHAPES[index % SHAPES.length] }))
+}
+
+async function loadPhotos() {
     if (USE_MOCK) return
 
     try {
-        categories.value = await fetchGallery()
+        items.value = fromApi(await fetchGallery())
+        active.value = Math.max(0, Math.min(2, items.value.length - 1))
+        await nextTick()
+        measure()
     } catch {
         failed.value = true
     } finally {
         loading.value = false
     }
+}
+
+function measure() {
+    const el = slides[active.value]
+    if (!viewport.value || !el) return
+    offset.value = viewport.value.clientWidth / 2 - (el.offsetLeft + el.offsetWidth / 2)
+}
+
+function stopAuto() {
+    clearInterval(timer)
+}
+
+function startAuto() {
+    stopAuto()
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    timer = setInterval(() => {
+        if (hovering.value || dragging.value || openId.value || document.hidden) return
+        go(active.value + 1)
+    }, AUTOPLAY_MS)
+}
+
+function go(index, { wrap = true } = {}) {
+    if (!total.value) return
+
+    active.value = wrap
+        ? (index + total.value) % total.value
+        : Math.min(Math.max(index, 0), total.value - 1)
+    startAuto()
+}
+
+const next = () => go(active.value + 1)
+const prev = () => go(active.value - 1)
+
+function onSelect(index) {
+    if (moved) return
+
+    if (index === active.value) openId.value = items.value[index].id
+    else go(index, { wrap: false })
+}
+
+// Hover hanya dihitung untuk mouse, supaya sentuhan di HP tidak menghentikan autoplay
+function onPointerEnter(event) {
+    if (event.pointerType === 'mouse') hovering.value = true
+}
+
+function onPointerLeave(event) {
+    if (event.pointerType === 'mouse') hovering.value = false
+}
+
+// Fokus hanya menghentikan autoplay kalau lewat keyboard
+function onFocusIn(event) {
+    if (event.target.matches?.(':focus-visible')) hovering.value = true
+}
+
+function onPointerDown(event) {
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    pressed = true
+    moved = false
+    startX = event.clientX
+}
+
+function onPointerMove(event) {
+    if (!pressed) return
+
+    if (event.pointerType === 'mouse' && event.buttons === 0) {
+        pressed = false
+        return
+    }
+
+    const dx = event.clientX - startX
+
+    if (!moved && Math.abs(dx) > 6) {
+        moved = true
+        dragging.value = true
+        viewport.value.setPointerCapture(event.pointerId)
+    }
+
+    if (moved) dragX.value = dx
+}
+
+function onPointerEnd() {
+    if (!pressed) return
+    pressed = false
+    if (!moved) return
+
+    // Jarak geser menyesuaikan lebar karya yang sedang di tengah
+    const unit = slides[active.value]?.offsetWidth ?? 260
+    const dx = dragX.value
+    let steps = Math.round(-dx / unit)
+    if (steps === 0 && Math.abs(dx) > Math.min(50, unit * 0.2)) steps = dx < 0 ? 1 : -1
+
+    dragging.value = false
+    dragX.value = 0
+    go(active.value + steps, { wrap: false })
+}
+
+function onKeydown(event) {
+    if (openId.value) return
+
+    if (event.key === 'ArrowLeft') {
+        event.preventDefault()
+        prev()
+    }
+
+    if (event.key === 'ArrowRight') {
+        event.preventDefault()
+        next()
+    }
+}
+
+function onLightboxChange(id) {
+    openId.value = id
+    const index = items.value.findIndex((item) => item.id === id)
+    if (index !== -1) active.value = index
+}
+
+watch(active, measure)
+
+onMounted(async () => {
+    measure()
+
+    // Pantau slider dan track, supaya posisi tengah dihitung ulang saat layar berubah
+    observer = new ResizeObserver(measure)
+    observer.observe(viewport.value)
+    if (track.value) observer.observe(track.value)
+
+    await nextTick()
+    requestAnimationFrame(() => {
+        ready.value = true
+    })
+
+    startAuto()
+    loadPhotos()
 })
 
-const photos = computed(() =>
-    categories.value
-        .filter((category) => active.value === 'all' || String(category.id) === active.value)
-        .flatMap((category) => category.items.map((item) => ({ ...item, category: category.name }))),
-)
-
-const current = computed(() => photos.value[openIndex.value])
-
-const close = () => {
-    openIndex.value = -1
-}
-
-const move = (step) => {
-    if (!photos.value.length) return
-    openIndex.value = (openIndex.value + step + photos.value.length) % photos.value.length
-}
-
-const onKey = (event) => {
-    if (openIndex.value < 0) return
-    if (event.key === 'Escape') close()
-    if (event.key === 'ArrowRight') move(1)
-    if (event.key === 'ArrowLeft') move(-1)
-}
-
-watch(active, close)
-watch(openIndex, (value) => {
-    document.body.style.overflow = value >= 0 ? 'hidden' : ''
-})
-
-onMounted(() => window.addEventListener('keydown', onKey))
 onBeforeUnmount(() => {
-    window.removeEventListener('keydown', onKey)
-    document.body.style.overflow = ''
+    stopAuto()
+    observer?.disconnect()
 })
 </script>
 
 <template>
-    <div class="min-h-screen bg-[#f7f7f5] text-[#171717] antialiased">
-        <div class="mx-auto max-w-7xl px-5 pb-16 pt-10 sm:px-8 sm:pb-24 sm:pt-14">
-            <header>
-                <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">Galeri AMAZiNK</p>
-                <h1 class="mt-2.5 text-[clamp(32px,4.5vw,52px)] font-semibold leading-[1.08] tracking-[-0.05em]">
-                    Galeri
-                </h1>
-                <p class="mt-3 max-w-lg text-sm leading-[1.8] text-[#737373]">
-                    Dokumentasi produk, kegiatan, dan momen bersama AMAZiNK.
+    <div class="overflow-x-hidden bg-[#f7f7f5] text-[#171717] antialiased">
+        <section class="relative overflow-hidden bg-linear-to-b from-[#f7f7f5] via-white to-[#f1f1ef]">
+            <div class="mx-auto max-w-7xl px-5 pt-6 sm:px-8 sm:pt-10">
+                <header class="flex items-end justify-between gap-4 sm:gap-6">
+                    <div>
+                        <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">
+                            Galeri AMAZiNK
+                        </p>
+                        <h1 class="mt-2 text-[clamp(28px,4vw,44px)] font-semibold leading-[1.08] tracking-tighter">
+                            Portofolio Kami
+                        </h1>
+                        <p class="mt-2 hidden max-w-xl text-sm leading-[1.7] text-[#737373] sm:block">
+                            Kumpulan hasil cetak untuk berbagai kebutuhan, mulai dari dokumen, banner, label,
+                            poster, hingga kemasan.
+                        </p>
+                    </div>
+
+                    <div class="flex shrink-0 gap-2">
+                        <button type="button" aria-label="Karya sebelumnya"
+                            class="grid h-10 w-10 cursor-pointer place-items-center rounded-full border-0 bg-white text-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/10 transition-colors hover:text-brand-red sm:h-11 sm:w-11"
+                            @click="prev">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
+                                <path d="m15 18-6-6 6-6" />
+                            </svg>
+                        </button>
+                        <button type="button" aria-label="Karya berikutnya"
+                            class="grid h-10 w-10 cursor-pointer place-items-center rounded-full border-0 bg-white text-gray-700 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/10 transition-colors hover:text-brand-red sm:h-11 sm:w-11"
+                            @click="next">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                                stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true">
+                                <path d="m9 18 6-6-6-6" />
+                            </svg>
+                        </button>
+                    </div>
+                </header>
+            </div>
+
+            <!-- --gallery-h: tinggi bingkai karya tengah, mengalir mengikuti lebar layar (200px - 340px) -->
+            <div ref="viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Galeri karya"
+                class="relative mt-6 cursor-grab select-none overflow-hidden py-8 outline-none active:cursor-grabbing sm:mt-12 sm:py-12"
+                style="touch-action: pan-y; --gallery-h: clamp(200px, 14vw + 140px, 340px)" @pointerdown="onPointerDown"
+                @pointermove="onPointerMove" @pointerup="onPointerEnd" @pointercancel="onPointerEnd" @dragstart.prevent
+                @pointerenter="onPointerEnter" @pointerleave="onPointerLeave" @focusin="onFocusIn"
+                @focusout="hovering = false" @keydown="onKeydown">
+                <p v-if="!items.length" class="m-0 py-24 text-center text-sm font-semibold text-[#737373]">
+                    {{ emptyMessage }}
                 </p>
-            </header>
 
-            <div v-if="categories.length" class="mt-8 flex max-w-full gap-2 overflow-x-auto pb-1">
-                <button type="button" :aria-pressed="active === 'all'"
-                    class="shrink-0 cursor-pointer rounded-full border px-4 py-2 text-[13px] font-semibold transition-colors"
-                    :class="active === 'all' ? 'border-[#171717] bg-[#171717] text-white' : 'border-[#d6d3d1] bg-white text-[#292524] hover:border-[#171717]'"
-                    @click="active = 'all'">
-                    Semua
-                </button>
-
-                <button v-for="category in categories" :key="category.id" type="button"
-                    :aria-pressed="active === String(category.id)"
-                    class="shrink-0 cursor-pointer rounded-full border px-4 py-2 text-[13px] font-semibold transition-colors"
-                    :class="active === String(category.id) ? 'border-[#171717] bg-[#171717] text-white' : 'border-[#d6d3d1] bg-white text-[#292524] hover:border-[#171717]'"
-                    @click="active = String(category.id)">
-                    {{ category.name }}
-                </button>
+                <div v-show="items.length" ref="track" class="relative flex w-max items-start gap-6 sm:gap-10 lg:gap-12"
+                    :class="ready && !dragging
+                        ? 'transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none'
+                        : ''" :style="{ transform: `translateX(${offset + dragX}px)` }">
+                    <GalleryCard v-for="(item, index) in items" :key="item.id"
+                        :ref="(el) => (slides[index] = el?.$el ?? null)" :item="item"
+                        :distance="Math.abs(index - active)" :active="index === active" @select="onSelect(index)" />
+                </div>
             </div>
 
-            <div v-if="photos.length" class="mt-6 columns-2 gap-3 sm:columns-3 sm:gap-4 lg:columns-4">
-                <button v-for="(photo, index) in photos" :key="photo.id" type="button"
-                    class="group relative mb-3 block w-full cursor-zoom-in overflow-hidden rounded-2xl border-0 bg-[#ebeae5] p-0 sm:mb-4"
-                    :aria-label="`Perbesar foto ${photo.category}`" @click="openIndex = index">
-                    <img :src="photo.image" :alt="photo.category" loading="lazy"
-                        class="block h-auto w-full transition-transform duration-500 group-hover:scale-105" />
-                    <span
-                        class="absolute bottom-2 left-2 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-semibold text-white opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">
-                        {{ photo.category }}
-                    </span>
-                </button>
+            <div class="relative pb-5 pt-1 sm:pb-8 sm:pt-2">
+                <div
+                    class="absolute inset-x-0 bottom-0 top-11 border-t border-black/10 bg-linear-to-b from-[#dedede] to-[#efefee] sm:top-16">
+                </div>
+
+                <div class="relative mx-auto w-[min(590px,88vw)]">
+                    <div class="mb-3 text-center sm:mb-4" aria-live="polite">
+                        <p class="m-0 mb-1 font-serif text-[12px] italic tabular-nums" style="color: #555">
+                            {{ counter }}
+                        </p>
+                        <div class="relative h-px bg-black/25">
+                            <span class="absolute -top-1 left-0 h-2.5 w-px bg-black/35"></span>
+                            <span class="absolute -top-1 right-0 h-2.5 w-px bg-black/35"></span>
+                        </div>
+                    </div>
+
+                    <div class="relative pb-9 sm:pb-13">
+                        <div
+                            class="h-6 rounded-[3px] bg-linear-to-b from-[#5b5553] via-[#403b3a] to-[#2b2827] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] sm:h-8">
+                        </div>
+                        <div
+                            class="absolute left-0 top-6 h-9 w-5 bg-linear-to-r from-[#3a3534] to-[#262322] sm:top-8 sm:h-13 sm:w-8">
+                        </div>
+                        <div
+                            class="absolute right-0 top-6 h-9 w-5 bg-linear-to-l from-[#3a3534] to-[#262322] sm:top-8 sm:h-13 sm:w-8">
+                        </div>
+                        <div class="absolute -bottom-1 left-[4%] h-4 w-[92%] rounded-full bg-black/20 blur-lg"></div>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <div v-else
-                class="mt-8 rounded-3xl bg-white px-5 py-14 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
-                <p class="m-0 text-sm font-semibold">
-                    {{ loading ? 'Memuat galeri...' : failed ? 'Galeri gagal dimuat' : 'Belum ada foto' }}
-                </p>
-                <p v-if="failed" class="mt-1 text-[13px] text-[#737373]">Periksa koneksi lalu muat ulang halaman.</p>
-            </div>
-        </div>
+        <section class="bg-[#0f0d12] px-5 py-16 text-center sm:py-24">
+            <h2 class="m-0 font-serif text-[clamp(26px,4vw,44px)] font-normal leading-tight" style="color: #f7f7f5">
+                Punya kebutuhan cetak sendiri?
+            </h2>
+            <p class="mx-auto mt-4 max-w-md text-[13px] leading-7 sm:text-sm" style="color: #8f8d94">
+                Ceritakan kebutuhanmu ke tim AMAZiNK, kami bantu pilih tinta dan toner yang cocok untuk hasil
+                cetak terbaik.
+            </p>
+            <RouterLink to="/#kontak"
+                class="mt-8 inline-flex h-12 items-center rounded-md bg-[#2a2830] px-8 text-[13px] font-semibold uppercase tracking-[0.04em] no-underline transition-colors hover:bg-brand-red"
+                style="color: #fff">
+                Hubungi Kami
+            </RouterLink>
+        </section>
 
-        <!-- Pratinjau foto -->
-        <Teleport to="body">
-            <div v-if="current" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4"
-                role="dialog" aria-modal="true" aria-label="Pratinjau foto" @click.self="close">
-                <button type="button" aria-label="Tutup"
-                    class="absolute right-4 top-4 grid h-10 w-10 cursor-pointer place-items-center rounded-full border-0 bg-white/10 text-2xl text-white transition-colors hover:bg-white/20"
-                    @click="close">
-                    ×
-                </button>
-
-                <button v-if="photos.length > 1" type="button" aria-label="Foto sebelumnya"
-                    class="absolute left-3 top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full border-0 bg-white/10 text-xl text-white transition-colors hover:bg-white/20 sm:left-6"
-                    @click="move(-1)">
-                    ←
-                </button>
-
-                <figure class="m-0 flex max-h-full max-w-5xl flex-col items-center">
-                    <img :src="current.image" :alt="current.category"
-                        class="max-h-[80vh] w-auto max-w-full rounded-xl object-contain" />
-                    <figcaption class="mt-3 text-[13px] text-white/80">
-                        {{ current.category }} · {{ openIndex + 1 }} / {{ photos.length }}
-                    </figcaption>
-                </figure>
-
-                <button v-if="photos.length > 1" type="button" aria-label="Foto berikutnya"
-                    class="absolute right-3 top-1/2 grid h-11 w-11 -translate-y-1/2 cursor-pointer place-items-center rounded-full border-0 bg-white/10 text-xl text-white transition-colors hover:bg-white/20 sm:right-6"
-                    @click="move(1)">
-                    →
-                </button>
-            </div>
-        </Teleport>
+        <GalleryLightbox :items="items" :active-id="openId" @close="openId = null" @change="onLightboxChange" />
     </div>
 </template>

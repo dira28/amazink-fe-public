@@ -1,119 +1,156 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
+import { useCart } from '@/composables/useCart'
+import { shopProducts as products } from '@/data/products'
 
 const route = useRoute()
 const router = useRouter()
+const { add, qtyInCart } = useCart()
 
-const products = [
-    {
-        slug: 'amazink-ink-bottle-black',
-        name: 'AMAZiNK Ink Bottle Black',
-        sku: 'AMZ-INK-BLK-001',
-        category: 'Tinta Botol',
-        description: 'Tinta hitam untuk kebutuhan cetak harian dengan hasil cetak yang jelas dan konsisten.',
-        image: '/images/home/tinta.jpeg',
-        color: 'Black',
-        volume: '127 ml',
-        price: 85000,
-        stock: 25,
-    },
-    {
-        slug: 'amazink-ink-bottle-cyan',
-        name: 'AMAZiNK Ink Bottle Cyan',
-        sku: 'AMZ-INK-CYN-002',
-        category: 'Tinta Botol',
-        description: 'Tinta cyan untuk kebutuhan cetak berwarna dengan hasil warna yang tajam.',
-        image: '/images/home/tinta.jpeg',
-        color: 'Cyan',
-        volume: '70 ml',
-        price: 75000,
-        stock: 18,
-    },
-    {
-        slug: 'amazink-ink-bottle-magenta',
-        name: 'AMAZiNK Ink Bottle Magenta',
-        sku: 'AMZ-INK-MAG-003',
-        category: 'Tinta Botol',
-        description: 'Tinta magenta untuk melengkapi kebutuhan cetak dokumen dan gambar berwarna.',
-        image: '/images/home/tinta.jpeg',
-        color: 'Magenta',
-        volume: '70 ml',
-        price: 75000,
-        stock: 12,
-    },
-    {
-        slug: 'amazink-ink-cartridge-black',
-        name: 'AMAZiNK Ink Cartridge Black',
-        sku: 'AMZ-CAR-BLK-004',
-        category: 'Cartridge',
-        description: 'Cartridge hitam untuk mendukung kebutuhan cetak dokumen sehari-hari.',
-        image: '',
-        color: 'Black',
-        volume: '',
-        price: 95000,
-        stock: 10,
-    },
-    {
-        slug: 'amazink-laser-toner-black',
-        name: 'AMAZiNK Laser Toner Black',
-        sku: 'AMZ-TNR-BLK-005',
-        category: 'Toner Laser',
-        description: 'Toner hitam untuk kebutuhan cetak dokumen dengan hasil yang tegas dan rapi.',
-        image: '/images/home/toner.jpeg',
-        color: 'Black',
-        volume: '',
-        price: 125000,
-        stock: 8,
-    },
-    {
-        slug: 'amazink-ink-bottle-yellow',
-        name: 'AMAZiNK Ink Bottle Yellow',
-        sku: 'AMZ-INK-YLW-006',
-        category: 'Tinta Botol',
-        description: 'Tinta kuning untuk kebutuhan cetak berwarna.',
-        image: '/images/home/tinta.jpeg',
-        color: 'Yellow',
-        volume: '70 ml',
-        price: 75000,
-        stock: 0,
-    },
-    {
-        slug: 'amazink-printing-accessory',
-        name: 'AMAZiNK Printing Accessory',
-        sku: 'AMZ-ACC-007',
-        category: 'Produk Lainnya',
-        description: 'Aksesori pendukung untuk membantu kebutuhan cetak sehari-hari.',
-        image: '/images/home/aksesori.jpeg',
-        color: '',
-        volume: '',
-        price: 45000,
-        stock: 15,
-    },
-    {
-        slug: 'amazink-ink-bottle-set',
-        name: 'AMAZiNK Ink Bottle Set',
-        sku: 'AMZ-INK-SET-008',
-        category: 'Tinta Botol',
-        description: 'Paket tinta dengan beberapa pilihan warna untuk kebutuhan cetak berwarna.',
-        image: '/images/home/tinta.jpeg',
-        color: 'CMYK',
-        volume: 'Set',
-        price: 250000,
-        stock: 6,
-    },
-]
 
-const product = computed(() =>
-    products.find(item => item.slug === route.params.slug)
-)
+const product = computed(() => products.find((item) => item.slug === route.params.slug))
 
-const formatPrice = price =>
+const formatPrice = (price) =>
     new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
         maximumFractionDigits: 0,
     }).format(price)
+
+/* ---------- Keranjang ---------- */
+const qty = ref(1)
+const added = ref(false)
+let addedTimer
+
+const inCart = computed(() => (product.value ? qtyInCart(product.value.slug) : 0))
+const room = computed(() => (product.value ? Math.max(0, product.value.stock - inCart.value) : 0))
+const canBuy = computed(() => room.value > 0)
+const total = computed(() => (product.value ? product.value.price * qty.value : 0))
+
+watch(room, (value) => {
+    if (qty.value > value) qty.value = Math.max(1, value)
+})
+
+function clampQty(value) {
+    return Math.min(Math.max(1, value), Math.max(1, room.value))
+}
+
+const changeQty = (step) => {
+    qty.value = clampQty(qty.value + step)
+}
+
+function onQtyChange(event) {
+    const parsed = parseInt(event.target.value, 10)
+    qty.value = clampQty(Number.isFinite(parsed) ? parsed : 1)
+    event.target.value = qty.value
+}
+
+function addToCart() {
+    if (!product.value || !canBuy.value) return false
+
+    add(product.value, { qty: qty.value })
+    qty.value = 1
+    added.value = true
+    clearTimeout(addedTimer)
+    addedTimer = setTimeout(() => {
+        added.value = false
+    }, 2400)
+    return true
+}
+
+function buyNow() {
+    if (addToCart()) router.push('/keranjang')
+}
+
+/* ---------- Tab, zoom, bagikan ---------- */
+const tab = ref('deskripsi')
+const zoomOpen = ref(false)
+const copied = ref(false)
+let copiedTimer
+
+async function copyLink() {
+    try {
+        await navigator.clipboard.writeText(window.location.href)
+        copied.value = true
+        clearTimeout(copiedTimer)
+        copiedTimer = setTimeout(() => {
+            copied.value = false
+        }, 2000)
+    } catch {
+        // Clipboard bisa diblokir browser
+    }
+}
+
+const waShareUrl = computed(
+    () =>
+        `https://wa.me/?text=${encodeURIComponent(
+            `${product.value?.name ?? ''} - AMAZiNK\n${typeof window !== 'undefined' ? window.location.href : ''}`
+        )}`
+)
+
+/* ---------- Spesifikasi ---------- */
+const swatches = {
+    Black: 'bg-black',
+    Cyan: 'bg-cyan-400',
+    Magenta: 'bg-fuchsia-500',
+    Yellow: 'bg-yellow-400',
+    CMYK: 'bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-yellow-400',
+}
+
+const specs = computed(() => {
+    const p = product.value
+    if (!p) return []
+
+    return [
+        { label: 'Kode produk', value: p.sku },
+        { label: 'Kategori', value: p.category },
+        p.color && { label: 'Warna', value: p.color, swatch: swatches[p.color] },
+        p.volume && { label: 'Ukuran / Isi', value: p.volume },
+        { label: 'Merek', value: 'AMAZiNK' },
+    ].filter(Boolean)
+})
+
+/* ---------- Produk terkait ---------- */
+const detailBase = computed(() => route.path.replace(/\/$/, '').replace(/[^/]+$/, ''))
+
+const related = computed(() => {
+    if (!product.value) return []
+
+    const others = products.filter((item) => item.slug !== product.value.slug)
+    const same = others.filter((item) => item.category === product.value.category)
+    const rest = others.filter((item) => item.category !== product.value.category)
+    return [...same, ...rest].slice(0, 4)
+})
+
+/* ---------- Efek samping ---------- */
+watch(
+    () => route.params.slug,
+    () => {
+        qty.value = 1
+        tab.value = 'deskripsi'
+        added.value = false
+        zoomOpen.value = false
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+)
+
+watch(zoomOpen, (open) => {
+    document.body.style.overflow = open ? 'hidden' : ''
+})
+
+const onKeydown = (event) => {
+    if (event.key === 'Escape') zoomOpen.value = false
+}
+
+onMounted(() => window.addEventListener('keydown', onKeydown))
+
+onBeforeUnmount(() => {
+    window.removeEventListener('keydown', onKeydown)
+    document.body.style.overflow = ''
+    clearTimeout(addedTimer)
+    clearTimeout(copiedTimer)
+})
 </script>
 
 <template>
@@ -122,18 +159,12 @@ const formatPrice = price =>
         <div class="border-b border-gray-200/70 bg-white">
             <div class="mx-auto max-w-7xl px-5 py-4 sm:px-8">
                 <nav class="flex flex-wrap items-center gap-2 text-xs text-gray-500" aria-label="Breadcrumb">
-                    <RouterLink to="/" class="transition-colors hover:text-brand-red">
-                        Beranda
-                    </RouterLink>
-
+                    <RouterLink to="/" class="transition-colors hover:text-brand-red">Beranda</RouterLink>
                     <span class="text-gray-300">/</span>
-
                     <RouterLink to="/catalog-produk#daftar-produk" class="transition-colors hover:text-brand-red">
                         Katalog Produk
                     </RouterLink>
-
                     <span class="text-gray-300">/</span>
-
                     <span class="max-w-[220px] truncate font-medium text-gray-800">
                         {{ product?.name || 'Produk tidak ditemukan' }}
                     </span>
@@ -141,14 +172,13 @@ const formatPrice = price =>
             </div>
         </div>
 
-        <!-- Product Detail -->
-        <section v-if="product" class="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12 lg:py-16">
-            <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-16">
-
-                <!-- Product Image -->
+        <!-- Detail Produk -->
+        <section v-if="product" class="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12">
+            <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
+                <!-- Gambar -->
                 <div class="min-w-0">
                     <div
-                        class="group relative flex aspect-square max-h-[680px] items-center justify-center overflow-hidden rounded-3xl border border-gray-200/70 bg-white p-8 sm:p-12 lg:p-14">
+                        class="group relative flex aspect-square max-h-[640px] items-center justify-center overflow-hidden rounded-3xl border border-gray-200/70 bg-white p-8 sm:p-12">
                         <div
                             class="pointer-events-none absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100/70" />
 
@@ -165,13 +195,7 @@ const formatPrice = price =>
                                     <path d="m21 15-5-5L5 20" />
                                 </svg>
                             </div>
-
-                            <p class="mt-4 text-sm font-medium text-gray-600">
-                                Gambar belum tersedia
-                            </p>
-                            <p class="mt-1 text-xs text-gray-400">
-                                {{ product.name }}
-                            </p>
+                            <p class="mt-4 text-sm font-medium text-gray-600">Gambar belum tersedia</p>
                         </div>
 
                         <span
@@ -179,36 +203,36 @@ const formatPrice = price =>
                             {{ product.category }}
                         </span>
 
+                        <button v-if="product.image" type="button" aria-label="Perbesar gambar"
+                            class="absolute right-5 top-5 grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-gray-200 bg-white/90 text-gray-600 shadow-sm backdrop-blur transition-colors hover:text-brand-red sm:right-6 sm:top-6"
+                            @click="zoomOpen = true">
+                            <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="11" cy="11" r="7" />
+                                <path d="m20 20-3.5-3.5M11 8v6M8 11h6" />
+                            </svg>
+                        </button>
+
                         <span v-if="product.stock === 0"
-                            class="absolute right-5 top-5 rounded-full bg-red-50 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-red-700 sm:right-6 sm:top-6">
+                            class="absolute bottom-5 left-5 rounded-full bg-red-50 px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-red-700 sm:bottom-6 sm:left-6">
                             Stok habis
                         </span>
                     </div>
 
-                    <div class="mt-4 flex items-center justify-between gap-3 px-1">
-                        <p class="text-xs text-gray-400">
-                            Kode produk
-                            <span class="ml-1 font-medium text-gray-600">
-                                {{ product.sku }}
-                            </span>
-                        </p>
-
-                        <span class="flex shrink-0 items-center gap-1.5 text-xs text-gray-500">
-                            <span class="h-2 w-2 rounded-full"
-                                :class="product.stock > 0 ? 'bg-emerald-500' : 'bg-red-500'" />
-                            {{ product.stock > 0 ? 'Tersedia' : 'Tidak tersedia' }}
-                        </span>
-                    </div>
+                    <p class="mb-0 mt-4 px-1 text-xs text-gray-400">
+                        Kode produk
+                        <span class="ml-1 font-medium text-gray-600">{{ product.sku }}</span>
+                    </p>
                 </div>
 
-                <!-- Product Information -->
-                <div class="min-w-0 lg:pt-3">
-                    <p class="text-xs font-bold uppercase tracking-[0.22em] text-brand-red">
+                <!-- Informasi -->
+                <div class="min-w-0 lg:pt-2">
+                    <p class="m-0 text-xs font-bold uppercase tracking-[0.22em] text-brand-red">
                         {{ product.category }}
                     </p>
 
                     <h1
-                        class="mt-3 text-3xl font-bold leading-tight tracking-tight text-gray-950 sm:text-4xl lg:text-[42px]">
+                        class="mt-3 text-3xl font-bold leading-tight tracking-tight text-gray-950 sm:text-4xl lg:text-[40px]">
                         {{ product.name }}
                     </h1>
 
@@ -216,133 +240,241 @@ const formatPrice = price =>
                         {{ product.description }}
                     </p>
 
-                    <!-- Price -->
-                    <div class="mt-7 rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-                        <p class="text-xs font-medium text-gray-500">
-                            Harga produk
-                        </p>
-
-                        <div class="mt-2 flex flex-wrap items-baseline gap-2">
-                            <p class="text-3xl font-bold tracking-tight text-gray-950 sm:text-4xl">
+                    <!-- Kartu beli -->
+                    <div class="mt-6 max-w-md rounded-2xl border border-gray-200 bg-white p-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <p class="m-0 text-2xl font-bold tracking-tight text-gray-950">
                                 {{ formatPrice(product.price) }}
                             </p>
-                        </div>
 
-                        <p class="mt-2 text-xs text-gray-400">
-                            Hubungi tim kami untuk informasi pemesanan
-                        </p>
-                    </div>
-
-                    <!-- Availability -->
-                    <div class="mt-5 flex items-start gap-3 rounded-2xl border border-gray-200/80 bg-white p-4">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl"
-                            :class="product.stock > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'">
-                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M20 7 10 17l-5-5" />
-                                <path d="M21 12a9 9 0 1 1-5.7-8.4" />
-                            </svg>
-                        </div>
-
-                        <div class="min-w-0">
-                            <p class="text-sm font-semibold text-gray-900">
-                                {{ product.stock > 0 ? 'Produk tersedia' : 'Stok sedang kosong' }}
-                            </p>
-                            <p class="mt-1 text-xs leading-5 text-gray-500">
-                                {{ product.stock > 0
-                                    ? `${product.stock} unit tersedia saat ini`
-                                    : 'Silakan hubungi tim kami untuk informasi ketersediaan berikutnya'
-                                }}
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Specifications -->
-                    <div class="mt-8">
-                        <div class="mb-3 flex items-center justify-between">
-                            <h2 class="text-sm font-bold text-gray-900">
-                                Informasi produk
-                            </h2>
-                            <span class="text-[10px] font-medium uppercase tracking-widest text-gray-400">
-                                Spesifikasi
+                            <span
+                                class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                                :class="product.stock > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'">
+                                <span class="h-1.5 w-1.5 rounded-full"
+                                    :class="product.stock > 0 ? 'bg-emerald-500' : 'bg-red-500'" />
+                                {{ product.stock > 0 ? 'Stok tersedia' : 'Stok habis' }}
                             </span>
                         </div>
 
-                        <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-                            <div
-                                class="flex items-center justify-between gap-4 border-b border-gray-100 px-4 py-4 sm:px-5">
-                                <span class="text-sm text-gray-500">Kode produk</span>
-                                <span class="text-right text-sm font-semibold text-gray-900">
-                                    {{ product.sku }}
-                                </span>
+                        <div class="mt-3 flex items-center justify-between gap-3 border-t border-gray-100 pt-3">
+                            <div class="inline-flex h-9 items-center overflow-hidden rounded-lg border border-gray-200 bg-white"
+                                :class="{ 'opacity-50': !canBuy }">
+                                <button type="button" aria-label="Kurangi jumlah" :disabled="!canBuy || qty <= 1"
+                                    class="grid h-full w-9 cursor-pointer place-items-center border-0 bg-transparent text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent"
+                                    @click="changeQty(-1)">
+                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                        <path d="M5 12h14" />
+                                    </svg>
+                                </button>
+
+                                <input :value="qty" type="text" inputmode="numeric" aria-label="Jumlah produk"
+                                    :disabled="!canBuy"
+                                    class="h-full w-10 border-0 bg-transparent text-center text-[13px] font-semibold text-gray-900 outline-none"
+                                    @change="onQtyChange" />
+
+                                <button type="button" aria-label="Tambah jumlah" :disabled="!canBuy || qty >= room"
+                                    class="grid h-full w-9 cursor-pointer place-items-center border-0 bg-transparent text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-300 disabled:hover:bg-transparent"
+                                    @click="changeQty(1)">
+                                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                        <path d="M12 5v14M5 12h14" />
+                                    </svg>
+                                </button>
                             </div>
 
-                            <div
-                                class="flex items-center justify-between gap-4 border-b border-gray-100 px-4 py-4 sm:px-5">
-                                <span class="text-sm text-gray-500">Kategori</span>
-                                <span class="text-right text-sm font-semibold text-gray-900">
-                                    {{ product.category }}
-                                </span>
-                            </div>
-
-                            <div v-if="product.color"
-                                class="flex items-center justify-between gap-4 border-b border-gray-100 px-4 py-4 sm:px-5">
-                                <span class="text-sm text-gray-500">Warna</span>
-                                <span class="flex items-center gap-2 text-right text-sm font-semibold text-gray-900">
-                                    <span class="h-3 w-3 rounded-full border border-black/10" :class="{
-                                        'bg-black': product.color === 'Black',
-                                        'bg-cyan-400': product.color === 'Cyan',
-                                        'bg-fuchsia-500': product.color === 'Magenta',
-                                        'bg-yellow-400': product.color === 'Yellow',
-                                        'bg-gradient-to-r from-cyan-400 via-fuchsia-500 to-yellow-400': product.color === 'CMYK',
-                                    }" />
-                                    {{ product.color }}
-                                </span>
-                            </div>
-
-                            <div v-if="product.volume"
-                                class="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
-                                <span class="text-sm text-gray-500">Ukuran / Isi</span>
-                                <span class="text-right text-sm font-semibold text-gray-900">
-                                    {{ product.volume }}
-                                </span>
-                            </div>
+                            <p v-if="canBuy" class="m-0 text-right text-[13px] text-gray-500">
+                                Total
+                                <span class="ml-1 text-base font-bold tracking-tight text-gray-950">{{
+                                    formatPrice(total) }}</span>
+                            </p>
                         </div>
+
+                        <div class="mt-3 grid grid-cols-2 gap-2">
+                            <button type="button" :disabled="!canBuy"
+                                class="inline-flex h-11 cursor-pointer items-center justify-center gap-1.5 rounded-lg border-2 border-gray-900 bg-white px-3 transition duration-200 hover:bg-gray-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:opacity-60"
+                                :class="added ? '!border-emerald-600 !bg-emerald-600' : ''" :style="{
+                                    color: added ? '#ffffff' : canBuy ? '#171717' : '#9ca3af',
+                                    fontSize: '13px',
+                                    fontWeight: 600,
+                                }" @click="addToCart">
+                                <svg v-if="!added" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                                    aria-hidden="true">
+                                    <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H6" />
+                                    <circle cx="10" cy="20" r="1" />
+                                    <circle cx="18" cy="20" r="1" />
+                                </svg>
+                                <svg v-else class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="m5 12 5 5L20 7" />
+                                </svg>
+                                {{ added ? 'Ditambahkan' : 'Keranjang' }}
+                            </button>
+
+                            <button type="button" :disabled="!canBuy"
+                                class="inline-flex h-11 cursor-pointer items-center justify-center rounded-lg border-0 bg-brand-red px-3 transition duration-200 hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-gray-200"
+                                :style="{ color: canBuy ? '#ffffff' : '#9ca3af', fontSize: '13px', fontWeight: 600 }"
+                                @click="buyNow">
+                                Beli Sekarang
+                            </button>
+                        </div>
+
+                        <p class="mb-0 mt-3 min-h-4 text-[11.5px] leading-4 text-gray-500" aria-live="polite">
+                            <template v-if="added">
+                                Produk masuk ke keranjang.
+                                <RouterLink to="/keranjang"
+                                    class="font-semibold text-brand-red no-underline hover:underline">
+                                    Lihat keranjang
+                                </RouterLink>
+                            </template>
+                            <template v-else-if="product.stock === 0">
+                                Stok sedang kosong. Hubungi tim kami untuk informasi ketersediaan berikutnya.
+                            </template>
+                            <template v-else-if="!canBuy">
+                                Seluruh stok produk ini sudah ada di keranjangmu.
+                                <RouterLink to="/keranjang"
+                                    class="font-semibold text-brand-red no-underline hover:underline">
+                                    Lihat keranjang
+                                </RouterLink>
+                            </template>
+                            <template v-else>
+                                {{ room }} unit tersedia<template v-if="inCart"> · {{ inCart }} sudah di
+                                    keranjang</template>
+                            </template>
+                        </p>
                     </div>
 
-                    <!-- Actions -->
-                    <!-- Actions -->
-                    <div class="mt-7">
-                        <RouterLink to="/catalog-produk#daftar-produk"
-                            class="group inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-red px-6 py-3 text-sm font-semibold text-white no-underline shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-red-700 hover:shadow-md focus:outline-none focus:ring-4 focus:ring-red-100 active:translate-y-0 active:bg-red-800">
-                            <svg class="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M19 12H5" />
-                                <path d="m12 19-7-7 7-7" />
+                    <!-- Bagikan -->
+                    <div class="mt-4 flex flex-wrap items-center gap-2">
+                        <span class="mr-1 text-xs font-medium text-gray-500">Bagikan</span>
+
+                        <button type="button"
+                            class="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3.5 transition-colors hover:border-brand-red/40"
+                            style="color: #374151; font-size: 12px; font-weight: 600" @click="copyLink">
+                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1" />
+                                <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
                             </svg>
+                            {{ copied ? 'Tautan disalin' : 'Salin tautan' }}
+                        </button>
 
-                            Kembali ke katalog
-                        </RouterLink>
+                        <!-- Hanya tampil di HP -->
+                        <a :href="waShareUrl" target="_blank" rel="noopener noreferrer"
+                            class="inline-flex h-9 items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3.5 no-underline transition-colors hover:border-brand-red/40 sm:hidden"
+                            style="color: #374151; font-size: 12px; font-weight: 600">
+                            <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="18" cy="5" r="3" />
+                                <circle cx="6" cy="12" r="3" />
+                                <circle cx="18" cy="19" r="3" />
+                                <path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" />
+                            </svg>
+                            Kirim via WhatsApp
+                        </a>
                     </div>
-                    <div class="mt-5 flex items-start gap-2.5 text-xs leading-6 text-gray-400">
+
+                    <div class="mt-6 flex items-start gap-2.5 text-xs leading-6 text-gray-400">
                         <svg class="mt-1 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <circle cx="12" cy="12" r="10" />
                             <path d="M12 11v5" />
                             <path d="M12 8h.01" />
                         </svg>
-
-                        <p>
-                            Pastikan produk sesuai dengan tipe printer yang digunakan.
-                            Hubungi tim AMAZiNK jika membutuhkan bantuan memilih produk.
+                        <p class="m-0">
+                            Pastikan produk sesuai dengan tipe printer yang digunakan. Hubungi tim AMAZiNK jika
+                            membutuhkan bantuan memilih produk.
                         </p>
                     </div>
                 </div>
             </div>
+
+            <!-- Tab -->
+            <div class="mt-10 overflow-hidden rounded-3xl border border-gray-200/70 bg-white sm:mt-14">
+                <div class="flex gap-1 border-b border-gray-100 px-3 sm:px-6" role="tablist">
+                    <button
+                        v-for="item in [{ id: 'deskripsi', label: 'Deskripsi' }, { id: 'spesifikasi', label: 'Spesifikasi' }]"
+                        :key="item.id" type="button" role="tab" :aria-selected="tab === item.id"
+                        class="-mb-px cursor-pointer border-0 border-b-2 bg-transparent px-4 py-4 transition-colors"
+                        :class="tab === item.id ? 'border-brand-red' : 'border-transparent hover:border-gray-200'"
+                        :style="{
+                            color: tab === item.id ? '#171717' : '#6b7280',
+                            fontSize: '14px',
+                            fontWeight: 600,
+                        }" @click="tab = item.id">
+                        {{ item.label }}
+                    </button>
+                </div>
+
+                <div class="p-5 sm:p-8" role="tabpanel">
+                    <div v-if="tab === 'deskripsi'" class="max-w-3xl">
+                        <p class="m-0 text-sm leading-8 text-gray-600 sm:text-[15px]">
+                            {{ product.longDescription || product.description }}
+                        </p>
+                    </div>
+
+                    <dl v-else class="m-0 max-w-2xl divide-y divide-gray-100">
+                        <div v-for="row in specs" :key="row.label"
+                            class="flex items-center justify-between gap-4 py-3.5">
+                            <dt class="text-sm text-gray-500">{{ row.label }}</dt>
+                            <dd class="m-0 flex items-center gap-2 text-right text-sm font-semibold text-gray-900">
+                                <span v-if="row.swatch" class="h-3 w-3 rounded-full border border-black/10"
+                                    :class="row.swatch" />
+                                {{ row.value }}
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Produk terkait -->
+            <div class="mt-12 sm:mt-16">
+                <div class="mb-5 flex items-end justify-between gap-4">
+                    <h2 class="m-0 text-xl font-bold tracking-tight sm:text-2xl">Produk lainnya</h2>
+                    <RouterLink to="/catalog-produk#daftar-produk"
+                        class="text-[13px] font-semibold text-brand-red no-underline hover:underline">
+                        Lihat semua
+                    </RouterLink>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+                    <RouterLink v-for="item in related" :key="item.slug" :to="`${detailBase}${item.slug}`"
+                        class="group block overflow-hidden rounded-2xl border border-gray-200/70 bg-white text-inherit no-underline transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_32px_rgba(0,0,0,0.1)]">
+                        <span
+                            class="relative flex aspect-square items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100/70 p-5">
+                            <img v-if="item.image" :src="item.image" :alt="item.name" loading="lazy"
+                                class="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105" />
+                            <svg v-else class="h-9 w-9 text-gray-300" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="16" rx="2" />
+                                <circle cx="8.5" cy="9" r="1.5" />
+                                <path d="m21 15-5-5L5 20" />
+                            </svg>
+
+                            <span v-if="item.stock === 0"
+                                class="absolute left-3 top-3 rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-red-700">
+                                Habis
+                            </span>
+                        </span>
+
+                        <span class="block p-4">
+                            <span class="block text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-400">
+                                {{ item.category }}
+                            </span>
+                            <span class="mt-1 line-clamp-2 block text-[13px] font-semibold leading-5 text-gray-900">
+                                {{ item.name }}
+                            </span>
+                            <span class="mt-2 block text-sm font-bold text-gray-950">
+                                {{ formatPrice(item.price) }}
+                            </span>
+                        </span>
+                    </RouterLink>
+                </div>
+            </div>
         </section>
 
-        <!-- Product Not Found -->
+        <!-- Produk tidak ditemukan -->
         <section v-else
             class="mx-auto flex min-h-[65vh] max-w-7xl flex-col items-center justify-center px-5 py-16 text-center">
             <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
@@ -354,24 +486,43 @@ const formatPrice = price =>
                 </svg>
             </div>
 
-            <p class="mt-6 text-xs font-bold uppercase tracking-[0.2em] text-brand-red">
-                Katalog AMAZiNK
-            </p>
+            <p class="mt-6 text-xs font-bold uppercase tracking-[0.2em] text-brand-red">Katalog AMAZiNK</p>
 
-            <h1 class="mt-3 text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">
-                Produk tidak ditemukan
-            </h1>
+            <h1 class="mt-3 text-2xl font-bold tracking-tight text-gray-950 sm:text-3xl">Produk tidak ditemukan</h1>
 
             <p class="mt-3 max-w-md text-sm leading-7 text-gray-500">
-                Produk mungkin sudah tidak tersedia atau alamat halaman tidak valid.
-                Silakan kembali ke katalog untuk melihat produk lainnya.
+                Produk mungkin sudah tidak tersedia atau alamat halaman tidak valid. Silakan kembali ke katalog
+                untuk melihat produk lainnya.
             </p>
 
             <RouterLink to="/catalog-produk#daftar-produk"
-                class="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-red px-6 py-3 text-sm font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-100">
+                class="mt-7 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-brand-red px-6 py-3 text-sm font-semibold text-white no-underline transition hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-100">
                 Kembali ke katalog
                 <span aria-hidden="true">→</span>
             </RouterLink>
         </section>
+
+        <!-- Zoom gambar -->
+        <Teleport to="body">
+            <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0"
+                enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in"
+                leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <div v-if="zoomOpen && product?.image"
+                    class="fixed inset-0 z-[60] grid place-items-center bg-black/80 p-4 backdrop-blur-sm sm:p-10"
+                    role="dialog" aria-modal="true" :aria-label="product.name" @click.self="zoomOpen = false">
+                    <button type="button" aria-label="Tutup"
+                        class="absolute right-4 top-4 grid h-11 w-11 cursor-pointer place-items-center rounded-full border-0 bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-6 sm:top-6"
+                        @click="zoomOpen = false">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                            stroke-linecap="round" class="h-5 w-5" aria-hidden="true">
+                            <path d="M6 6l12 12M18 6L6 18" />
+                        </svg>
+                    </button>
+
+                    <img :src="product.image" :alt="product.name"
+                        class="max-h-full max-w-full rounded-2xl bg-white object-contain p-6 shadow-2xl" />
+                </div>
+            </Transition>
+        </Teleport>
     </main>
 </template>

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { usePageLoading } from '@/composables/usePageLoading'
+import { useAuth } from '@/stores/auth'
 
 
 const router = createRouter({
@@ -76,6 +77,34 @@ const router = createRouter({
             name: 'news-detail',
             component: () => import('@/views/news/pages/NewsDetailView.vue'),
         },
+        {
+            path: '/galeri',
+            name: 'gallery',
+            component: () => import('@/views/gallery/pages/GalleryView.vue'),
+        },
+        {
+            path: '/masuk',
+            name: 'login',
+            component: () => import('@/views/auth/pages/LoginView.vue'),
+            meta: { guestOnly: true },
+        },
+        {
+            path: '/daftar',
+            name: 'register',
+            component: () => import('@/views/auth/pages/RegisterView.vue'),
+            meta: { guestOnly: true },
+        },
+        {
+            path: '/akun',
+            name: 'account',
+            component: () => import('@/views/account/pages/AccountView.vue'),
+            meta: { requiresAuth: true },
+        },
+        {
+            path: '/cari-tinta',
+            name: 'finder',
+            component: () => import('@/views/finder/pages/PrinterFinderView.vue'),
+        },
     ],
 })
 
@@ -87,6 +116,7 @@ const isCatalog = (route) => route.path.startsWith('/catalog-produk')
 const isCart = (route) => route.path === '/keranjang'
 const isNews = (route) => route.name === 'news'
 const isNewsDetail = (route) => route.name === 'news-detail'
+const isFinder = (route) => route.name === 'finder'
 
 router.beforeEach(async (to, from) => {
     if (to.fullPath === from.fullPath) return
@@ -96,7 +126,8 @@ router.beforeEach(async (to, from) => {
         (isDetail(from) && isCatalog(to)) ||
         isCart(to) ||
         isNewsDetail(to) ||
-        (isNewsDetail(from) && isNews(to))
+        (isNewsDetail(from) && isNews(to)) ||
+        (isFinder(to) && !isFinder(from))
     ) {
         start()
         await wait(450)
@@ -105,5 +136,17 @@ router.beforeEach(async (to, from) => {
 
 router.afterEach(stop)
 router.onError(stop)
+
+router.beforeEach((to) => {
+    const { isLoggedIn } = useAuth()
+
+    if (to.meta.requiresAuth && !isLoggedIn.value) {
+        return { name: 'login', query: { redirect: to.fullPath } }
+    }
+
+    if (to.meta.guestOnly && isLoggedIn.value) {
+        return { name: 'account' }
+    }
+})
 
 export default router

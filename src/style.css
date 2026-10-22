@@ -11,6 +11,35 @@
     --color-surface: #161616;
 }
 
+.page-enter-active {
+    transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.page-leave-active {
+    transition: opacity 0.16s ease;
+}
+
+.page-enter-from {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.page-leave-to {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .page-enter-active,
+    .page-leave-active {
+        transition: none;
+    }
+
+    .page-enter-from {
+        transform: none;
+    }
+}
+
 @layer base {
 
     :focus-visible {

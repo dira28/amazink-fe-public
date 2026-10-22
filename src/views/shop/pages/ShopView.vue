@@ -4,6 +4,9 @@ import { computed, ref, watch } from 'vue'
 import ShopHero from '../components/ShopHero.vue'
 import ProductCategories from '../components/ProductCategories.vue'
 import ProductCard from '../components/ProductCard.vue'
+import { shopProducts as products } from '@/data/products'
+import PrinterFinderMini from '../components/PrinterFinderMini.vue'
+
 
 const categories = [
     { name: 'Semua Produk', slug: 'all' },
@@ -13,129 +16,6 @@ const categories = [
     { name: 'Produk Lainnya', slug: 'lainnya' },
 ]
 
-// Data dummy — nantinya bisa diganti dengan data API.
-const products = [
-    {
-        id: 1,
-        slug: 'amazink-ink-bottle-black',
-        name: 'AMAZiNK Ink Bottle Black',
-        sku: 'AMZ-INK-BLK-001',
-        category: 'Tinta Botol',
-        categorySlug: 'tinta-botol',
-        description: 'Tinta hitam untuk kebutuhan cetak harian.',
-        image: '/images/home/tinta.jpeg',
-        color: 'Black',
-        volume: '127 ml',
-        price: 85000,
-        stock: 25,
-        badge: 'Pilihan',
-    },
-    {
-        id: 2,
-        slug: 'amazink-ink-bottle-cyan',
-        name: 'AMAZiNK Ink Bottle Cyan',
-        sku: 'AMZ-INK-CYN-002',
-        category: 'Tinta Botol',
-        categorySlug: 'tinta-botol',
-        description: 'Tinta cyan untuk kebutuhan cetak berwarna.',
-        image: '/images/home/tinta.jpeg',
-        color: 'Cyan',
-        volume: '70 ml',
-        price: 75000,
-        stock: 18,
-        badge: '',
-    },
-    {
-        id: 3,
-        slug: 'amazink-ink-bottle-magenta',
-        name: 'AMAZiNK Ink Bottle Magenta',
-        sku: 'AMZ-INK-MAG-003',
-        category: 'Tinta Botol',
-        categorySlug: 'tinta-botol',
-        description: 'Tinta magenta untuk cetak berwarna.',
-        image: '/images/home/tinta.jpeg',
-        color: 'Magenta',
-        volume: '70 ml',
-        price: 75000,
-        stock: 12,
-        badge: '',
-    },
-    {
-        id: 4,
-        slug: 'amazink-ink-cartridge-black',
-        name: 'AMAZiNK Ink Cartridge Black',
-        sku: 'AMZ-CAR-BLK-004',
-        category: 'Cartridge',
-        categorySlug: 'cartridge',
-        description: 'Cartridge hitam untuk printer inkjet.',
-        image: '',
-        color: 'Black',
-        volume: '',
-        price: 95000,
-        stock: 10,
-        badge: 'Produk Baru',
-    },
-    {
-        id: 5,
-        slug: 'amazink-laser-toner-black',
-        name: 'AMAZiNK Laser Toner Black',
-        sku: 'AMZ-TNR-BLK-005',
-        category: 'Toner Laser',
-        categorySlug: 'toner-laser',
-        description: 'Toner hitam untuk kebutuhan cetak dokumen.',
-        image: '/images/home/toner.jpeg',
-        color: 'Black',
-        volume: '',
-        price: 125000,
-        stock: 8,
-        badge: '',
-    },
-    {
-        id: 6,
-        slug: 'amazink-ink-bottle-yellow',
-        name: 'AMAZiNK Ink Bottle Yellow',
-        sku: 'AMZ-INK-YLW-006',
-        category: 'Tinta Botol',
-        categorySlug: 'tinta-botol',
-        description: 'Tinta kuning untuk kebutuhan cetak berwarna.',
-        image: '/images/home/tinta.jpeg',
-        color: 'Yellow',
-        volume: '70 ml',
-        price: 75000,
-        stock: 0,
-        badge: '',
-    },
-    {
-        id: 7,
-        slug: 'amazink-printing-accessory',
-        name: 'AMAZiNK Printing Accessory',
-        sku: 'AMZ-ACC-007',
-        category: 'Produk Lainnya',
-        categorySlug: 'lainnya',
-        description: 'Aksesori pendukung kebutuhan cetak.',
-        image: '/images/home/aksesori.jpeg',
-        color: '',
-        volume: '',
-        price: 45000,
-        stock: 15,
-        badge: '',
-    },
-    {
-        id: 8,
-        slug: 'amazink-ink-bottle-set',
-        name: 'AMAZiNK Ink Bottle Set',
-        sku: 'AMZ-INK-SET-008',
-        category: 'Tinta Botol',
-        categorySlug: 'tinta-botol',
-        description: 'Paket tinta dengan beberapa pilihan warna.',
-        image: '/images/home/tinta.jpeg',
-        color: 'CMYK',
-        volume: 'Set',
-        price: 250000,
-        stock: 6,
-        badge: 'Paket',
-    },
-]
 
 const activeCategory = ref('all')
 const searchQuery = ref('')
@@ -350,34 +230,38 @@ watch(
             </div>
         </section>
 
-        <!-- Promo -->
-        <section class="px-5 py-9 sm:px-6 sm:py-16" aria-labelledby="shop-promo-title">
-            <div
-                class="mx-auto flex max-w-[1180px] flex-col items-start gap-6 border-y border-[#e7e5e4] py-[30px] sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:py-10">
-                <div class="max-w-[650px]">
-                    <span class="mb-3.5 inline-block text-[11px] font-bold tracking-[0.14em] text-brand-red">
-                        BUTUH BANTUAN?
-                    </span>
+        <!-- Pemilih printer -->
+        <section id="cari-tinta" class="scroll-mt-[72px] px-5 py-9 sm:scroll-mt-[88px] sm:px-6 sm:py-16"
+            aria-labelledby="shop-promo-title">
+            <div class="mx-auto max-w-[1180px] border-y border-[#e7e5e4] py-[30px] sm:py-10">
+                <div class="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end sm:gap-8">
+                    <div class="max-w-[650px]">
+                        <span class="mb-3.5 inline-block text-[11px] font-bold tracking-[0.14em] text-brand-red">
+                            BUTUH BANTUAN?
+                        </span>
 
-                    <h2 id="shop-promo-title"
-                        class="m-0 max-w-[580px] text-[30px] font-semibold leading-[1.15] tracking-[-0.045em] text-[#171717] sm:text-[clamp(28px,3.5vw,42px)]">
-                        Bingung memilih tinta<br />
-                        untuk printermu?
-                    </h2>
+                        <h2 id="shop-promo-title"
+                            class="m-0 max-w-[580px] text-[30px] font-semibold leading-[1.15] tracking-[-0.045em] text-[#171717] sm:text-[clamp(28px,3.5vw,42px)]">
+                            Bingung memilih tinta<br />
+                            untuk printermu?
+                        </h2>
 
-                    <p class="mt-3 max-w-[460px] text-[13px] leading-[1.8] text-[#737373] sm:mt-4 sm:text-sm">
-                        Kami bantu temukan tinta yang tepat untuk kebutuhan cetakmu.
-                    </p>
+                        <p class="mt-3 max-w-[460px] text-[13px] leading-[1.8] text-[#737373] sm:mt-4 sm:text-sm">
+                            Pilih seri printer, kami tunjukkan tinta yang cocok.
+                        </p>
+                    </div>
+
+                    <RouterLink to="/cari-tinta"
+                        class="inline-flex min-h-[46px] w-full shrink-0 items-center justify-center gap-[18px] rounded-full bg-[#171717] px-6 text-[13px] font-semibold text-white no-underline transition-all duration-200 hover:gap-6 hover:bg-brand-red motion-reduce:transition-none sm:min-h-12 sm:w-auto">
+                        Buka halaman lengkap
+                        <svg class="h-[18px] w-[18px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                            <path d="M4 10h12m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.7"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </RouterLink>
                 </div>
 
-                <RouterLink to="/#pilih"
-                    class="inline-flex min-h-[46px] w-full shrink-0 items-center justify-center gap-[18px] rounded-full bg-[#171717] px-5 text-[13px] font-semibold text-white no-underline transition-all duration-200 hover:gap-6 hover:bg-brand-red motion-reduce:transition-none sm:min-h-12 sm:w-auto">
-                    Cari tinta
-                    <svg class="h-[18px] w-[18px] shrink-0" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                        <path d="M4 10h12m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                    </svg>
-                </RouterLink>
+                <PrinterFinderMini class="mt-8" />
             </div>
         </section>
     </div>

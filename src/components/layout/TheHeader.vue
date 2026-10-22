@@ -1,6 +1,15 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vue-router'
 import { useCart } from '@/composables/useCart'
+import { useAuth } from '@/stores/auth'
+
+const route = useRoute()
+const { user, isLoggedIn } = useAuth()
+
+const accountTo = computed(() => (isLoggedIn.value ? '/akun' : '/masuk'))
+const firstName = computed(() => user.value?.name.trim().split(' ')[0] ?? '')
+const initial = computed(() => firstName.value.charAt(0).toUpperCase())
 
 const { items } = useCart()
 
@@ -12,26 +21,34 @@ const cartBadge = computed(() =>
 const menuOpen = ref(false)
 const isHeaderVisible = ref(true)
 
-const infoOpen = ref(false) 
-const mobileInfoOpen = ref(false) 
+const infoOpen = ref(false)
+const mobileInfoOpen = ref(false)
 const infoRef = ref(null)
 
 let lastScrollY = 0
 let ticking = false
 
+// match: awalan path yang membuat menu ini dianggap aktif
 const navItems = [
-    { label: 'Beranda', to: '/' },
-    { label: 'Catalog Produk', to: '/catalog-produk' },
-    { label: 'Tentang Kami', to: '/tentang-kami' },
-    { label: 'Hubungi Kami', to: '/#kontak' },
+    { label: 'Beranda', to: '/', match: ['/'], exact: true },
+    { label: 'Catalog Produk', to: '/catalog-produk', match: ['/catalog-produk', '/produk', '/cari-tinta'] },
+    { label: 'Tentang Kami', to: '/tentang-kami', match: ['/tentang-kami'] },
 ]
 
-// Sesuaikan path dengan route di router
 const infoItems = [
-    { label: 'Reseller', to: '/reseller' },
-    { label: 'News', to: '/news' },
-    { label: 'Galeri', to: '/galeri' },
+    { label: 'Reseller', to: '/reseller', match: ['/reseller'] },
+    { label: 'News', to: '/news', match: ['/news'] },
+    { label: 'Galeri', to: '/galeri', match: ['/galeri'] },
 ]
+
+const startsWithAny = (paths) =>
+    paths.some((path) => route.path === path || route.path.startsWith(`${path}/`))
+
+const isActive = (item) => (item.exact ? route.path === item.to : startsWithAny(item.match))
+
+const infoActive = computed(() => infoItems.some(isActive))
+const cartActive = computed(() => startsWithAny(['/keranjang', '/checkout', '/pesanan']))
+const accountActive = computed(() => startsWithAny(['/akun', '/masuk', '/daftar']))
 
 const handleScroll = () => {
     if (ticking) return
@@ -103,19 +120,24 @@ onBeforeUnmount(() => {
             </RouterLink>
 
             <!-- Navigasi Desktop -->
-            <nav class="hidden items-center gap-7 md:flex lg:gap-9" aria-label="Navigasi utama">
+            <nav class="hidden items-center gap-1 md:flex" aria-label="Navigasi utama">
                 <RouterLink v-for="item in navItems" :key="item.label" :to="item.to"
-                    class="whitespace-nowrap text-[13px] font-medium text-gray-600 transition-colors duration-200 hover:text-brand-red"
-                    @click="closeMenu">
+                    class="whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-medium transition-colors duration-200"
+                    :class="isActive(item)
+                        ? 'bg-red-50 text-brand-red'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-950'"
+                    :aria-current="isActive(item) ? 'page' : undefined" @click="closeMenu">
                     {{ item.label }}
                 </RouterLink>
 
                 <!-- Dropdown Info -->
                 <div ref="infoRef" class="relative">
                     <button type="button"
-                        class="flex items-center gap-1 whitespace-nowrap text-[13px] font-medium transition-colors duration-200 hover:text-brand-red"
-                        :class="infoOpen ? 'text-brand-red' : 'text-gray-600'" aria-haspopup="menu"
-                        :aria-expanded="infoOpen" @click="infoOpen = !infoOpen">
+                        class="flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border-0 px-4 py-2 text-[13px] font-medium transition-colors duration-200"
+                        :class="infoActive || infoOpen
+                            ? 'bg-red-50 text-brand-red'
+                            : 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-950'"
+                        aria-haspopup="menu" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen">
                         Info
                         <svg class="h-3.5 w-3.5 transition-transform duration-200" :class="{ 'rotate-180': infoOpen }"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -129,9 +151,10 @@ onBeforeUnmount(() => {
                         leave-active-class="transition duration-100 ease-in"
                         leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-1">
                         <div v-if="infoOpen" role="menu"
-                            class="absolute left-1/2 top-full z-50 mt-4 w-44 -translate-x-1/2 overflow-hidden rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg">
+                            class="absolute left-1/2 top-full z-50 mt-3 w-44 -translate-x-1/2 overflow-hidden rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg">
                             <RouterLink v-for="item in infoItems" :key="item.to" :to="item.to" role="menuitem"
-                                class="block rounded-lg px-3.5 py-2.5 text-[13px] font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-brand-red"
+                                class="block rounded-lg px-3.5 py-2.5 text-[13px] font-medium transition-colors hover:bg-gray-100 hover:text-brand-red"
+                                :class="isActive(item) ? 'bg-red-50 text-brand-red' : 'text-gray-700'"
                                 @click="closeMenu">
                                 {{ item.label }}
                             </RouterLink>
@@ -143,10 +166,18 @@ onBeforeUnmount(() => {
             <!-- Aksi Kanan -->
             <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
                 <!-- Akun -->
-                <RouterLink to="/login"
-                    class="group flex h-10 w-10 items-center justify-center rounded-full text-gray-800 transition-colors hover:bg-gray-100 hover:text-brand-red"
-                    aria-label="Masuk ke akun" title="Akun" @click="closeMenu">
-                    <svg class="h-[21px] w-[21px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                <RouterLink :to="accountTo"
+                    class="group flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-gray-100 hover:text-brand-red"
+                    :class="accountActive ? 'bg-gray-100 text-brand-red' : 'text-gray-800'"
+                    :aria-label="isLoggedIn ? `Akun ${firstName}` : 'Masuk ke akun'"
+                    :title="isLoggedIn ? firstName : 'Masuk'" @click="closeMenu">
+                    <span v-if="isLoggedIn"
+                        class="grid h-8 w-8 place-items-center rounded-full bg-brand-red text-[13px] font-semibold transition-shadow"
+                        :class="accountActive ? 'ring-2 ring-brand-red/30 ring-offset-2' : ''" style="color: #fff"
+                        aria-hidden="true">
+                        {{ initial }}
+                    </span>
+                    <svg v-else class="h-[21px] w-[21px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <circle cx="12" cy="8" r="3.5" />
                         <path d="M5 20c.5-3.5 3.2-5.5 7-5.5s6.5 2 7 5.5" />
@@ -155,7 +186,8 @@ onBeforeUnmount(() => {
 
                 <!-- Keranjang -->
                 <RouterLink to="/keranjang"
-                    class="relative flex h-10 w-10 items-center justify-center rounded-full text-gray-800 transition-colors hover:bg-gray-100 hover:text-brand-red"
+                    class="relative flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-gray-100 hover:text-brand-red"
+                    :class="cartActive ? 'bg-gray-100 text-brand-red' : 'text-gray-800'"
                     :aria-label="productCount ? `Keranjang belanja, ${productCount} produk` : 'Keranjang belanja'"
                     title="Keranjang" @click="closeMenu">
                     <svg class="h-[21px] w-[21px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -191,73 +223,84 @@ onBeforeUnmount(() => {
             enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-150 ease-in"
             leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
             <nav v-if="menuOpen" id="mobile-navigation"
-                class="border-t border-gray-100 bg-white px-5 pb-5 pt-2 md:hidden" aria-label="Navigasi mobile">
+                class="flex flex-col gap-1 border-t border-gray-100 bg-white px-5 pb-5 pt-3 md:hidden"
+                aria-label="Navigasi mobile">
                 <RouterLink v-for="item in navItems" :key="item.label" :to="item.to"
-                    class="flex items-center justify-between border-b border-gray-100 py-4 text-sm font-medium text-gray-700 transition-colors hover:text-brand-red"
-                    @click="closeMenu">
+                    class="flex items-center justify-between rounded-xl px-3.5 py-3.5 text-sm font-medium transition-colors"
+                    :class="isActive(item)
+                        ? 'bg-red-50 text-brand-red'
+                        : 'text-gray-700 hover:bg-gray-50 hover:text-brand-red'"
+                    :aria-current="isActive(item) ? 'page' : undefined" @click="closeMenu">
                     {{ item.label }}
 
-                    <svg class="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <svg class="h-4 w-4" :class="isActive(item) ? 'text-brand-red' : 'text-gray-400'"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
                         <path d="m9 18 6-6-6-6" />
                     </svg>
                 </RouterLink>
 
                 <!-- Accordion Info -->
-                <div class="border-b border-gray-100">
+                <div>
                     <button type="button"
-                        class="flex w-full items-center justify-between py-4 text-sm font-medium text-gray-700 transition-colors hover:text-brand-red"
+                        class="flex w-full cursor-pointer items-center justify-between rounded-xl border-0 px-3.5 py-3.5 text-sm font-medium transition-colors"
+                        :class="infoActive
+                            ? 'bg-red-50 text-brand-red'
+                            : 'bg-transparent text-gray-700 hover:bg-gray-50 hover:text-brand-red'"
                         :aria-expanded="mobileInfoOpen" @click="mobileInfoOpen = !mobileInfoOpen">
                         Info
-                        <svg class="h-4 w-4 text-gray-400 transition-transform duration-200"
-                            :class="{ 'rotate-180': mobileInfoOpen }" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
-                            aria-hidden="true">
+                        <svg class="h-4 w-4 transition-transform duration-200"
+                            :class="[mobileInfoOpen ? 'rotate-180' : '', infoActive ? 'text-brand-red' : 'text-gray-400']"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="m6 9 6 6 6-6" />
                         </svg>
                     </button>
 
-                    <div v-if="mobileInfoOpen" class="pb-2 pl-3">
+                    <div v-if="mobileInfoOpen" class="mt-1 flex flex-col gap-1 pl-3">
                         <RouterLink v-for="item in infoItems" :key="item.to" :to="item.to"
-                            class="block py-3 text-sm text-gray-600 transition-colors hover:text-brand-red"
-                            @click="closeMenu">
+                            class="block rounded-xl px-3.5 py-3 text-sm transition-colors" :class="isActive(item)
+                                ? 'bg-red-50 font-medium text-brand-red'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-brand-red'" @click="closeMenu">
                             {{ item.label }}
                         </RouterLink>
                     </div>
                 </div>
 
-                <!-- Akses Akun dan Keranjang di Mobile -->
-                <div class="mt-4 grid grid-cols-2 gap-3">
-                    <RouterLink to="/login"
-                        class="flex items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-3 text-sm font-semibold text-gray-800 transition hover:border-brand-red hover:text-brand-red"
-                        @click="closeMenu">
-                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="12" cy="8" r="3.5" />
-                            <path d="M5 20c.5-3.5 3.2-5.5 7-5.5s6.5 2 7 5.5" />
-                        </svg>
-                        Akun
-                    </RouterLink>
+            <!-- Akses Akun dan Keranjang di Mobile -->
+            <div class="mt-4 grid grid-cols-2 gap-3">
+                <RouterLink :to="accountTo"
+                    class="flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition hover:border-brand-red hover:text-brand-red"
+                    :class="accountActive
+                        ? 'border-brand-red text-brand-red'
+                        : 'border-gray-200 text-gray-800'" @click="closeMenu">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="8" r="3.5" />
+                        <path d="M5 20c.5-3.5 3.2-5.5 7-5.5s6.5 2 7 5.5" />
+                    </svg>
+                    {{ isLoggedIn ? firstName : 'Masuk' }}
+                </RouterLink>
 
-                    <RouterLink to="/keranjang"
-                        class="flex items-center justify-center gap-2 rounded-xl bg-brand-red px-3 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
-                        :aria-label="productCount ? `Keranjang, ${productCount} produk` : 'Keranjang'"
-                        @click="closeMenu">
-                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H6" />
-                            <circle cx="10" cy="20" r="1" />
-                            <circle cx="18" cy="20" r="1" />
-                        </svg>
-                        Keranjang
+                <RouterLink to="/keranjang"
+                    class="flex items-center justify-center gap-2 rounded-xl bg-brand-red px-3 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
+                    :class="cartActive ? 'ring-2 ring-brand-red/30 ring-offset-2' : ''"
+                    :aria-label="productCount ? `Keranjang, ${productCount} produk` : 'Keranjang'" @click="closeMenu">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H6" />
+                        <circle cx="10" cy="20" r="1" />
+                        <circle cx="18" cy="20" r="1" />
+                    </svg>
+                    Keranjang
 
-                        <span v-if="productCount"
-                            class="min-w-[20px] rounded-full bg-white px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-brand-red"
-                            aria-hidden="true">
-                            {{ cartBadge }}
-                        </span>
-                    </RouterLink>
-                </div>
+                    <span v-if="productCount"
+                        class="min-w-[20px] rounded-full bg-white px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-brand-red"
+                        aria-hidden="true">
+                        {{ cartBadge }}
+                    </span>
+                </RouterLink>
+            </div>
             </nav>
         </Transition>
     </header>

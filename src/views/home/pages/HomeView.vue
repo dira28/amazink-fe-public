@@ -3,6 +3,7 @@ import HomeCollection from '@/views/home/components/HomeCollection.vue'
 import HeroSection from '../components/HeroSection.vue'
 import CategorySection from '../components/CategorySection.vue'
 import HomeCollection from '@/views/home/components/HomeCollection.vue'
+import TestimonialsSection from '../components/TestimonialsSection.vue'
 
 </script>
 
@@ -10,5 +11,6 @@ import HomeCollection from '@/views/home/components/HomeCollection.vue'
     <HeroSection />
     <CategorySection />
     <HomeCollection />
+    <TestimonialsSection />
     <!-- Collection, dst. -->
 </template>
