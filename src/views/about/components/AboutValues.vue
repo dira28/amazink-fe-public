@@ -1,6 +1,8 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { computed, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import '../css/AboutValues.css'
+import AccentText from '@/components/base/AccentText.vue'
+import { usePageSection } from '@/composables/usePage'
 
 const sectionRef = ref(null)
 const isVisible = ref(false)
@@ -48,36 +50,47 @@ onBeforeUnmount(() => {
     observer?.disconnect()
 })
 
-const values = [
-    {
-        number: '01',
-        title: 'Kualitas',
-        description:
-            'Menjaga kualitas produk dan proses kerja untuk menghadirkan pengalaman cetak yang andal dan konsisten.',
-        keyword: 'QUALITY FIRST',
-    },
-    {
-        number: '02',
-        title: 'Inovasi',
-        description:
-            'Terus mengembangkan produk dan mencari pendekatan baru untuk menjawab kebutuhan pengguna.',
-        keyword: 'KEEP EVOLVING',
-    },
-    {
-        number: '03',
-        title: 'Efisiensi',
-        description:
-            'Mengutamakan solusi yang efektif dan bernilai untuk mendukung produktivitas pelanggan.',
-        keyword: 'WORK SMARTER',
-    },
-    {
-        number: '04',
-        title: 'Peningkatan Berkelanjutan',
-        description:
-            'Membangun budaya evaluasi dan perbaikan untuk meningkatkan mutu dari waktu ke waktu.',
-        keyword: 'ALWAYS IMPROVING',
-    },
-]
+// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
+const content = usePageSection('about-us', 'values', {
+    eyebrow: 'What We Stand For',
+    title: 'Prinsip yang membawa kami [[lebih jauh]]',
+    description: 'Setiap langkah AMAZiNK berangkat dari komitmen terhadap kualitas, inovasi, dan perbaikan berkelanjutan untuk menciptakan nilai yang berarti bagi pelanggan.',
+    items: [
+        {
+            id: 'value-1',
+            title: 'Kualitas',
+            keyword: 'QUALITY FIRST',
+            description: 'Menjaga kualitas produk dan proses kerja untuk menghadirkan pengalaman cetak yang andal dan konsisten.',
+        },
+        {
+            id: 'value-2',
+            title: 'Inovasi',
+            keyword: 'KEEP EVOLVING',
+            description: 'Terus mengembangkan produk dan mencari pendekatan baru untuk menjawab kebutuhan pengguna.',
+        },
+        {
+            id: 'value-3',
+            title: 'Efisiensi',
+            keyword: 'WORK SMARTER',
+            description: 'Mengutamakan solusi yang efektif dan bernilai untuk mendukung produktivitas pelanggan.',
+        },
+        {
+            id: 'value-4',
+            title: 'Peningkatan Berkelanjutan',
+            keyword: 'ALWAYS IMPROVING',
+            description: 'Membangun budaya evaluasi dan perbaikan untuk meningkatkan mutu dari waktu ke waktu.',
+        },
+    ],
+    closing: 'Bukan hanya tentang produk yang kami hasilkan, tetapi juga tentang standar yang kami jaga dalam setiap proses.',
+    closing_tag: 'AMAZiNK — Beyond Expectation',
+})
+
+const values = computed(() =>
+    content.value.items.map((item, index) => ({
+        ...item,
+        number: String(index + 1).padStart(2, '0'),
+    })),
+)
 </script>
 
 <template>
@@ -88,31 +101,28 @@ const values = [
             <div class="grid gap-6 lg:grid-cols-[1fr_0.65fr] lg:items-end">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-red">
-                        What We Stand For
+                        {{ content.eyebrow }}
                     </p>
 
                     <h2
                         class="mt-5 max-w-2xl text-4xl font-semibold leading-tight tracking-[-0.04em] text-gray-950 sm:text-5xl lg:text-6xl">
-                        Prinsip yang membawa kami
-                        <span class="text-brand-red">lebih jauh</span>
+                        <AccentText :text="content.title" />
                     </h2>
                 </div>
 
                 <p class="max-w-lg text-base leading-7 text-gray-500 lg:justify-self-end">
-                    Setiap langkah AMAZiNK berangkat dari komitmen terhadap
-                    kualitas, inovasi, dan perbaikan berkelanjutan untuk
-                    menciptakan nilai yang berarti bagi pelanggan.
+                    {{ content.description }}
                 </p>
             </div>
 
             <!-- Values grid -->
             <div class="values-grid mt-14 grid border-l border-t border-gray-200 sm:grid-cols-2">
                 <article v-for="(value, index) in values" :key="value.number"
-                    class="value-card group relative flex min-h-[290px] flex-col overflow-hidden border-b border-r border-gray-200 p-7 transition-colors duration-300 hover:bg-gray-50 sm:p-9 lg:min-h-[320px] lg:p-10"
+                    class="value-card group relative flex min-h-72.5 flex-col overflow-hidden border-b border-r border-gray-200 p-7 transition-colors duration-300 hover:bg-gray-50 sm:p-9 lg:min-h-80 lg:p-10"
                     :style="{ '--card-index': index }">
                     <!-- Accent line -->
                     <div
-                        class="absolute left-0 top-0 h-[3px] w-0 bg-brand-red transition-all duration-500 group-hover:w-full">
+                        class="absolute left-0 top-0 h-0.75 w-0 bg-brand-red transition-all duration-500 group-hover:w-full">
                     </div>
 
                     <div class="flex items-start justify-between gap-4">
@@ -143,12 +153,11 @@ const values = [
             <div
                 class="mt-10 flex flex-col gap-4 border-b border-gray-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
                 <p class="max-w-xl text-sm leading-6 text-gray-500">
-                    Bukan hanya tentang produk yang kami hasilkan, tetapi juga
-                    tentang standar yang kami jaga dalam setiap proses.
+                    {{ content.closing }}
                 </p>
 
                 <span class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-red">
-                    AMAZiNK — Beyond Expectation
+                    {{ content.closing_tag }}
                 </span>
             </div>
         </div>

@@ -2,14 +2,16 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useCart } from '@/composables/useCart'
-import { shopProducts as products } from '@/data/products'
+import { useProducts } from '@/composables/useProducts'
 
 const route = useRoute()
 const router = useRouter()
 const { add, qtyInCart } = useCart()
 
 
-const product = computed(() => products.find((item) => item.slug === route.params.slug))
+const { products, loading } = useProducts()
+
+const product = computed(() => products.value.find((item) => item.slug === route.params.slug))
 
 const formatPrice = (price) =>
     new Intl.NumberFormat('id-ID', {
@@ -117,7 +119,7 @@ const detailBase = computed(() => route.path.replace(/\/$/, '').replace(/[^/]+$/
 const related = computed(() => {
     if (!product.value) return []
 
-    const others = products.filter((item) => item.slug !== product.value.slug)
+    const others = products.value.filter((item) => item.slug !== product.value.slug)
     const same = others.filter((item) => item.category === product.value.category)
     const rest = others.filter((item) => item.category !== product.value.category)
     return [...same, ...rest].slice(0, 4)
@@ -165,8 +167,8 @@ onBeforeUnmount(() => {
                         Katalog Produk
                     </RouterLink>
                     <span class="text-gray-300">/</span>
-                    <span class="max-w-[220px] truncate font-medium text-gray-800">
-                        {{ product?.name || 'Produk tidak ditemukan' }}
+                    <span class="max-w-55 truncate font-medium text-gray-800">
+                        {{ product?.name || (loading ? 'Memuat produk...' : 'Produk tidak ditemukan') }}
                     </span>
                 </nav>
             </div>
@@ -178,7 +180,7 @@ onBeforeUnmount(() => {
                 <!-- Gambar -->
                 <div class="min-w-0">
                     <div
-                        class="group relative flex aspect-square max-h-[640px] items-center justify-center overflow-hidden rounded-3xl border border-gray-200/70 bg-white p-8 sm:p-12">
+                        class="group relative flex aspect-square max-h-160 items-center justify-center overflow-hidden rounded-3xl border border-gray-200/70 bg-white p-8 sm:p-12">
                         <div
                             class="pointer-events-none absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100/70" />
 
@@ -206,7 +208,7 @@ onBeforeUnmount(() => {
                         <button v-if="product.image" type="button" aria-label="Perbesar gambar"
                             class="absolute right-5 top-5 grid h-10 w-10 cursor-pointer place-items-center rounded-full border border-gray-200 bg-white/90 text-gray-600 shadow-sm backdrop-blur transition-colors hover:text-brand-red sm:right-6 sm:top-6"
                             @click="zoomOpen = true">
-                            <svg class="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <circle cx="11" cy="11" r="7" />
                                 <path d="m20 20-3.5-3.5M11 8v6M8 11h6" />
@@ -475,7 +477,7 @@ onBeforeUnmount(() => {
         </section>
 
         <!-- Produk tidak ditemukan -->
-        <section v-else
+        <section v-else-if="!loading"
             class="mx-auto flex min-h-[65vh] max-w-7xl flex-col items-center justify-center px-5 py-16 text-center">
             <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
                 <svg class="h-9 w-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"

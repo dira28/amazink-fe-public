@@ -1,7 +1,10 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import AccentText from '@/components/base/AccentText.vue'
+import TurnstileWidget from '@/components/base/TurnstileWidget.vue'
 import { usePageSection } from '@/composables/usePage'
+import { USE_MOCK } from '@/services/http'
+import { submitReseller } from '@/services/resellerService'
 
 const content = usePageSection('reseller', 'form', {
     title: 'Berminat jadi reseller?',
@@ -13,6 +16,13 @@ const attempted = ref(false)
 const submitting = ref(false)
 const sent = ref(false)
 
+// Dengan API aktif, pengajuan wajib melewati CAPTCHA Turnstile.
+const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
+const captcha = ref(null)
+const captchaToken = ref('')
+const captchaError = ref(!USE_MOCK && !siteKey ? 'CAPTCHA belum dikonfigurasi.' : '')
+const submitError = ref('')
+
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const errors = computed(() => {
@@ -23,6 +33,7 @@ const errors = computed(() => {
         email: /^\S+@\S+\.\S+$/.test(form.email.trim()) ? '' : 'Email tidak valid',
         address: form.address.trim().length < 5 ? 'Alamat belum lengkap' : '',
         phone: phoneDigits.length >= 9 && phoneDigits.length <= 15 ? '' : 'Nomor telepon tidak valid',
+        captcha: USE_MOCK || captchaToken.value ? '' : captchaError.value || 'Selesaikan CAPTCHA terlebih dahulu',
     }
 })
 
@@ -39,12 +50,33 @@ async function submit() {
     if (hasErrors.value || submitting.value) return
 
     submitting.value = true
-    await wait(900) // TODO: ganti dengan request ke API reseller
-    submitting.value = false
-    sent.value = true
+    submitError.value = ''
 
-    Object.assign(form, { name: '', email: '', address: '', phone: '', message: '' })
-    attempted.value = false
+    try {
+        if (USE_MOCK) {
+            await wait(900)
+        } else {
+            await submitReseller({
+                name: form.name.trim(),
+                email: form.email.trim(),
+                phone: form.phone.trim(),
+                address: form.address.trim(),
+                message: form.message.trim(),
+                captcha_token: captchaToken.value,
+            })
+        }
+
+        sent.value = true
+        Object.assign(form, { name: '', email: '', address: '', phone: '', message: '' })
+        attempted.value = false
+    } catch (error) {
+        submitError.value = error.message
+    } finally {
+        submitting.value = false
+        // Token Turnstile hanya berlaku sekali, jadi widget diulang setelah setiap percobaan.
+        captchaToken.value = ''
+        captcha.value?.reset()
+    }
 }
 </script>
 
@@ -122,8 +154,16 @@ async function submit() {
                         <textarea v-model="form.message" rows="3" :class="inputClass('message')"></textarea>
                     </label>
 
+                    <div v-if="!USE_MOCK && siteKey" class="mt-4">
+                        <TurnstileWidget ref="captcha" :site-key="siteKey" @verify="captchaToken = $event"
+                            @error="captchaError = $event" />
+                        <span v-if="fieldError('captcha')" class="mt-1 block text-xs text-brand-red">
+                            {{ fieldError('captcha') }}
+                        </span>
+                    </div>
+
                     <button type="submit" :disabled="submitting"
-                        class="mt-5 inline-flex min-h-[46px] w-full items-center justify-center gap-2 rounded-full bg-brand-red px-6 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto">
+                        class="mt-5 inline-flex min-h-11.5 w-full items-center justify-center gap-2 rounded-full bg-brand-red px-6 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto">
                         <svg v-if="submitting" viewBox="0 0 24 24" fill="none"
                             class="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true">
                             <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3" />
@@ -132,6 +172,10 @@ async function submit() {
                         </svg>
                         {{ submitting ? 'Mengirim...' : 'Kirim pendaftaran' }}
                     </button>
+
+                    <p v-if="submitError" class="mt-3 text-xs text-brand-red" role="alert">
+                        {{ submitError }}
+                    </p>
 
                     <p v-if="attempted && hasErrors" class="mt-3 text-xs text-brand-red">
                         Lengkapi data yang ditandai merah.

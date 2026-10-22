@@ -58,9 +58,9 @@ const stats = computed(() => {
 
 <template>
     <section class="flex min-h-[calc(100svh-73px)] flex-col bg-[#f4f3ee] text-[#171717]">
-        <div class="mx-auto flex w-full max-w-[1280px] flex-1 flex-col px-5 pt-8 sm:px-8">
+        <div class="mx-auto flex w-full max-w-320 flex-1 flex-col px-5 pt-8 sm:px-8">
             <!-- Visualisasi jaringan -->
-            <div class="relative min-h-[210px] flex-1">
+            <div class="relative min-h-52.5 flex-1">
                 <svg :viewBox="`0 0 ${W} ${H}`" preserveAspectRatio="xMidYMid meet"
                     class="absolute inset-0 h-full w-full" role="img"
                     :aria-label="`Jaringan reseller AMAZiNK di ${totalCities} kota`">
@@ -110,7 +110,7 @@ const stats = computed(() => {
 
                 <div class="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
                     <a href="#daftar"
-                        class="inline-flex min-h-[48px] items-center justify-center rounded-full bg-[#171717] px-7 text-sm font-semibold text-white no-underline transition-colors hover:bg-brand-red">
+                        class="inline-flex min-h-12 items-center justify-center rounded-full bg-[#171717] px-7 text-sm font-semibold text-white no-underline transition-colors hover:bg-brand-red">
                         {{ hero.primary_button_label }}
                     </a>
 
@@ -125,7 +125,7 @@ const stats = computed(() => {
 
         <!-- Strip angka -->
         <dl class="bg-brand-red text-white">
-            <div class="mx-auto grid w-full max-w-[1280px] grid-cols-3 px-5 sm:px-8">
+            <div class="mx-auto grid w-full max-w-320 grid-cols-3 px-5 sm:px-8">
                 <div v-for="(stat, index) in stats" :key="stat.label" class="py-4 sm:py-5"
                     :class="index > 0 ? 'border-l border-white/25 pl-4 sm:pl-8' : ''">
                     <dd class="m-0 text-lg font-semibold tracking-[-0.03em] sm:text-2xl">{{ stat.value }}</dd>

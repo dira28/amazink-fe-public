@@ -91,7 +91,7 @@ watch([search, brand], () => {
             </p>
 
             <div class="relative mt-3">
-                <svg class="pointer-events-none absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400"
+                <svg class="pointer-events-none absolute left-4 top-1/2 h-4.5 w-4.5 -translate-y-1/2 text-gray-400"
                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
                     aria-hidden="true">
                     <circle cx="11" cy="11" r="7" />
@@ -147,7 +147,7 @@ watch([search, brand], () => {
         <!-- Kanan: hasil -->
         <div class="min-w-0" aria-live="polite">
             <div v-if="!selected"
-                class="flex h-full min-h-[220px] flex-col items-center justify-center rounded-2xl border border-dashed border-black/15 bg-white/60 p-6 text-center">
+                class="flex h-full min-h-55 flex-col items-center justify-center rounded-2xl border border-dashed border-black/15 bg-white/60 p-6 text-center">
                 <span class="grid h-12 w-12 place-items-center rounded-2xl bg-white text-gray-400 ring-1 ring-black/5">
                     <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -157,7 +157,7 @@ watch([search, brand], () => {
                     </svg>
                 </span>
                 <p class="m-0 mt-4 text-sm font-semibold">Produk yang cocok muncul di sini</p>
-                <p class="mx-auto mb-0 mt-1.5 max-w-[240px] text-[12.5px] leading-6 text-[#737373]">
+                <p class="mx-auto mb-0 mt-1.5 max-w-60 text-[12.5px] leading-6 text-[#737373]">
                     Pilih seri printer di samping, tinta yang pas langsung ditampilkan.
                 </p>
             </div>

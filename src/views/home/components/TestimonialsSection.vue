@@ -1,8 +1,10 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { USE_MOCK } from '@/services/http'
+import { fetchTestimonials } from '@/services/testimonialService'
 
-// DATA CONTOH. Ganti dengan testimoni pelanggan yang asli sebelum website dipublikasikan.
-const testimonials = [
+// DATA CONTOH: dipakai hanya saat mode mock. Selain itu testimoni diambil dari API.
+const mockTestimonials = [
     {
         id: 1,
         name: 'Rina Wulandari',
@@ -47,16 +49,31 @@ const testimonials = [
     },
 ]
 
+const testimonials = ref(USE_MOCK ? mockTestimonials : [])
+
+onMounted(async () => {
+    if (USE_MOCK) return
+
+    try {
+        testimonials.value = await fetchTestimonials()
+    } catch {
+        // Gagal memuat: bagian ini disembunyikan.
+    }
+})
+
 const average = computed(() => {
-    const sum = testimonials.reduce((total, item) => total + item.rating, 0)
-    return (sum / testimonials.length).toFixed(1)
+    if (!testimonials.value.length) return '0.0'
+
+    const sum = testimonials.value.reduce((total, item) => total + item.rating, 0)
+    return (sum / testimonials.value.length).toFixed(1)
 })
 
 const initial = (name) => name.trim().charAt(0).toUpperCase()
 </script>
 
 <template>
-    <section class="bg-[#f7f7f5] py-14 text-[#171717] sm:py-20" aria-labelledby="testimoni-title">
+    <section v-if="testimonials.length" class="bg-[#f7f7f5] py-14 text-[#171717] sm:py-20"
+        aria-labelledby="testimoni-title">
         <div class="mx-auto max-w-7xl px-5 sm:px-8">
             <header class="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
                 <div>

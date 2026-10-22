@@ -10,7 +10,7 @@ const { loading } = usePageLoading()
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-brand-black text-white">
+  <div class="flex min-h-screen flex-col bg-brand-white text-white">
     <PageLoader :show="loading" />
     <TheHeader />
     <main class="flex-1">

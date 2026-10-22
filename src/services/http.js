@@ -12,3 +12,27 @@ export async function apiGet(path) {
 
     return body?.data ?? null
 }
+
+// Mengirim JSON ke backend. Pesan error dari backend dipakai apa adanya agar bisa ditampilkan ke pengguna.
+export async function apiPost(path, payload) {
+    let response
+
+    try {
+        response = await fetch(`${BASE_URL}${path}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        })
+    } catch {
+        throw new Error('Tidak dapat terhubung ke server. Periksa koneksi lalu coba lagi.')
+    }
+
+    const body = await response.json().catch(() => null)
+
+    if (!response.ok) {
+        const detail = Array.isArray(body?.data) ? body.data[0]?.message : ''
+        throw new Error(detail || body?.message || 'Gagal mengirim data ke server.')
+    }
+
+    return body?.data ?? null
+}

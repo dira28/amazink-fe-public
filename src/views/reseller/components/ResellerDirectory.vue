@@ -110,7 +110,7 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                 <label
                     class="relative flex h-12 min-w-0 flex-1 items-center rounded-full transition-colors focus-within:bg-[#f7f7f5]">
                     <span class="sr-only">Cari kota atau alamat</span>
-                    <svg class="pointer-events-none absolute left-4 h-[18px] w-[18px] text-[#858585]"
+                    <svg class="pointer-events-none absolute left-4 h-4.5 w-4.5 text-[#858585]"
                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
                         stroke-linejoin="round" aria-hidden="true">
                         <circle cx="11" cy="11" r="7" />
@@ -156,7 +156,7 @@ watch([activeRegion, activeCity, query, pageSize], () => {
             </div>
 
             <!-- Ringkasan hasil -->
-            <div class="mt-5 flex min-h-[32px] items-center justify-between gap-3 px-1">
+            <div class="mt-5 flex min-h-8 items-center justify-between gap-3 px-1">
                 <p class="m-0 text-xs text-[#737373]">
                     <template v-if="filtered.length">
                         Menampilkan
@@ -225,7 +225,7 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                 <p class="m-0 text-sm font-semibold">Reseller tidak ditemukan</p>
                 <p class="mt-1 text-[13px] text-[#737373]">Coba kata kunci, wilayah, atau kota lainnya.</p>
                 <button type="button"
-                    class="mt-5 min-h-[42px] cursor-pointer rounded-full border-0 bg-[#171717] px-5 text-xs font-semibold text-white transition-colors hover:bg-brand-red"
+                    class="mt-5 min-h-10.5 cursor-pointer rounded-full border-0 bg-[#171717] px-5 text-xs font-semibold text-white transition-colors hover:bg-brand-red"
                     @click="resetFilters">
                     Tampilkan semua reseller
                 </button>

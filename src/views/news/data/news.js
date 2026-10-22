@@ -133,12 +133,19 @@ function makePlaceholder(slug) {
     return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }
 
-export const newsPosts = rawPosts.map((post) => ({
+// Melengkapi artikel dengan kategori, waktu baca, dan gambar pengganti bila belum ada gambar.
+export const decoratePost = (post) => ({
     category: 'Printer',
     readTime: 3,
     placeholder: makePlaceholder(post.slug),
     ...post,
-}))
+})
+
+// Data dummy: dipakai hanya saat mode mock.
+export const newsPosts = rawPosts.map(decoratePost)
+
+// Bentuk data dari API (/public/news) disesuaikan dengan yang dipakai komponen.
+export const fromApi = ({ read_time, ...post }) => decoratePost({ ...post, readTime: read_time })
 
 export const formatShortDate = (iso) =>
     new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short' }).format(new Date(iso))
