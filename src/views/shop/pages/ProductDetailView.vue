@@ -2,7 +2,6 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useCart } from '@/composables/useCart'
-import { shopProducts as products } from '@/data/products'
 
 import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
@@ -14,8 +13,7 @@ const route = useRoute()
 const router = useRouter()
 const { add, qtyInCart } = useCart()
 
-
-const product = computed(() => products.find((item) => item.slug === route.params.slug))
+const product = computed(() => products.value.find((item) => item.slug === route.params.slug))
 
 const formatPrice = (price) =>
     new Intl.NumberFormat('id-ID', {
@@ -123,7 +121,7 @@ const detailBase = computed(() => route.path.replace(/\/$/, '').replace(/[^/]+$/
 const related = computed(() => {
     if (!product.value) return []
 
-    const others = products.filter((item) => item.slug !== product.value.slug)
+    const others = products.value.filter((item) => item.slug !== product.value.slug)
     const same = others.filter((item) => item.category === product.value.category)
     const rest = others.filter((item) => item.category !== product.value.category)
     return [...same, ...rest].slice(0, 4)
@@ -158,7 +156,6 @@ onBeforeUnmount(() => {
     clearTimeout(copiedTimer)
 })
 </script>
-
 <template>
     <main class="min-h-screen bg-[#fafaf9] text-gray-950">
         <!-- Breadcrumb -->
