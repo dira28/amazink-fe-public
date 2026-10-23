@@ -18,7 +18,7 @@ const SHAPES = ['portrait', 'landscape', 'square']
 
 const contactLink = waLink('Halo AMAZiNK, saya tertarik dengan hasil cetak di galeri dan ingin konsultasi kebutuhan cetak.')
 
-const allItems = ref(USE_MOCK ? mockItems : [])
+const allItems = ref(USE_MOCK ? galleryItems : [])
 const loading = ref(!USE_MOCK)
 const failed = ref(false)
 
