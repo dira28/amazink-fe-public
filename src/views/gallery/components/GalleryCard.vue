@@ -42,11 +42,11 @@ const frameStyle = computed(() => ({
         </span>
 
         <span class="mt-3 block w-0 min-w-full px-1 sm:mt-4">
-            <span class="line-clamp-2 block text-[12px] font-semibold leading-[18px] tracking-[-0.01em] sm:text-[13px] sm:leading-5"
+            <span class="line-clamp-2 block text-[12px] font-semibold leading-4.5 tracking-[-0.01em] sm:text-[13px] sm:leading-5"
                 style="color: #171717">
                 {{ item.title }}
             </span>
-            <span class="mt-0.5 block text-[11.5px] leading-[18px] sm:text-[12.5px] sm:leading-5"
+            <span class="mt-0.5 block text-[11.5px] leading-4.5 sm:text-[12.5px] sm:leading-5"
                 style="color: #9a9a9a">
                 {{ item.categoryLabel }} · {{ formatMonth(item.date) }}
             </span>

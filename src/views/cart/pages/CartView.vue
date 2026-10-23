@@ -77,7 +77,7 @@ function checkout() {
                 <div>
                     <label
                         class="flex cursor-pointer items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3">
-                        <input type="checkbox" class="h-[18px] w-[18px] cursor-pointer accent-brand-red"
+                        <input type="checkbox" class="h-4.5 w-4.5 cursor-pointer accent-brand-red"
                             :checked="allSelected" :indeterminate="someSelected && !allSelected"
                             @change="setAllSelected($event.target.checked)" />
                         <span class="text-sm font-semibold">Pilih semua</span>
@@ -91,7 +91,7 @@ function checkout() {
                             class="flex items-start gap-3 rounded-2xl border bg-white p-4 transition sm:gap-4"
                             :class="item.selected ? 'border-gray-300' : 'border-gray-200'">
                             <input type="checkbox"
-                                class="mt-1 h-[18px] w-[18px] shrink-0 cursor-pointer accent-brand-red"
+                                class="mt-1 h-4.5 w-4.5 shrink-0 cursor-pointer accent-brand-red"
                                 :checked="item.selected" :aria-label="`Pilih ${item.name}`"
                                 @change="toggleSelect(item.key)" />
 
@@ -121,7 +121,7 @@ function checkout() {
                                         class="shrink-0 rounded-full p-1.5 text-gray-400 transition hover:bg-red-50 hover:text-brand-red"
                                         @click="remove(item.key)">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                                            stroke-linecap="round" stroke-linejoin="round" class="h-[18px] w-[18px]"
+                                            stroke-linecap="round" stroke-linejoin="round" class="h-4.5 w-4.5"
                                             aria-hidden="true">
                                             <path
                                                 d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 .9h8a1 1 0 0 0 1-.9L18 7M9 7V4h6v3" />

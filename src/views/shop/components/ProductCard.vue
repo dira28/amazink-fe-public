@@ -30,7 +30,7 @@ onBeforeUnmount(() => clearTimeout(resetTimer))
     <article
         class="group flex h-full min-w-0 flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:-translate-y-1 hover:shadow-lg">
         <RouterLink :to="`/produk/${product.slug}`"
-            class="product-card-media relative block overflow-hidden bg-[#F7F7F5]"
+            class="product-card-media relative block overflow-hidden bg-white"
             :aria-label="`Lihat ${product.name}`">
             <div class="aspect-[4/3] overflow-hidden">
                 <img v-if="product.image" :src="product.image" :alt="product.name" loading="lazy"
@@ -69,7 +69,7 @@ onBeforeUnmount(() => clearTimeout(resetTimer))
 
             <div class="mt-auto flex items-center gap-2 pt-3.5">
                 <RouterLink :to="`/produk/${product.slug}`"
-                    class="inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-[7px] rounded-lg border border-gray-950 bg-gray-950 text-[11px] font-semibold text-white no-underline transition-colors duration-200 hover:border-brand-red hover:bg-brand-red">
+                    class="inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1.75 rounded-lg border border-gray-950 bg-gray-950 text-[11px] font-semibold text-white no-underline transition-colors duration-200 hover:border-brand-red hover:bg-brand-red">
                     Lihat detail
                     <svg class="h-4 w-4 transition-transform group-hover:translate-x-1" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
@@ -88,12 +88,12 @@ onBeforeUnmount(() => clearTimeout(resetTimer))
                         : 'border-gray-300 text-gray-700 hover:border-brand-red hover:text-brand-red disabled:hover:border-gray-300 disabled:hover:text-gray-700'"
                     @click="dialogOpen = true">
                     <svg v-if="justAdded" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round" class="h-[18px] w-[18px]" aria-hidden="true">
+                        stroke-linecap="round" stroke-linejoin="round" class="h-4.5 w-4.5" aria-hidden="true">
                         <path d="m5 12 4 4L19 6" />
                     </svg>
 
                     <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                        stroke-linecap="round" stroke-linejoin="round" class="h-[18px] w-[18px]" aria-hidden="true">
+                        stroke-linecap="round" stroke-linejoin="round" class="h-4.5 w-4.5" aria-hidden="true">
                         <path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 8H6.2" />
                         <circle cx="9.5" cy="20" r="1.2" />
                         <circle cx="17" cy="20" r="1.2" />

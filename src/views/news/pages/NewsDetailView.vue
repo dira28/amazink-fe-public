@@ -1,22 +1,47 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import NewsArticleBody from '../components/NewsArticleBody.vue'
 import NewsChip from '../components/NewsChip.vue'
 import NewsImage from '../components/NewsImage.vue'
 import NewsSidebar from '../components/NewsSidebar.vue'
-import { newsPosts } from '../data/news'
+import { fromApi, newsPosts as mockPosts } from '../data/news'
 import { getContent } from '../data/newsContent'
-import { useProducts } from '@/composables/useProducts'
-import { usePolling } from '@/composables/usePolling'
-
-const { products, refreshProducts } = useProducts()
-usePolling(refreshProducts, 30000)
+import { USE_MOCK } from '@/services/http'
+import { fetchNews, fetchNewsPost } from '@/services/newsService'
 
 const route = useRoute()
 
-const post = computed(() => newsPosts.find((item) => item.slug === route.params.slug))
-const blocks = computed(() => (post.value ? getContent(post.value) : []))
+const post = ref(null)
+const newsPosts = ref(USE_MOCK ? mockPosts : [])
+const loading = ref(!USE_MOCK)
+
+// Mode dummy memakai data lokal; selain itu artikel dan daftar sidebar diambil dari API.
+watch(
+    () => route.params.slug,
+    async (slug) => {
+        if (USE_MOCK) {
+            post.value = mockPosts.find((item) => item.slug === slug) ?? null
+            return
+        }
+
+        loading.value = true
+        post.value = null
+
+        try {
+            const [detail, list] = await Promise.all([fetchNewsPost(slug), fetchNews()])
+            post.value = { ...fromApi(detail), content: detail.content }
+            newsPosts.value = list.map(fromApi)
+        } catch {
+            post.value = null
+        } finally {
+            loading.value = false
+        }
+    },
+    { immediate: true },
+)
+
+const blocks = computed(() => (post.value && USE_MOCK ? getContent(post.value) : []))
 
 const formatDate = (iso) =>
     new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(iso))
@@ -48,15 +73,15 @@ const formatDate = (iso) =>
                         <NewsImage :post="post" class="h-full w-full object-cover" />
                     </div>
 
-                    <NewsArticleBody class="mt-8" :blocks="blocks" :current-slug="post.slug" />
+                    <NewsArticleBody class="mt-8" :blocks="blocks" :html="post.content" :current-slug="post.slug" />
                 </article>
 
                 <NewsSidebar :posts="newsPosts" :current-slug="post.slug" />
             </div>
 
             <div v-else class="mt-10 rounded-3xl bg-white px-5 py-14 text-center ring-1 ring-black/5">
-                <p class="m-0 text-sm font-semibold">Article not found</p>
-                <RouterLink to="/news" class="mt-4 inline-block text-[13px] font-semibold text-brand-red no-underline">
+                <p class="m-0 text-sm font-semibold">{{ loading ? 'Memuat artikel...' : 'Article not found' }}</p>
+                <RouterLink v-if="!loading" to="/news" class="mt-4 inline-block text-[13px] font-semibold text-brand-red no-underline">
                     Back to news
                 </RouterLink>
             </div>

@@ -1,25 +1,30 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { resellerRegions } from '../data/resellers'
-import { useProducts } from '@/composables/useProducts'
-import { usePolling } from '@/composables/usePolling'
+import AccentText from '@/components/base/AccentText.vue'
+import { usePageSection } from '@/composables/usePage'
 
-const { products, refreshProducts } = useProducts()
-usePolling(refreshProducts, 30000)
+const section = usePageSection('reseller', 'directory', {
+    eyebrow: 'Jaringan kami',
+    title: 'Daftar Reseller AMAZiNK',
+    link_label: 'Lihat selengkapnya',
+})
+import { useResellerDirectory } from '@/composables/useResellerDirectory'
+
+const { regions } = useResellerDirectory()
 
 const AUTO_SLIDE_MS = 5000
 
-const cities = resellerRegions.flatMap((region) =>
-    region.cities.map((city) => ({ ...city, region: region.name }))
+const cities = computed(() =>
+    regions.value.flatMap((region) => region.cities.map((city) => ({ ...city, region: region.name })))
 )
 
 const perSlide = ref(4)
 const currentSlide = ref(0)
 
 const slides = computed(() =>
-    Array.from({ length: Math.ceil(cities.length / perSlide.value) }, (_, index) =>
-        cities.slice(index * perSlide.value, (index + 1) * perSlide.value)
+    Array.from({ length: Math.ceil(cities.value.length / perSlide.value) }, (_, index) =>
+        cities.value.slice(index * perSlide.value, (index + 1) * perSlide.value)
     )
 )
 const slideCount = computed(() => slides.value.length)
@@ -30,6 +35,7 @@ let timer = null
 let reducedMotion = false
 
 function goTo(index) {
+    if (!slideCount.value) return
     currentSlide.value = (index + slideCount.value) % slideCount.value
 }
 
@@ -69,22 +75,22 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <section id="daftar-reseller" class="scroll-mt-24 bg-[#f7f7f5] px-5 py-14 sm:px-8 sm:py-20">
+    <section v-if="cities.length" id="daftar-reseller" class="scroll-mt-24 bg-[#f7f7f5] px-5 py-14 sm:px-8 sm:py-20">
         <div class="mx-auto max-w-7xl">
             <!-- Header -->
             <header class="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">Jaringan kami</p>
+                    <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">{{ section.eyebrow }}</p>
                     <h2 class="mt-2.5 text-[clamp(26px,3vw,36px)] font-semibold leading-[1.2] tracking-[-0.045em]">
-                        Daftar Reseller AMAZiNK
+                        <AccentText :text="section.title" />
                     </h2>
                 </div>
 
                 <RouterLink :to="{ name: 'reseller-list' }"
                     class="group inline-flex items-center gap-3 rounded-full bg-[#171717] px-5 py-2.5 text-[13px] font-semibold text-white no-underline transition-colors hover:bg-brand-red">
-                    Lihat selengkapnya
+                    {{ section.link_label }}
                     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"
-                        class="h-[18px] w-[18px] transition-transform group-hover:translate-x-1">
+                        class="h-4.5 w-4.5 transition-transform group-hover:translate-x-1">
                         <path d="M4 10h12m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
                             stroke-linejoin="round" />
                     </svg>
@@ -133,8 +139,8 @@ onBeforeUnmount(() => {
             <div class="mt-6 flex items-center justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-2" aria-label="Pilih halaman reseller">
                     <button v-for="(_, index) in slides" :key="index" type="button"
-                        class="h-[7px] cursor-pointer rounded-full border-0 p-0 transition-all duration-300"
-                        :class="currentSlide === index ? 'w-[26px] bg-brand-red' : 'w-[7px] bg-[#c9c7c0]'"
+                        class="h-1.75 cursor-pointer rounded-full border-0 p-0 transition-all duration-300"
+                        :class="currentSlide === index ? 'w-6.5 bg-brand-red' : 'w-1.75 bg-[#c9c7c0]'"
                         :aria-label="`Slide ${index + 1}`" :aria-current="currentSlide === index ? 'true' : undefined"
                         @click="goTo(index)" />
                 </div>

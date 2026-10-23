@@ -340,7 +340,7 @@ onBeforeUnmount(() => {
 
                                 <div class="mt-3 flex flex-wrap items-center gap-3">
                                     <button type="button" :disabled="sending"
-                                        class="inline-flex min-w-[140px] items-center justify-center gap-2 rounded-full bg-brand-red px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+                                        class="inline-flex min-w-35 items-center justify-center gap-2 rounded-full bg-brand-red px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
                                         @click="sendProof">
                                         <svg v-if="sending" viewBox="0 0 24 24" fill="none"
                                             class="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true">
@@ -385,7 +385,7 @@ onBeforeUnmount(() => {
                             <RouterLink to="/keranjang"
                                 class="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#171717] px-6 text-sm font-semibold text-white no-underline transition-colors hover:bg-brand-red">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                                    stroke-linecap="round" stroke-linejoin="round" class="h-[18px] w-[18px]"
+                                    stroke-linecap="round" stroke-linejoin="round" class="h-4.5 w-4.5"
                                     aria-hidden="true">
                                     <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H6" />
                                     <circle cx="10" cy="20" r="1" />

@@ -7,7 +7,7 @@ defineProps({
 <template>
     <Transition enter-active-class="transition-opacity duration-150" enter-from-class="opacity-0"
         leave-active-class="transition-opacity duration-200" leave-to-class="opacity-0">
-        <div v-if="show" class="fixed inset-0 z-[100] flex items-center justify-center bg-white/85 backdrop-blur-sm"
+        <div v-if="show" class="fixed inset-0 z-100 flex items-center justify-center bg-white/85 backdrop-blur-sm"
             role="status" aria-live="polite">
             <svg viewBox="0 0 24 24" fill="none" class="h-8 w-8 animate-spin text-brand-red motion-reduce:animate-none"
                 aria-hidden="true">

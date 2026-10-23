@@ -1,47 +1,66 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import '../css/AboutVisionMission.css'
+import AccentText from '@/components/base/AccentText.vue'
+import { usePageSection } from '@/composables/usePage'
 
 const activeMission = ref(0)
 
-const missions = [
-    {
-        title: 'Menghasilkan produk inovatif dan berkualitas.',
-        description:
-            'Mengembangkan produk yang relevan dengan kebutuhan pengguna melalui perhatian terhadap kualitas dan penyempurnaan produk secara berkelanjutan.',
-        keyword: 'INNOVATION & QUALITY',
-    },
-    {
-        title: 'Membangun bisnis yang efektif dan efisien.',
-        description:
-            'Menjalankan proses bisnis secara terarah agar sumber daya digunakan dengan baik dan dapat memberikan nilai bagi pelanggan.',
-        keyword: 'SMARTER OPERATIONS',
-    },
-    {
-        title: 'Mengembangkan teknologi informasi yang tepat guna.',
-        description:
-            'Memanfaatkan teknologi informasi untuk mendukung proses kerja, meningkatkan efektivitas, dan membantu pengambilan keputusan.',
-        keyword: 'PURPOSEFUL TECHNOLOGY',
-    },
-    {
-        title: 'Memperluas distribusi dan pemasaran.',
-        description:
-            'Memperkuat jangkauan pemasaran serta membangun kerja sama dengan distributor, dealer, dan mitra resmi.',
-        keyword: 'GROWING TOGETHER',
-    },
-    {
-        title: 'Menerapkan standar mutu perusahaan.',
-        description:
-            'Menjaga konsistensi kualitas melalui penerapan standar mutu dan komitmen terhadap perbaikan berkelanjutan.',
-        keyword: 'QUALITY BY DESIGN',
-    },
-    {
-        title: 'Meningkatkan kesejahteraan karyawan dan stakeholder.',
-        description:
-            'Membangun hubungan kerja sama yang saling mendukung agar pertumbuhan perusahaan dapat memberikan manfaat bagi para pemangku kepentingan.',
-        keyword: 'SHARED PROGRESS',
-    },
-]
+// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
+const content = usePageSection('about-us', 'vision-mission', {
+    eyebrow: 'Our Direction',
+    title: 'Punya arah [[Punya tujuan]]',
+    description: 'Visi memberi kami arah. Misi menjadi langkah nyata untuk terus menghadirkan kualitas dan nilai yang lebih baik.',
+    vision_label: '01 / Visi Kami',
+    vision_title: 'Melampaui [[ekspektasi.]]',
+    vision: 'Menjadi perusahaan yang menghasilkan produk untuk membantu meningkatkan produktivitas dan efisiensi kerja konsumen dengan hasil yang melebihi ekspektasi.',
+    promise_label: 'Our Brand Promise',
+    promise: 'Beyond Expectation.',
+    mission_label: '02 / Misi Kami',
+    mission_title: 'Kualitas dalam [[setiap langkah]]',
+    missions: [
+        {
+            id: 'mission-1',
+            title: 'Menghasilkan produk inovatif dan berkualitas.',
+            keyword: 'INNOVATION & QUALITY',
+            description: 'Mengembangkan produk yang relevan dengan kebutuhan pengguna melalui perhatian terhadap kualitas dan penyempurnaan produk secara berkelanjutan.',
+        },
+        {
+            id: 'mission-2',
+            title: 'Membangun bisnis yang efektif dan efisien.',
+            keyword: 'SMARTER OPERATIONS',
+            description: 'Menjalankan proses bisnis secara terarah agar sumber daya digunakan dengan baik dan dapat memberikan nilai bagi pelanggan.',
+        },
+        {
+            id: 'mission-3',
+            title: 'Mengembangkan teknologi informasi yang tepat guna.',
+            keyword: 'PURPOSEFUL TECHNOLOGY',
+            description: 'Memanfaatkan teknologi informasi untuk mendukung proses kerja, meningkatkan efektivitas, dan membantu pengambilan keputusan.',
+        },
+        {
+            id: 'mission-4',
+            title: 'Memperluas distribusi dan pemasaran.',
+            keyword: 'GROWING TOGETHER',
+            description: 'Memperkuat jangkauan pemasaran serta membangun kerja sama dengan distributor, dealer, dan mitra resmi.',
+        },
+        {
+            id: 'mission-5',
+            title: 'Menerapkan standar mutu perusahaan.',
+            keyword: 'QUALITY BY DESIGN',
+            description: 'Menjaga konsistensi kualitas melalui penerapan standar mutu dan komitmen terhadap perbaikan berkelanjutan.',
+        },
+        {
+            id: 'mission-6',
+            title: 'Meningkatkan kesejahteraan karyawan dan stakeholder.',
+            keyword: 'SHARED PROGRESS',
+            description: 'Membangun hubungan kerja sama yang saling mendukung agar pertumbuhan perusahaan dapat memberikan manfaat bagi para pemangku kepentingan.',
+        },
+    ],
+    closing: 'Satu visi, langkah yang berkelanjutan, dan komitmen untuk terus berkembang bersama.',
+    closing_link_label: 'Lihat perjalanan kami',
+})
+
+const missions = computed(() => content.value.missions)
 
 function toggleMission(index) {
     activeMission.value = activeMission.value === index ? -1 : index
@@ -58,24 +77,22 @@ function toggleMission(index) {
             <div class="mb-6 flex flex-col gap-3 lg:mb-8 lg:flex-row lg:items-end lg:justify-between">
                 <div class="max-w-3xl">
                     <p class="text-[11px] font-bold uppercase tracking-[0.26em] text-brand-red">
-                        Our Direction
+                        {{ content.eyebrow }}
                     </p>
 
                     <h2 class="mt-3 text-3xl font-semibold leading-[1.1] tracking-[-0.04em] text-gray-950 sm:text-4xl">
-                        Punya arah
-                        <span class="text-brand-red">Punya tujuan</span>
+                        <AccentText :text="content.title" />
                     </h2>
                 </div>
 
                 <p class="max-w-md text-sm leading-6 text-gray-500">
-                    Visi memberi kami arah. Misi menjadi langkah nyata untuk
-                    terus menghadirkan kualitas dan nilai yang lebih baik.
+                    {{ content.description }}
                 </p>
             </div>
 
             <div class="grid items-stretch gap-4 lg:grid-cols-[0.85fr_1.15fr]">
                 <article
-                    class="group relative flex min-h-[340px] flex-col justify-between overflow-hidden rounded-3xl bg-[#171717] p-6 text-white sm:p-8">
+                    class="group relative flex min-h-85 flex-col justify-between overflow-hidden rounded-3xl bg-[#171717] p-6 text-white sm:p-8">
                     <div aria-hidden="true"
                         class="pointer-events-none absolute -right-20 top-16 h-56 w-56 rounded-full bg-brand-red/20 blur-[80px] transition duration-700 group-hover:bg-brand-red/30">
                     </div>
@@ -83,7 +100,7 @@ function toggleMission(index) {
                     <div class="relative">
                         <div class="flex items-center justify-between">
                             <span class="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/50">
-                                01 / Visi Kami
+                                {{ content.vision_label }}
                             </span>
 
                             <span
@@ -99,14 +116,11 @@ function toggleMission(index) {
                         </div>
 
                         <h3 class="mt-8 max-w-lg text-3xl font-semibold leading-[1.1] tracking-[-0.04em] sm:text-4xl">
-                            Melampaui
-                            <span class="text-brand-red">ekspektasi.</span>
+                            <AccentText :text="content.vision_title" />
                         </h3>
 
                         <p class="mt-4 max-w-lg text-sm leading-7 text-white/65">
-                            Menjadi perusahaan yang menghasilkan produk untuk
-                            membantu meningkatkan produktivitas dan efisiensi
-                            kerja konsumen dengan hasil yang melebihi ekspektasi.
+                            {{ content.vision }}
                         </p>
                     </div>
 
@@ -116,11 +130,11 @@ function toggleMission(index) {
                         <div class="flex flex-wrap items-center justify-between gap-4 pt-5">
                             <div>
                                 <p class="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/40">
-                                    Our Brand Promise
+                                    {{ content.promise_label }}
                                 </p>
 
                                 <p class="mt-1.5 text-base font-semibold tracking-tight">
-                                    Beyond Expectation.
+                                    {{ content.promise }}
                                 </p>
                             </div>
 
@@ -139,12 +153,11 @@ function toggleMission(index) {
                         class="flex flex-col gap-2 border-b border-gray-100 pb-4 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                             <p class="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-red">
-                                02 / Misi Kami
+                                {{ content.mission_label }}
                             </p>
 
                             <h3 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-gray-950 sm:text-3xl">
-                                Kualitas dalam
-                                <span class="text-brand-red">setiap langkah</span>
+                                <AccentText :text="content.mission_title" />
                             </h3>
                         </div>
 
@@ -154,7 +167,7 @@ function toggleMission(index) {
                     </div>
 
                     <div class="mt-1">
-                        <div v-for="(mission, index) in missions" :key="mission.keyword"
+                        <div v-for="(mission, index) in missions" :key="mission.id ?? index"
                             class="border-b border-gray-100 last:border-b-0">
                             <button type="button"
                                 class="group flex w-full items-start gap-3 rounded-xl py-3 text-left sm:gap-4"
@@ -212,13 +225,12 @@ function toggleMission(index) {
             <div
                 class="mt-4 flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
                 <p class="max-w-2xl text-sm leading-6 text-gray-600">
-                    Satu visi, langkah yang berkelanjutan, dan komitmen untuk
-                    terus berkembang bersama.
+                    {{ content.closing }}
                 </p>
 
                 <a href="#cerita-amazink"
                     class="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-gray-950 transition hover:text-brand-red">
-                    Lihat perjalanan kami
+                    {{ content.closing_link_label }}
                 </a>
             </div>
         </div>

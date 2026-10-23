@@ -1,43 +1,58 @@
 <script setup>
 import { computed, ref } from 'vue'
 import '../css/AboutStory.css'
+import AccentText from '@/components/base/AccentText.vue'
+import { usePageSection } from '@/composables/usePage'
 
 const activeStory = ref(0)
 
-const stories = [
-    {
-        year: '2007',
-        label: 'The Beginning',
-        title: 'Semua berawal dari kebutuhan.',
-        description:
-            'AMAZiNK memulai perjalanan di bidang consumables printer melalui PT Amazink Karya Indonesia.',
-        highlight: 'Berawal dari dunia printing',
-        detail:
-            'Memahami kebutuhan pengguna printer menjadi bagian penting dari perjalanan kami.',
-    },
-    {
-        year: 'TODAY',
-        label: 'Our Purpose',
-        title: 'Kualitas seharusnya lebih mudah dijangkau.',
-        description:
-            'Kami percaya produk consumables printer yang berkualitas perlu hadir dengan nilai yang masuk akal bagi penggunanya.',
-        highlight: 'Quality meets value',
-        detail:
-            'Fokus kami adalah kualitas, efisiensi, dan pengalaman penggunaan yang lebih baik.',
-    },
-    {
-        year: 'NEXT',
-        label: 'Looking Ahead',
-        title: 'Terus berkembang, melampaui ekspektasi.',
-        description:
-            'Kami terus berupaya meningkatkan mutu, mengembangkan produk, dan menjawab kebutuhan cetak yang terus berubah.',
-        highlight: 'Always moving forward',
-        detail:
-            'Inovasi dan perbaikan berkelanjutan menjadi arah bagi perjalanan kami selanjutnya.',
-    },
-]
+// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
+const content = usePageSection('about-us', 'story', {
+    eyebrow: 'The AMAZiNK Story',
+    title: 'Kami percaya, [[printing]] bisa lebih baik',
+    description: 'Setiap hasil cetak punya cerita. Di baliknya, ada kebutuhan akan kualitas, efisiensi, dan solusi yang bisa diandalkan. Di situlah perjalanan AMAZINK berawal.',
+    link_label: 'Kenali produk kami',
+    stories: [
+        {
+            id: 'story-1',
+            year: '2007',
+            label: 'The Beginning',
+            title: 'Semua berawal dari kebutuhan.',
+            description: 'AMAZiNK memulai perjalanan di bidang consumables printer melalui PT Amazink Karya Indonesia.',
+            highlight: 'Berawal dari dunia printing',
+            detail: 'Memahami kebutuhan pengguna printer menjadi bagian penting dari perjalanan kami.',
+        },
+        {
+            id: 'story-2',
+            year: 'TODAY',
+            label: 'Our Purpose',
+            title: 'Kualitas seharusnya lebih mudah dijangkau.',
+            description: 'Kami percaya produk consumables printer yang berkualitas perlu hadir dengan nilai yang masuk akal bagi penggunanya.',
+            highlight: 'Quality meets value',
+            detail: 'Fokus kami adalah kualitas, efisiensi, dan pengalaman penggunaan yang lebih baik.',
+        },
+        {
+            id: 'story-3',
+            year: 'NEXT',
+            label: 'Looking Ahead',
+            title: 'Terus berkembang, melampaui ekspektasi.',
+            description: 'Kami terus berupaya meningkatkan mutu, mengembangkan produk, dan menjawab kebutuhan cetak yang terus berubah.',
+            highlight: 'Always moving forward',
+            detail: 'Inovasi dan perbaikan berkelanjutan menjadi arah bagi perjalanan kami selanjutnya.',
+        },
+    ],
+    statement_eyebrow: 'What drives us',
+    statement_title: 'Beyond Expectation.',
+    statement_description: 'Bukan sekadar slogan, tetapi arah yang ingin terus kami tuju melalui kualitas produk, pelayanan, dan peningkatan yang berkelanjutan.',
+    since_label: 'Since',
+    since_year: '2007',
+})
 
-const currentStory = computed(() => stories[activeStory.value])
+const stories = computed(() => content.value.stories)
+
+const currentStory = computed(
+    () => stories.value[activeStory.value] ?? stories.value[0] ?? { year: '', label: '', title: '', description: '', highlight: '', detail: '' },
+)
 </script>
 
 <template>
@@ -47,27 +62,23 @@ const currentStory = computed(() => stories[activeStory.value])
             <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-red">
-                        The AMAZiNK Story
+                        {{ content.eyebrow }}
                     </p>
 
                     <h2
                         class="mt-5 max-w-2xl text-4xl font-semibold leading-tight tracking-[-0.04em] text-gray-950 sm:text-5xl lg:text-6xl">
-                        Kami percaya,
-                        <span class="text-brand-red">printing</span>
-                        bisa lebih baik
+                        <AccentText :text="content.title" />
                     </h2>
                 </div>
 
                 <div class="max-w-lg lg:justify-self-end">
                     <p class="text-base leading-7 text-gray-500 sm:text-lg">
-                        Setiap hasil cetak punya cerita. Di baliknya, ada
-                        kebutuhan akan kualitas, efisiensi, dan solusi yang bisa
-                        diandalkan. Di situlah perjalanan AMAZINK berawal.
+                        {{ content.description }}
                     </p>
 
                     <a href="#produk-amazink"
                         class="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-gray-950 transition hover:text-brand-red">
-                        Kenali produk kami
+                        {{ content.link_label }}
                     </a>
                 </div>
             </div>
@@ -81,7 +92,7 @@ const currentStory = computed(() => stories[activeStory.value])
                     </p>
 
                     <div class="mt-7 space-y-2">
-                        <button v-for="(story, index) in stories" :key="story.year" type="button"
+                        <button v-for="(story, index) in stories" :key="story.id ?? index" type="button"
                             :aria-pressed="activeStory === index" @click="activeStory = index"
                             class="group flex w-full items-center gap-5 rounded-2xl border p-5 text-left transition duration-300"
                             :class="activeStory === index
@@ -126,7 +137,7 @@ const currentStory = computed(() => stories[activeStory.value])
 
                 <!-- Active story panel -->
                 <div
-                    class="relative flex min-h-[400px] flex-col justify-between overflow-hidden bg-[#171717] p-7 text-white sm:p-10 lg:p-12">
+                    class="relative flex min-h-100 flex-col justify-between overflow-hidden bg-[#171717] p-7 text-white sm:p-10 lg:p-12">
                     <div
                         class="pointer-events-none absolute -right-24 -top-20 h-72 w-72 rounded-full bg-brand-red/20 blur-3xl">
                     </div>
@@ -172,7 +183,7 @@ const currentStory = computed(() => stories[activeStory.value])
                         </span>
 
                         <div class="flex gap-2">
-                            <button v-for="(story, index) in stories" :key="story.year" type="button"
+                            <button v-for="(story, index) in stories" :key="story.id ?? index" type="button"
                                 :aria-label="`Lihat cerita ${story.label}`" :aria-pressed="activeStory === index"
                                 @click="activeStory = index" class="h-1.5 rounded-full transition-all duration-300"
                                 :class="activeStory === index ? 'w-8 bg-brand-red' : 'w-3 bg-white/25 hover:bg-white/50'"></button>
@@ -186,26 +197,24 @@ const currentStory = computed(() => stories[activeStory.value])
                 class="mt-8 grid gap-6 rounded-3xl border border-gray-200 p-7 sm:p-9 md:grid-cols-[1fr_auto] md:items-center lg:p-10">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-red">
-                        What drives us
+                        {{ content.statement_eyebrow }}
                     </p>
 
                     <h3 class="mt-3 text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl">
-                        Beyond Expectation.
+                        {{ content.statement_title }}
                     </h3>
 
                     <p class="mt-3 max-w-2xl text-sm leading-7 text-gray-500">
-                        Bukan sekadar slogan, tetapi arah yang ingin terus kami
-                        tuju melalui kualitas produk, pelayanan, dan peningkatan
-                        yang berkelanjutan.
+                        {{ content.statement_description }}
                     </p>
                 </div>
 
                 <div class="border-t border-gray-200 pt-5 md:border-l md:border-t-0 md:pl-8 md:pt-0">
                     <p class="text-xs uppercase tracking-widest text-gray-400">
-                        Since
+                        {{ content.since_label }}
                     </p>
                     <p class="mt-1 text-4xl font-semibold tracking-tight text-gray-950">
-                        2007
+                        {{ content.since_year }}
                     </p>
                 </div>
             </div>

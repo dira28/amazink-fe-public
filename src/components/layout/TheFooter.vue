@@ -1,5 +1,31 @@
 <script setup>
+import { usePageSection } from '@/composables/usePage'
+
 const year = new Date().getFullYear()
+
+const brand = usePageSection('footer', 'brand', {
+    company_name: 'PT. AMAZINK KARYA INDONESIA',
+    description: 'Print Amazing. Solusi kebutuhan tinta, toner, dan printer untuk mendukung produktivitas Anda.',
+})
+
+const contact = usePageSection('footer', 'contact', {
+    phone: '0822 2666 7233',
+    email: 'info@amazinkprint.com',
+})
+
+const office = usePageSection('footer', 'office', {
+    address: 'Jl. Watubelang 1, Noborejo, Kec. Argomulyo, Kota Salatiga, Jawa Tengah 50736',
+    working_hours: [
+        { id: 'hours-1', text: 'Mon–Fri: 08:00–17:00' },
+        { id: 'hours-2', text: 'Sat: 08:00–14:00' },
+    ],
+})
+
+// 0822 2666 7233 -> tel:+6282226667233
+const telHref = (phone) => {
+    const digits = phone.replace(/\D/g, '')
+    return `tel:${digits.startsWith('0') ? `+62${digits.slice(1)}` : `+${digits}`}`
+}
 
 const menus = [
     { label: 'Beranda', to: '/' },
@@ -15,18 +41,18 @@ const menus = [
         <div class="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-8 lg:py-16">
             <!-- BRAND -->
             <div>
-                <RouterLink to="/" class="inline-block text-2xl font-extrabold tracking-tight"
-                    aria-label="AMAZiNK Beranda">
-                    AMAZ<span class="text-brand-red">I</span>NK
+                <RouterLink to="/" class="inline-block" aria-label="AMAZiNK Beranda">
+                    <!-- Logo berwarna gelap; dijadikan putih agar terbaca di latar hitam. -->
+                    <img src="@/assets/images/amazink_logo.png" alt="Amazink" width="1703" height="227"
+                        class="block h-7 w-auto brightness-0 invert" />
                 </RouterLink>
 
                 <p class="mt-3 text-sm font-medium text-gray-300">
-                    PT. AMAZINK KARYA INDONESIA
+                    {{ brand.company_name }}
                 </p>
 
                 <p class="mt-2 text-sm leading-6 text-muted">
-                    Print Amazing. Solusi kebutuhan tinta, toner, dan printer
-                    untuk mendukung produktivitas Anda.
+                    {{ brand.description }}
                 </p>
             </div>
 
@@ -56,8 +82,8 @@ const menus = [
                         <p class="mb-1 text-xs font-medium uppercase tracking-wider text-muted">
                             Phone Number
                         </p>
-                        <a href="tel:+6282226667233" class="text-gray-200 transition-colors hover:text-brand-red">
-                            0822 2666 7233
+                        <a :href="telHref(contact.phone)" class="text-gray-200 transition-colors hover:text-brand-red">
+                            {{ contact.phone }}
                         </a>
                     </li>
 
@@ -65,9 +91,9 @@ const menus = [
                         <p class="mb-1 text-xs font-medium uppercase tracking-wider text-muted">
                             Email Address
                         </p>
-                        <a href="mailto:info@amazinkprint.com"
+                        <a :href="`mailto:${contact.email}`"
                             class="break-words text-gray-200 transition-colors hover:text-brand-red">
-                            info@amazinkprint.com
+                            {{ contact.email }}
                         </a>
                     </li>
                 </ul>
@@ -79,9 +105,8 @@ const menus = [
                     Our Office
                 </h2>
 
-                <p class="mt-4 text-sm leading-6 text-gray-300">
-                    Jl. Watubelang 1, Noborejo, Kec. Argomulyo,
-                    Kota Salatiga, Jawa Tengah 50736
+                <p class="mt-4 whitespace-pre-line text-sm leading-6 text-gray-300">
+                    {{ office.address }}
                 </p>
 
                 <h3 class="mt-6 text-sm font-bold">
@@ -89,13 +114,9 @@ const menus = [
                 </h3>
 
                 <ul class="mt-3 space-y-2 text-sm text-muted">
-                    <li class="flex items-start gap-2">
+                    <li v-for="hours in office.working_hours" :key="hours.id" class="flex items-start gap-2">
                         <span class="mt-0.5 text-brand-red">•</span>
-                        <span>Mon–Fri: 08:00–17:00</span>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <span class="mt-0.5 text-brand-red">•</span>
-                        <span>Sat: 08:00–14:00</span>
+                        <span>{{ hours.text }}</span>
                     </li>
                 </ul>
             </div>
@@ -106,7 +127,7 @@ const menus = [
             <div
                 class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 text-center text-xs text-muted sm:flex-row sm:text-left">
                 <p>
-                    © {{ year }} PT. AMAZINK KARYA INDONESIA.
+                    © {{ year }} {{ brand.company_name }}.
                     All rights reserved.
                 </p>
 

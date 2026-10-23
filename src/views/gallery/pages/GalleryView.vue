@@ -2,6 +2,8 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import GalleryCard from '../components/GalleryCard.vue'
 import GalleryLightbox from '../components/GalleryLightbox.vue'
+import { USE_MOCK } from '@/services/http'
+import { fetchGallery } from '@/services/galleryService'
 import { galleryCategories, galleryItems } from '../data/gallery'
 import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
@@ -12,29 +14,36 @@ usePolling(refreshProducts, 30000)
 
 const AUTOPLAY_MS = 4000
 const MAX_ITEMS = 15
+const SHAPES = ['portrait', 'landscape', 'square']
 
 const contactLink = waLink('Halo AMAZiNK, saya tertarik dengan hasil cetak di galeri dan ingin konsultasi kebutuhan cetak.')
 
+const allItems = ref(USE_MOCK ? mockItems : [])
+const loading = ref(!USE_MOCK)
+const failed = ref(false)
+
 // Newest first, so the cap keeps the latest works
-const sortedItems = [...galleryItems].sort((a, b) => b.date.localeCompare(a.date))
+const sortedItems = computed(() =>
+    [...allItems.value].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
+)
 
 const category = ref('all')
 
 const items = computed(() =>
     (category.value === 'all'
-        ? sortedItems
-        : sortedItems.filter((item) => item.category === category.value)
+        ? sortedItems.value
+        : sortedItems.value.filter((item) => item.category === category.value)
     ).slice(0, MAX_ITEMS)
 )
 
 const total = computed(() => items.value.length)
 
 const tabs = computed(() => [
-    { id: 'all', label: 'Semua', count: Math.min(sortedItems.length, MAX_ITEMS) },
+    { id: 'all', label: 'Semua', count: Math.min(sortedItems.value.length, MAX_ITEMS) },
     ...galleryCategories
         .map((item) => ({
             ...item,
-            count: Math.min(sortedItems.filter((work) => work.category === item.id).length, MAX_ITEMS),
+            count: Math.min(sortedItems.value.filter((work) => work.category === item.id).length, MAX_ITEMS),
         }))
         .filter((tab) => tab.count > 0),
 ])
@@ -60,9 +69,46 @@ let pressed = false
 let moved = false
 let startX = 0
 
-const counter = computed(
-    () => `${String(active.value + 1).padStart(2, '0')} / ${String(total.value).padStart(2, '0')}`
+const counter = computed(() =>
+    total.value
+        ? `${String(active.value + 1).padStart(2, '0')} / ${String(total.value).padStart(2, '0')}`
+        : ''
 )
+
+const emptyMessage = computed(() =>
+    loading.value ? 'Memuat galeri...' : failed.value ? 'Galeri gagal dimuat' : 'Belum ada foto'
+)
+
+function fromApi(categories) {
+    return categories
+        .flatMap((category) =>
+            category.items.map((photo) => ({
+                id: String(photo.id),
+                title: category.name,
+                categoryLabel: category.name,
+                description: '',
+                image: photo.image,
+                placeholder: '',
+                date: null,
+            }))
+        )
+        .map((item, index) => ({ ...item, shape: SHAPES[index % SHAPES.length] }))
+}
+
+async function loadPhotos() {
+    if (USE_MOCK) return
+
+    try {
+        items.value = fromApi(await fetchGallery())
+        active.value = Math.max(0, Math.min(2, items.value.length - 1))
+        await nextTick()
+        measure()
+    } catch {
+        failed.value = true
+    } finally {
+        loading.value = false
+    }
+}
 
 function measure() {
     const el = slides[active.value]
@@ -214,6 +260,7 @@ onMounted(async () => {
     })
 
     startAuto()
+    loadPhotos()
 })
 
 onBeforeUnmount(() => {
@@ -224,14 +271,14 @@ onBeforeUnmount(() => {
 
 <template>
     <div class="overflow-x-hidden bg-[#f7f7f5] text-[#171717] antialiased">
-        <section class="relative overflow-hidden bg-gradient-to-b from-[#f7f7f5] via-white to-[#f1f1ef]">
+        <section class="relative overflow-hidden bg-linear-to-b from-[#f7f7f5] via-white to-[#f1f1ef]">
             <div class="mx-auto max-w-7xl px-5 pt-6 sm:px-8 sm:pt-10">
                 <header class="flex items-end justify-between gap-4 sm:gap-6">
                     <div>
                         <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">
                             Galeri AMAZiNK
                         </p>
-                        <h1 class="mt-2 text-[clamp(28px,4vw,44px)] font-semibold leading-[1.08] tracking-[-0.05em]">
+                        <h1 class="mt-2 text-[clamp(28px,4vw,44px)] font-semibold leading-[1.08] tracking-tighter">
                             Portofolio Kami
                         </h1>
                         <p class="mt-2 hidden max-w-xl text-sm leading-[1.7] text-[#737373] sm:block">
@@ -285,9 +332,14 @@ onBeforeUnmount(() => {
                 @pointermove="onPointerMove" @pointerup="onPointerEnd" @pointercancel="onPointerEnd" @dragstart.prevent
                 @pointerenter="onPointerEnter" @pointerleave="onPointerLeave" @focusin="onFocusIn"
                 @focusout="hovering = false" @keydown="onKeydown">
-                <div ref="track" class="relative flex w-max items-start gap-6 sm:gap-10 lg:gap-12" :class="ready && !dragging
-                    ? 'transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none'
-                    : ''" :style="{ transform: `translateX(${offset + dragX}px)` }">
+                <p v-if="!items.length" class="m-0 py-24 text-center text-sm font-semibold text-[#737373]">
+                    {{ emptyMessage }}
+                </p>
+
+                <div v-show="items.length" ref="track" class="relative flex w-max items-start gap-6 sm:gap-10 lg:gap-12"
+                    :class="ready && !dragging
+                        ? 'transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none'
+                        : ''" :style="{ transform: `translateX(${offset + dragX}px)` }">
                     <GalleryCard v-for="(item, index) in items" :key="item.id"
                         :ref="(el) => (slides[index] = el?.$el ?? null)" :item="item"
                         :distance="Math.abs(index - active)" :active="index === active" @select="onSelect(index)" />
@@ -296,7 +348,7 @@ onBeforeUnmount(() => {
 
             <div class="relative pb-5 pt-1 sm:pb-8 sm:pt-2">
                 <div
-                    class="absolute inset-x-0 bottom-0 top-[44px] border-t border-black/10 bg-gradient-to-b from-[#dedede] to-[#efefee] sm:top-[64px]">
+                    class="absolute inset-x-0 bottom-0 top-11 border-t border-black/10 bg-linear-to-b from-[#dedede] to-[#efefee] sm:top-16">
                 </div>
 
                 <div class="relative mx-auto w-[min(590px,88vw)]">
@@ -310,15 +362,15 @@ onBeforeUnmount(() => {
                         </div>
                     </div>
 
-                    <div class="relative pb-[36px] sm:pb-[52px]">
+                    <div class="relative pb-9 sm:pb-13">
                         <div
-                            class="h-6 rounded-[3px] bg-gradient-to-b from-[#5b5553] via-[#403b3a] to-[#2b2827] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] sm:h-8">
+                            class="h-6 rounded-[3px] bg-linear-to-b from-[#5b5553] via-[#403b3a] to-[#2b2827] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] sm:h-8">
                         </div>
                         <div
-                            class="absolute left-0 top-6 h-[36px] w-5 bg-gradient-to-r from-[#3a3534] to-[#262322] sm:top-8 sm:h-[52px] sm:w-8">
+                            class="absolute left-0 top-6 h-9 w-5 bg-linear-to-r from-[#3a3534] to-[#262322] sm:top-8 sm:h-13 sm:w-8">
                         </div>
                         <div
-                            class="absolute right-0 top-6 h-[36px] w-5 bg-gradient-to-l from-[#3a3534] to-[#262322] sm:top-8 sm:h-[52px] sm:w-8">
+                            class="absolute right-0 top-6 h-9 w-5 bg-linear-to-l from-[#3a3534] to-[#262322] sm:top-8 sm:h-13 sm:w-8">
                         </div>
                         <div class="absolute -bottom-1 left-[4%] h-4 w-[92%] rounded-full bg-black/20 blur-lg"></div>
                     </div>

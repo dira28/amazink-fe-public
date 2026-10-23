@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { useAuth } from '@/stores/auth'
+import logo from '@/assets/images/amazink_logo.png'
 
 const route = useRoute()
 const { user, isLoggedIn } = useAuth()
@@ -129,15 +130,11 @@ onBeforeUnmount(() => {
     <header
         class="sticky top-0 z-50 border-b border-gray-200/70 bg-white/90 text-gray-900 backdrop-blur-xl transition-transform duration-300 ease-in-out"
         :class="isHeaderVisible ? 'translate-y-0' : '-translate-y-full'">
-        <div class="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-6 px-5 lg:px-8">
+        <div class="mx-auto flex h-18 max-w-7xl items-center justify-between gap-6 px-5 lg:px-8">
             <!-- Logo -->
             <RouterLink to="/"
-                class="shrink-0 text-[23px] font-black tracking-[-0.07em] text-gray-950 transition-opacity hover:opacity-75"
-                aria-label="Amazink Beranda" @click="closeMenu">
-                AMAZ<span class="text-brand-red">i</span>NK
-                <span class="ml-0.5 align-top text-[9px] font-semibold tracking-normal text-gray-400">
-                    ®
-                </span>
+                class="shrink-0 transition-opacity hover:opacity-75" aria-label="Amazink Beranda" @click="closeMenu">
+                <img :src="logo" alt="Amazink" width="1703" height="227" class="block h-6 w-auto sm:h-5" />
             </RouterLink>
 
             <!-- Navigasi Desktop -->
@@ -200,7 +197,7 @@ onBeforeUnmount(() => {
                         aria-hidden="true">
                         {{ initial }}
                     </span>
-                    <svg v-else class="h-[21px] w-[21px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    <svg v-else class="h-5.25 w-5.25" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <circle cx="12" cy="8" r="3.5" />
                         <path d="M5 20c.5-3.5 3.2-5.5 7-5.5s6.5 2 7 5.5" />
@@ -213,7 +210,7 @@ onBeforeUnmount(() => {
                     :class="cartActive ? 'bg-gray-100 text-brand-red' : 'text-gray-800'"
                     :aria-label="productCount ? `Keranjang belanja, ${productCount} produk` : 'Keranjang belanja'"
                     title="Keranjang" @click="closeMenu">
-                    <svg class="h-[21px] w-[21px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    <svg class="h-5.25 w-5.25" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H6" />
                         <circle cx="10" cy="20" r="1" />
@@ -221,7 +218,7 @@ onBeforeUnmount(() => {
                     </svg>
 
                     <span v-if="productCount"
-                        class="absolute right-0 top-0 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-red px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white"
+                        class="absolute right-0 top-0 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-brand-red px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white"
                         aria-hidden="true">
                         {{ cartBadge }}
                     </span>
@@ -232,7 +229,7 @@ onBeforeUnmount(() => {
                     class="ml-1 flex h-10 w-10 items-center justify-center rounded-full text-gray-900 transition hover:bg-gray-100 md:hidden"
                     :aria-expanded="menuOpen" aria-controls="mobile-navigation"
                     :aria-label="menuOpen ? 'Tutup menu' : 'Buka menu'" @click="menuOpen = !menuOpen">
-                    <svg class="h-[22px] w-[22px]" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    <svg class="h-5.5 w-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
                         <path v-if="!menuOpen" d="M4 8h16M4 16h16" />
                         <path v-else d="M6 6l12 12M18 6L6 18" />
@@ -318,13 +315,13 @@ onBeforeUnmount(() => {
                         </svg>
                         Keranjang
 
-                        <span v-if="productCount"
-                            class="min-w-[20px] rounded-full bg-white px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-brand-red"
-                            aria-hidden="true">
-                            {{ cartBadge }}
-                        </span>
-                    </RouterLink>
-                </div>
+                    <span v-if="productCount"
+                        class="min-w-5 rounded-full bg-white px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-brand-red"
+                        aria-hidden="true">
+                        {{ cartBadge }}
+                    </span>
+                </RouterLink>
+            </div>
             </nav>
         </Transition>
     </header>

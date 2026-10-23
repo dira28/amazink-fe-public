@@ -1,10 +1,12 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import BasePagination from '@/components/base/BasePagination.vue'
 import NewsCard from '../components/NewsCard.vue'
 import NewsFeatured from '../components/NewsFeatured.vue'
-import { formatShortDate, newsPosts } from '../data/news'
+import { formatShortDate, fromApi, newsPosts as mockPosts } from '../data/news'
+import { USE_MOCK } from '@/services/http'
+import { fetchNews } from '@/services/newsService'
 import NewsImage from '../components/NewsImage.vue'
 import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
@@ -18,15 +20,31 @@ const query = ref('')
 const page = ref(1)
 const listTop = ref(null)
 
+const newsPosts = ref(USE_MOCK ? mockPosts : [])
+const loading = ref(!USE_MOCK)
+const failed = ref(false)
+
+onMounted(async () => {
+    if (USE_MOCK) return
+
+    try {
+        newsPosts.value = (await fetchNews()).map(fromApi)
+    } catch {
+        failed.value = true
+    } finally {
+        loading.value = false
+    }
+})
+
 const searching = computed(() => query.value.trim().length > 0)
-const featured = computed(() => newsPosts[0])
-const latest = computed(() => newsPosts.slice(1, 5))
+const featured = computed(() => newsPosts.value[0])
+const latest = computed(() => newsPosts.value.slice(1, 5))
 
 const pool = computed(() => {
     const q = query.value.trim().toLowerCase()
-    if (!q) return newsPosts.slice(5)
+    if (!q) return newsPosts.value.slice(5)
 
-    return newsPosts.filter(
+    return newsPosts.value.filter(
         (post) => post.title.toLowerCase().includes(q) || post.excerpt.toLowerCase().includes(q)
     )
 })
@@ -69,7 +87,7 @@ watch(query, () => {
                     <ul class="mt-5 space-y-5">
                         <li v-for="post in latest" :key="post.slug">
                             <RouterLink :to="`/news/${post.slug}`" class="group flex items-center gap-3.5 no-underline">
-                                <span class="block h-[72px] w-[72px] shrink-0 overflow-hidden rounded-xl bg-[#ebeae5]">
+                                <span class="block h-18 w-18 shrink-0 overflow-hidden rounded-xl bg-[#ebeae5]">
                                     <NewsImage :post="post" class="h-full w-full object-cover" />
                                 </span>
 
@@ -88,7 +106,7 @@ watch(query, () => {
                 </div>
             </section>
 
-            <section ref="listTop" class="scroll-mt-24"
+            <section v-if="searching || pool.length || !newsPosts.length" ref="listTop" class="scroll-mt-24"
                 :class="searching ? 'mt-9' : 'mt-12 border-t border-black/10 pt-10'">
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h2 class="text-xl font-semibold tracking-[-0.03em]">
@@ -98,7 +116,7 @@ watch(query, () => {
                     <label
                         class="relative flex h-11 w-full items-center rounded-full bg-white shadow-[0_2px_14px_rgba(0,0,0,0.05)] ring-1 ring-black/5 transition focus-within:ring-brand-red/40 sm:w-72">
                         <span class="sr-only">Cari artikel</span>
-                        <svg class="pointer-events-none absolute left-4 h-[18px] w-[18px] text-[#858585]"
+                        <svg class="pointer-events-none absolute left-4 h-4.5 w-4.5 text-[#858585]"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <circle cx="11" cy="11" r="7" />
@@ -120,10 +138,13 @@ watch(query, () => {
 
                 <div v-else
                     class="mt-6 rounded-3xl bg-white px-5 py-14 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
-                    <p class="m-0 text-sm font-semibold">Artikel tidak ditemukan</p>
-                    <p class="mt-1 text-[13px] text-[#737373]">Coba kata kunci yang lain.</p>
-                    <button type="button"
-                        class="mt-5 min-h-[42px] cursor-pointer rounded-full border-0 bg-[#171717] px-5 text-xs font-semibold text-white transition-colors hover:bg-brand-red"
+                    <p class="m-0 text-sm font-semibold">
+                        {{ loading ? 'Memuat artikel...' : failed ? 'Artikel gagal dimuat' : newsPosts.length ? 'Artikel tidak ditemukan' : 'Belum ada artikel' }}
+                    </p>
+                    <p v-if="failed" class="mt-1 text-[13px] text-[#737373]">Periksa koneksi lalu muat ulang halaman.</p>
+                    <p v-else-if="newsPosts.length" class="mt-1 text-[13px] text-[#737373]">Coba kata kunci yang lain.</p>
+                    <button v-if="query" type="button"
+                        class="mt-5 min-h-10.5 cursor-pointer rounded-full border-0 bg-[#171717] px-5 text-xs font-semibold text-white transition-colors hover:bg-brand-red"
                         @click="query = ''">
                         Tampilkan semua artikel
                     </button>

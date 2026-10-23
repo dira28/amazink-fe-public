@@ -1,16 +1,17 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { resellerRegions } from '../data/resellers'
-import { useProducts } from '@/composables/useProducts'
+import { useResellerDirectory } from '@/composables/useResellerDirectory'
 import { usePolling } from '@/composables/usePolling'
 
-const { products, refreshProducts } = useProducts()
-usePolling(refreshProducts, 30000)
+const { regions, loading, failed, refreshResellers } = useResellerDirectory()
+
+// Daftar bisa berubah setelah admin menyetujui atau mengubah reseller, jadi dimuat ulang berkala.
+usePolling(refreshResellers, 30000)
 
 const PAGE_SIZES = [5, 10, 15, 20]
 
-const allCities = resellerRegions.flatMap((region) =>
-    region.cities.map((city) => ({ ...city, region: region.name }))
+const allCities = computed(() =>
+    regions.value.flatMap((region) => region.cities.map((city) => ({ ...city, region: region.name })))
 )
 
 const query = ref('')
@@ -23,7 +24,7 @@ const listTop = ref(null)
 const telHref = (phone) => `tel:${phone.replace(/[^\d+]/g, '')}`
 
 const cityOptions = computed(() =>
-    allCities
+    allCities.value
         .filter((city) => activeRegion.value === 'all' || city.region === activeRegion.value)
         .map((city) => city.name)
         .sort((a, b) => a.localeCompare(b, 'id'))
@@ -32,7 +33,7 @@ const cityOptions = computed(() =>
 const filtered = computed(() => {
     const q = query.value.trim().toLowerCase()
 
-    return allCities.filter((city) => {
+    return allCities.value.filter((city) => {
         const matchRegion = activeRegion.value === 'all' || city.region === activeRegion.value
         const matchCity = activeCity.value === 'all' || city.name === activeCity.value
         const matchQuery =
@@ -115,7 +116,7 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                 <label
                     class="relative flex h-12 min-w-0 flex-1 items-center rounded-full transition-colors focus-within:bg-[#f7f7f5]">
                     <span class="sr-only">Cari kota atau alamat</span>
-                    <svg class="pointer-events-none absolute left-4 h-[18px] w-[18px] text-[#858585]"
+                    <svg class="pointer-events-none absolute left-4 h-4.5 w-4.5 text-[#858585]"
                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
                         stroke-linejoin="round" aria-hidden="true">
                         <circle cx="11" cy="11" r="7" />
@@ -132,7 +133,7 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                     <select v-model="activeRegion"
                         class="h-12 w-full cursor-pointer appearance-none rounded-full border-0 bg-transparent pl-4 pr-10 text-sm text-[#292524] outline-none transition-colors hover:bg-[#f7f7f5] focus:bg-[#f7f7f5]">
                         <option value="all">Semua wilayah</option>
-                        <option v-for="region in resellerRegions" :key="region.name" :value="region.name">
+                        <option v-for="region in regions" :key="region.name" :value="region.name">
                             {{ region.name }}
                         </option>
                     </select>
@@ -161,7 +162,7 @@ watch([activeRegion, activeCity, query, pageSize], () => {
             </div>
 
             <!-- Ringkasan hasil -->
-            <div class="mt-5 flex min-h-[32px] items-center justify-between gap-3 px-1">
+            <div class="mt-5 flex min-h-8 items-center justify-between gap-3 px-1">
                 <p class="m-0 text-xs text-[#737373]">
                     <template v-if="filtered.length">
                         Menampilkan
@@ -205,6 +206,7 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                     <div class="min-w-0 space-y-4">
                         <div v-for="branch in city.branches" :key="branch.address"
                             class="border-t border-gray-100 pt-4 first:border-0 first:pt-0">
+                            <p v-if="branch.name" class="m-0 text-[13px] font-semibold leading-6 text-gray-950">{{ branch.name }}</p>
                             <p class="m-0 text-[13px] leading-6 text-gray-600">{{ branch.address }}</p>
 
                             <div v-if="branch.phones.length" class="mt-2.5 flex flex-wrap gap-2">
@@ -227,10 +229,12 @@ watch([activeRegion, activeCity, query, pageSize], () => {
             <!-- Kosong -->
             <div v-else
                 class="mt-3 rounded-3xl bg-white px-5 py-14 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
-                <p class="m-0 text-sm font-semibold">Reseller tidak ditemukan</p>
+                <p class="m-0 text-sm font-semibold">
+                    {{ loading ? 'Memuat daftar reseller...' : failed ? 'Daftar reseller gagal dimuat' : allCities.length ? 'Reseller tidak ditemukan' : 'Belum ada reseller' }}
+                </p>
                 <p class="mt-1 text-[13px] text-[#737373]">Coba kata kunci, wilayah, atau kota lainnya.</p>
                 <button type="button"
-                    class="mt-5 min-h-[42px] cursor-pointer rounded-full border-0 bg-[#171717] px-5 text-xs font-semibold text-white transition-colors hover:bg-brand-red"
+                    class="mt-5 min-h-10.5 cursor-pointer rounded-full border-0 bg-[#171717] px-5 text-xs font-semibold text-white transition-colors hover:bg-brand-red"
                     @click="resetFilters">
                     Tampilkan semua reseller
                 </button>

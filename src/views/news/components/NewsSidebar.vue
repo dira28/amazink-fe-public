@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import NewsImage from './NewsImage.vue'
+import { usePageSection } from '@/composables/usePage'
 
 const props = defineProps({
     posts: { type: Array, required: true },
@@ -9,7 +10,7 @@ const props = defineProps({
 })
 
 // Replace href with AMAZiNK social accounts
-const socials = [
+const socialIcons = [
     {
         label: 'YouTube',
         href: '#',
@@ -40,6 +41,16 @@ const socials = [
         ],
     },
 ]
+
+// Tautan akun diambil dari admin (Halaman > Footer & Kontak > Tautan Sosial), dicocokkan lewat nama.
+const socialLinks = usePageSection('footer', 'social', { items: [] })
+
+const socials = computed(() =>
+    socialIcons.map((social) => ({
+        ...social,
+        href: socialLinks.value.items.find((item) => item.label.toLowerCase() === social.label.toLowerCase())?.url || '#',
+    })),
+)
 
 // Dummy products
 const products = [

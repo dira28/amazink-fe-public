@@ -11,7 +11,7 @@ defineProps({
 
 <template>
     <RouterLink :to="`/news/${post.slug}`"
-        class="group relative block aspect-[16/11] min-w-0 overflow-hidden rounded-3xl no-underline lg:aspect-auto lg:h-full lg:min-h-[400px]">
+        class="group relative block aspect-[16/11] min-w-0 overflow-hidden rounded-3xl no-underline lg:aspect-auto lg:h-full lg:min-h-100">
         <NewsImage :post="post"
             class="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
 

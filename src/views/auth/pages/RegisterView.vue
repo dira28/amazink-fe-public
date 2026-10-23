@@ -1,13 +1,15 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
-import { safeRedirect, useAuth } from '@/stores/auth'
+import { useAuth } from '@/stores/auth'
 
 const route = useRoute()
 const router = useRouter()
-const { register } = useAuth()
+const { register, verifyEmail } = useAuth()
 
-const form = reactive({ name: '', email: '', phone: '', password: '', confirm: '' })
+const form = reactive({ name: '', email: '', password: '', confirm: '' })
+const step = ref('form')
+const code = ref('')
 const error = ref('')
 const loading = ref(false)
 
@@ -28,13 +30,21 @@ async function submit() {
 
     loading.value = true
     try {
-        await register({
-            name: form.name.trim(),
-            email: form.email.trim(),
-            phone: form.phone.trim(),
-            password: form.password,
-        })
-        router.replace(safeRedirect(route.query.redirect))
+        await register({ name: form.name.trim(), email: form.email.trim(), password: form.password })
+        step.value = 'otp'
+    } catch (e) {
+        error.value = e.message
+    } finally {
+        loading.value = false
+    }
+}
+
+async function verify() {
+    error.value = ''
+    loading.value = true
+    try {
+        await verifyEmail({ email: form.email.trim(), code: code.value.trim() })
+        router.replace({ name: 'login', query: { ...route.query, verified: '1' } })
     } catch (e) {
         error.value = e.message
     } finally {
@@ -48,44 +58,72 @@ async function submit() {
         <div
             class="w-full max-w-md rounded-3xl bg-white p-7 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5 sm:p-9">
             <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">AMAZiNK</p>
-            <h1 class="mt-2 text-3xl font-semibold tracking-[-0.04em]">Buat akun</h1>
-            <p class="mt-2 text-sm leading-6 text-[#737373]">Daftar sekali, lalu pesan kapan saja.</p>
 
-            <form class="mt-7 space-y-4" @submit.prevent="submit">
-                <label class="block">
-                    <span class="text-[13px] font-semibold">Nama lengkap</span>
-                    <input v-model="form.name" type="text" required autocomplete="name" :class="input" />
-                </label>
-                <label class="block">
-                    <span class="text-[13px] font-semibold">Email</span>
-                    <input v-model="form.email" type="email" required autocomplete="email" :class="input" />
-                </label>
-                <label class="block">
-                    <span class="text-[13px] font-semibold">Nomor WhatsApp</span>
-                    <input v-model="form.phone" type="tel" required autocomplete="tel" placeholder="08xxxxxxxxxx"
-                        :class="input" />
-                </label>
-                <label class="block">
-                    <span class="text-[13px] font-semibold">Kata sandi</span>
-                    <input v-model="form.password" type="password" required autocomplete="new-password"
-                        placeholder="Minimal 8 karakter" :class="input" />
-                </label>
-                <label class="block">
-                    <span class="text-[13px] font-semibold">Ulangi kata sandi</span>
-                    <input v-model="form.confirm" type="password" required autocomplete="new-password" :class="input" />
-                </label>
+            <template v-if="step === 'form'">
+                <h1 class="mt-2 text-3xl font-semibold tracking-[-0.04em]">Buat akun</h1>
+                <p class="mt-2 text-sm leading-6 text-[#737373]">Daftar sekali, lalu pesan kapan saja.</p>
 
-                <p v-if="error" role="alert" class="m-0 rounded-xl bg-red-50 px-4 py-3 text-[13px]"
-                    style="color: #b91c1c">
-                    {{ error }}
+                <form class="mt-7 space-y-4" @submit.prevent="submit">
+                    <label class="block">
+                        <span class="text-[13px] font-semibold">Nama lengkap</span>
+                        <input v-model="form.name" type="text" required minlength="2" maxlength="100"
+                            autocomplete="name" :class="input" />
+                    </label>
+                    <label class="block">
+                        <span class="text-[13px] font-semibold">Email</span>
+                        <input v-model="form.email" type="email" required autocomplete="email" :class="input" />
+                    </label>
+                    <label class="block">
+                        <span class="text-[13px] font-semibold">Kata sandi</span>
+                        <input v-model="form.password" type="password" required autocomplete="new-password"
+                            placeholder="Minimal 8 karakter" :class="input" />
+                    </label>
+                    <label class="block">
+                        <span class="text-[13px] font-semibold">Ulangi kata sandi</span>
+                        <input v-model="form.confirm" type="password" required autocomplete="new-password"
+                            :class="input" />
+                    </label>
+
+                    <p v-if="error" role="alert" class="m-0 rounded-xl bg-red-50 px-4 py-3 text-[13px]"
+                        style="color: #b91c1c">
+                        {{ error }}
+                    </p>
+
+                    <button type="submit" :disabled="loading"
+                        class="h-12 w-full cursor-pointer rounded-full border-0 bg-brand-red transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                        style="color: #fff; font-size: 14px; font-weight: 600">
+                        {{ loading ? 'Memproses...' : 'Daftar' }}
+                    </button>
+                </form>
+            </template>
+
+            <template v-else>
+                <h1 class="mt-2 text-3xl font-semibold tracking-[-0.04em]">Verifikasi email</h1>
+                <p class="mt-2 text-sm leading-6 text-[#737373]">
+                    Kami mengirim kode 6 digit ke <strong class="text-[#171717]">{{ form.email }}</strong>.
+                    Kode berlaku 5 menit. Cek juga folder spam bila belum masuk.
                 </p>
 
-                <button type="submit" :disabled="loading"
-                    class="h-12 w-full cursor-pointer rounded-full border-0 bg-brand-red transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
-                    style="color: #fff; font-size: 14px; font-weight: 600">
-                    {{ loading ? 'Memproses...' : 'Daftar' }}
-                </button>
-            </form>
+                <form class="mt-7 space-y-4" @submit.prevent="verify">
+                    <label class="block">
+                        <span class="text-[13px] font-semibold">Kode OTP</span>
+                        <input v-model="code" type="text" required inputmode="numeric" pattern="[0-9]{6}"
+                            maxlength="6" autocomplete="one-time-code" placeholder="123456"
+                            :class="input + ' tracking-[0.4em]'" />
+                    </label>
+
+                    <p v-if="error" role="alert" class="m-0 rounded-xl bg-red-50 px-4 py-3 text-[13px]"
+                        style="color: #b91c1c">
+                        {{ error }}
+                    </p>
+
+                    <button type="submit" :disabled="loading || code.length !== 6"
+                        class="h-12 w-full cursor-pointer rounded-full border-0 bg-brand-red transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                        style="color: #fff; font-size: 14px; font-weight: 600">
+                        {{ loading ? 'Memproses...' : 'Verifikasi' }}
+                    </button>
+                </form>
+            </template>
 
             <p class="mb-0 mt-6 text-center text-[13px] text-[#737373]">
                 Sudah punya akun?

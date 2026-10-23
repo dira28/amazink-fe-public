@@ -1,16 +1,17 @@
 <script setup>
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { newsPosts } from '../data/news'
-import { useProducts } from '@/composables/useProducts'
-import { usePolling } from '@/composables/usePolling'
-
-const { refreshProducts } = useProducts()
-usePolling(refreshProducts, 30000)
+import { sanitizeHtml } from '@/utils/sanitizeHtml'
 
 const props = defineProps({
-    blocks: { type: Array, required: true },
+    blocks: { type: Array, default: () => [] },
+    // Isi artikel dari admin (HTML). Bila ada, dipakai menggantikan blocks.
+    html: { type: String, default: '' },
     currentSlug: { type: String, required: true },
 })
+
+const safeHtml = computed(() => sanitizeHtml(props.html))
 
 const bySlug = new Map(newsPosts.map((post) => [post.slug, post]))
 
@@ -22,7 +23,9 @@ function relatedFor(block) {
 </script>
 
 <template>
-    <div class="space-y-5 text-[15px] leading-8 text-gray-600">
+    <div v-if="html" class="news-content text-[15px] leading-8 text-gray-600" v-html="safeHtml" />
+
+    <div v-else class="space-y-5 text-[15px] leading-8 text-gray-600">
         <template v-for="(block, index) in blocks" :key="index">
             <p v-if="block.type === 'p'" class="m-0">{{ block.text }}</p>
 
@@ -70,3 +73,23 @@ function relatedFor(block) {
         </template>
     </div>
 </template>
+
+<style scoped>
+.news-content :deep(p) { margin: 0 0 1.1em; }
+.news-content :deep(h1),
+.news-content :deep(h2),
+.news-content :deep(h3),
+.news-content :deep(h4) { margin: 1.6em 0 0.6em; font-weight: 600; letter-spacing: -0.03em; line-height: 1.3; color: #171717; }
+.news-content :deep(h1),
+.news-content :deep(h2) { font-size: 1.25rem; }
+.news-content :deep(h3),
+.news-content :deep(h4) { font-size: 1.05rem; }
+.news-content :deep(ul) { margin: 0 0 1.1em; padding-left: 1.4em; list-style: disc; }
+.news-content :deep(ol) { margin: 0 0 1.1em; padding-left: 1.4em; list-style: decimal; }
+.news-content :deep(li) { margin-bottom: 0.4em; }
+.news-content :deep(a) { color: #e91d2d; text-decoration: underline; }
+.news-content :deep(strong),
+.news-content :deep(b) { color: #171717; font-weight: 600; }
+.news-content :deep(img) { max-width: 100%; height: auto; border-radius: 1rem; margin: 1.2em 0; }
+.news-content :deep(blockquote) { margin: 1.2em 0; padding: 0.8em 1.2em; border-left: 4px solid #e91d2d; background: #f4f3ee; border-radius: 0 1rem 1rem 0; }
+</style>
