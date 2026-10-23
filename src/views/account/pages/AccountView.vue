@@ -4,15 +4,15 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 
 const router = useRouter()
-const { user, updateProfile, logout } = useAuth()
+const { user, updatePhone, logout } = useAuth()
 
-const form = reactive({ name: user.value.name, phone: user.value.phone })
+const form = reactive({ phone: user.value.phone })
 const saving = ref(false)
 const saved = ref(false)
 const error = ref('')
 
 const initial = computed(() => user.value.name.trim().charAt(0).toUpperCase() || '?')
-const dirty = computed(() => form.name !== user.value.name || form.phone !== user.value.phone)
+const dirty = computed(() => form.phone !== user.value.phone)
 
 const input =
     'mt-1.5 h-12 w-full rounded-xl border-0 bg-[#f7f7f5] px-4 text-sm outline-none ring-1 ring-black/10 focus:ring-2 focus:ring-brand-red'
@@ -22,7 +22,7 @@ async function save() {
     saved.value = false
     saving.value = true
     try {
-        await updateProfile({ name: form.name.trim(), phone: form.phone.trim() })
+        updatePhone(form.phone.trim())
         saved.value = true
     } catch (e) {
         error.value = e.message
@@ -65,11 +65,11 @@ function signOut() {
                 <form class="mt-5 grid gap-4 sm:grid-cols-2" @submit.prevent="save">
                     <label class="block">
                         <span class="text-[13px] font-semibold">Nama lengkap</span>
-                        <input v-model="form.name" type="text" required :class="input" />
+                        <input :value="user.name" type="text" disabled :class="input + ' opacity-60'" />
                     </label>
                     <label class="block">
                         <span class="text-[13px] font-semibold">Nomor WhatsApp</span>
-                        <input v-model="form.phone" type="tel" required :class="input" />
+                        <input v-model="form.phone" type="tel" placeholder="08xxxxxxxxxx" :class="input" />
                     </label>
                     <label class="block sm:col-span-2">
                         <span class="text-[13px] font-semibold">Email</span>

@@ -7,19 +7,41 @@ import ProductCategories from '../components/ProductCategories.vue'
 import ProductCard from '../components/ProductCard.vue'
 import PrinterFinderMini from '../components/PrinterFinderMini.vue'
 
+import AccentText from '@/components/base/AccentText.vue'
+import { usePageSection } from '@/composables/usePage'
 import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
 
-const { products, refreshProducts } = useProducts()
-usePolling(refreshProducts, 30000) 
+// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
+const list = usePageSection('catalog', 'list', {
+    eyebrow: 'Katalog AMAZiNK',
+    title: 'Temukan kebutuhan cetakmu',
+    search_placeholder: 'Cari nama produk atau kode...',
+})
 
-const categories = [
-    { name: 'Semua Produk', slug: 'all' },
-    { name: 'Tinta Botol', slug: 'tinta-botol' },
-    { name: 'Cartridge', slug: 'cartridge' },
-    { name: 'Toner Laser', slug: 'toner-laser' },
-    { name: 'Produk Lainnya', slug: 'lainnya' },
-]
+const help = usePageSection('catalog', 'help', {
+    eyebrow: 'BUTUH BANTUAN?',
+    title: 'Bingung memilih tinta\nuntuk printermu?',
+    description: 'Pilih seri printer, kami tunjukkan tinta yang cocok.',
+    button_label: 'Buka halaman lengkap',
+    button_link: '/cari-tinta',
+})
+
+const { products, loading, failed, refreshProducts } = useProducts()
+
+// Harga dan gambar bisa berubah setelah sinkronisasi di admin, jadi daftar dimuat ulang berkala.
+usePolling(refreshProducts, 30000)
+
+// Kategori mengikuti produk yang ada.
+const categories = computed(() => {
+    const seen = new Map()
+    for (const product of products.value) seen.set(product.categorySlug, product.category)
+
+    return [
+        { name: 'Semua Produk', slug: 'all' },
+        ...[...seen].map(([slug, name]) => ({ name, slug })),
+    ]
+})
 
 
 const route = useRoute()

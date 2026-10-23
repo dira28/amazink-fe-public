@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { useAuth } from '@/stores/auth'
+import logo from '@/assets/images/amazink_logo.png'
 
 const route = useRoute()
 const { user, isLoggedIn } = useAuth()
@@ -132,12 +133,8 @@ onBeforeUnmount(() => {
         <div class="mx-auto flex h-18 max-w-7xl items-center justify-between gap-6 px-5 lg:px-8">
             <!-- Logo -->
             <RouterLink to="/"
-                class="shrink-0 text-[23px] font-black tracking-[-0.07em] text-gray-950 transition-opacity hover:opacity-75"
-                aria-label="Amazink Beranda" @click="closeMenu">
-                AMAZ<span class="text-brand-red">i</span>NK
-                <span class="ml-0.5 align-top text-[9px] font-semibold tracking-normal text-gray-400">
-                    ®
-                </span>
+                class="shrink-0 transition-opacity hover:opacity-75" aria-label="Amazink Beranda" @click="closeMenu">
+                <img :src="logo" alt="Amazink" width="1703" height="227" class="block h-6 w-auto sm:h-5" />
             </RouterLink>
 
             <!-- Navigasi Desktop -->

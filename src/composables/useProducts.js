@@ -11,7 +11,7 @@ const fromApi = (product) => ({
     id: product.id,
     slug: product.slug,
     name: product.name,
-    sku: product.sku,
+    sku: product.code,
     category: product.category,
     categorySlug: product.category_slug,
     description: `Produk ${product.category} dari AMAZiNK.`,

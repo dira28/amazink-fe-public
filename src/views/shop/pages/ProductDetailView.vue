@@ -107,7 +107,7 @@ const specs = computed(() => {
     if (!p) return []
 
     return [
-        { label: 'Kode produk', value: p.sku },
+        p.sku && { label: 'Kode produk', value: p.sku },
         { label: 'Kategori', value: p.category },
         p.color && { label: 'Warna', value: p.color, swatch: swatches[p.color] },
         p.volume && { label: 'Ukuran / Isi', value: p.volume },
@@ -223,7 +223,7 @@ onBeforeUnmount(() => {
                         </span>
                     </div>
 
-                    <p class="mb-0 mt-4 px-1 text-xs text-gray-400">
+                    <p v-if="product.sku" class="mb-0 mt-4 px-1 text-xs text-gray-400">
                         Kode produk
                         <span class="ml-1 font-medium text-gray-600">{{ product.sku }}</span>
                     </p>

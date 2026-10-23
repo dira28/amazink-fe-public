@@ -41,9 +41,10 @@ const menus = [
         <div class="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-8 lg:py-16">
             <!-- BRAND -->
             <div>
-                <RouterLink to="/" class="inline-block text-2xl font-extrabold tracking-tight"
-                    aria-label="AMAZiNK Beranda">
-                    AMAZ<span class="text-brand-red">I</span>NK
+                <RouterLink to="/" class="inline-block" aria-label="AMAZiNK Beranda">
+                    <!-- Logo berwarna gelap; dijadikan putih agar terbaca di latar hitam. -->
+                    <img src="@/assets/images/amazink_logo.png" alt="Amazink" width="1703" height="227"
+                        class="block h-7 w-auto brightness-0 invert" />
                 </RouterLink>
 
                 <p class="mt-3 text-sm font-medium text-gray-300">
