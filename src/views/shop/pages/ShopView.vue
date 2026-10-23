@@ -12,7 +12,6 @@ import { usePageSection } from '@/composables/usePage'
 import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
 
-// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
 const list = usePageSection('catalog', 'list', {
     eyebrow: 'Katalog AMAZiNK',
     title: 'Temukan kebutuhan cetakmu',
@@ -29,10 +28,8 @@ const help = usePageSection('catalog', 'help', {
 
 const { products, loading, failed, refreshProducts } = useProducts()
 
-// Harga dan gambar bisa berubah setelah sinkronisasi di admin, jadi daftar dimuat ulang berkala.
 usePolling(refreshProducts, 30000)
 
-// Kategori mengikuti produk yang ada.
 const categories = computed(() => {
     const seen = new Map()
     for (const product of products.value) seen.set(product.categorySlug, product.category)

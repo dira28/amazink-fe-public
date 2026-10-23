@@ -5,6 +5,9 @@ import GalleryLightbox from '../components/GalleryLightbox.vue'
 import { USE_MOCK } from '@/services/http'
 import { fetchGallery } from '@/services/galleryService'
 import { galleryItems } from '../data/gallery'
+import { galleryCategories, galleryItems } from '../data/gallery'
+import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
 import { waLink } from '@/utils/whatsapp'
 
 const AUTOPLAY_MS = 4000
@@ -13,11 +16,14 @@ const SHAPES = ['portrait', 'landscape', 'square']
 
 const contactLink = waLink('Halo AMAZiNK, saya tertarik dengan hasil cetak di galeri dan ingin konsultasi kebutuhan cetak.')
 
-// Mode dummy memakai data lokal (terbaru dulu, agar batas tampil mengambil karya terbaru); selain itu foto dari API.
-const mockItems = [...galleryItems].sort((a, b) => b.date.localeCompare(a.date))
-const allItems = ref(USE_MOCK ? mockItems : [])
+const allItems = ref(USE_MOCK ? galleryItems : [])
 const loading = ref(!USE_MOCK)
 const failed = ref(false)
+
+// Newest first, so the cap keeps the latest works
+const sortedItems = computed(() =>
+    [...allItems.value].sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
+)
 
 const category = ref('all')
 
@@ -25,6 +31,8 @@ const items = computed(() =>
     (category.value === 'all'
         ? allItems.value
         : allItems.value.filter((item) => item.category === category.value)
+        ? sortedItems.value
+        : sortedItems.value.filter((item) => item.category === category.value)
     ).slice(0, MAX_ITEMS)
 )
 
@@ -67,15 +75,16 @@ let pressed = false
 let moved = false
 let startX = 0
 
-const counter = computed(
-    () => `${String(active.value + 1).padStart(2, '0')} / ${String(total.value).padStart(2, '0')}`
+const counter = computed(() =>
+    total.value
+        ? `${String(active.value + 1).padStart(2, '0')} / ${String(total.value).padStart(2, '0')}`
+        : ''
 )
 
 const emptyMessage = computed(() =>
     loading.value ? 'Memuat galeri...' : failed.value ? 'Galeri gagal dimuat' : 'Belum ada foto'
 )
 
-// Bentuk data API disesuaikan dengan yang dipakai GalleryCard dan GalleryLightbox.
 function fromApi(categories) {
     return categories
         .flatMap((group) =>
