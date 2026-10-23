@@ -5,9 +5,6 @@ import GalleryLightbox from '../components/GalleryLightbox.vue'
 import { USE_MOCK } from '@/services/http'
 import { fetchGallery } from '@/services/galleryService'
 import { galleryItems } from '../data/gallery'
-import { galleryCategories, galleryItems } from '../data/gallery'
-import { useProducts } from '@/composables/useProducts'
-import { usePolling } from '@/composables/usePolling'
 import { waLink } from '@/utils/whatsapp'
 
 const AUTOPLAY_MS = 4000
@@ -29,8 +26,6 @@ const category = ref('all')
 
 const items = computed(() =>
     (category.value === 'all'
-        ? allItems.value
-        : allItems.value.filter((item) => item.category === category.value)
         ? sortedItems.value
         : sortedItems.value.filter((item) => item.category === category.value)
     ).slice(0, MAX_ITEMS)
