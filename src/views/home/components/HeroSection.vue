@@ -33,8 +33,7 @@ const benefits = ['Produk original', 'Pengiriman cepat', 'Harga kompetitif']
                 </p>
 
                 <div class="mt-[22px] flex flex-wrap items-center gap-2.5 sm:mt-7 sm:gap-3">
-                    <BaseButton to="/#produk">Jelajahi Produk</BaseButton>
-
+                    <BaseButton to="/catalog-produk">Jelajahi Produk</BaseButton>
                     <RouterLink to="/tentang-kami"
                         class="inline-flex min-h-11 items-center justify-center rounded-full border border-gray-400 bg-[#f8f8f8] px-4 py-[11px] text-[13px] font-semibold text-[#20232a] no-underline transition-colors duration-200 hover:border-[#171a20] hover:bg-[#171a20] hover:text-white sm:min-h-[46px] sm:px-[22px] sm:py-3 sm:text-sm">
                         Tentang Kami
