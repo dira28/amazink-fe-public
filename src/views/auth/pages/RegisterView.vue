@@ -1,11 +1,18 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
+import PasswordInput from '@/components/base/PasswordInput.vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 
 const route = useRoute()
 const router = useRouter()
 const { register, verifyEmail } = useAuth()
+
+
+const tooShort = computed(() => form.password.length > 0 && form.password.length < 8)
+const mismatch = computed(() => form.confirm.length > 0 && form.confirm !== form.password)
+const matched = computed(() => form.confirm.length > 0 && form.confirm === form.password)
+const canSubmit = computed(() => form.password.length >= 8 && form.confirm === form.password)
 
 const form = reactive({ name: '', email: '', password: '', confirm: '' })
 const step = ref('form')
@@ -75,13 +82,21 @@ async function verify() {
                     </label>
                     <label class="block">
                         <span class="text-[13px] font-semibold">Kata sandi</span>
-                        <input v-model="form.password" type="password" required autocomplete="new-password"
-                            placeholder="Minimal 8 karakter" :class="input" />
+                        <PasswordInput v-model="form.password" autocomplete="new-password"
+                            placeholder="Minimal 8 karakter" :invalid="tooShort" />
+                        <span class="mt-1.5 block min-h-4 text-xs"
+                            :class="tooShort ? 'text-red-600' : 'text-[#737373]'">
+                            {{ tooShort ? `Kurang ${8 - form.password.length} karakter lagi.` : 'Minimal 8 karakter.' }}
+                        </span>
                     </label>
+
                     <label class="block">
                         <span class="text-[13px] font-semibold">Ulangi kata sandi</span>
-                        <input v-model="form.confirm" type="password" required autocomplete="new-password"
-                            :class="input" />
+                        <PasswordInput v-model="form.confirm" autocomplete="new-password" :invalid="mismatch" />
+                        <span class="mt-1.5 block min-h-4 text-xs" aria-live="polite"
+                            :class="mismatch ? 'text-red-600' : matched ? 'text-green-700' : 'text-transparent'">
+                            {{ mismatch ? 'Kata sandi tidak sama.' : matched ? 'Kata sandi cocok.' : '.' }}
+                        </span>
                     </label>
 
                     <p v-if="error" role="alert" class="m-0 rounded-xl bg-red-50 px-4 py-3 text-[13px]"
@@ -107,9 +122,8 @@ async function verify() {
                 <form class="mt-7 space-y-4" @submit.prevent="verify">
                     <label class="block">
                         <span class="text-[13px] font-semibold">Kode OTP</span>
-                        <input v-model="code" type="text" required inputmode="numeric" pattern="[0-9]{6}"
-                            maxlength="6" autocomplete="one-time-code" placeholder="123456"
-                            :class="input + ' tracking-[0.4em]'" />
+                        <input v-model="code" type="text" required inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+                            autocomplete="one-time-code" placeholder="123456" :class="input + ' tracking-[0.4em]'" />
                     </label>
 
                     <p v-if="error" role="alert" class="m-0 rounded-xl bg-red-50 px-4 py-3 text-[13px]"

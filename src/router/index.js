@@ -110,6 +110,12 @@ const router = createRouter({
             name: 'faq',
             component: () => import('@/views/faq/pages/FaqView.vue'),
         },
+        {
+            path: '/lupa-password',
+            name: 'forgot-password',
+            component: () => import('@/views/auth/pages/ForgotPasswordView.vue'),
+            meta: { guestOnly: true },
+        },
     ],
 })
 

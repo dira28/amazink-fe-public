@@ -1,6 +1,7 @@
 <script setup>
 import { RouterLink, useRouter } from 'vue-router'
 import { useCart } from '@/composables/useCart'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 
 const router = useRouter()
 
@@ -32,6 +33,79 @@ function checkout() {
 
     router.push({ name: 'checkout' })
 }
+
+/* ---------- Konfirmasi hapus ---------- */
+const confirmState = ref(null)
+const dialogEl = ref(null)
+const cancelBtn = ref(null)
+let trigger = null
+
+const dialog = computed(() => {
+    if (confirmState.value?.type === 'clear') {
+        return {
+            title: 'Kosongkan keranjang?',
+            message: `Semua ${items.value.length} produk akan dihapus dari keranjang.`,
+            action: 'Ya, kosongkan',
+        }
+    }
+
+    return {
+        title: 'Hapus produk ini?',
+        message: `“${confirmState.value?.name ?? ''}” akan dihapus dari keranjang.`,
+        action: 'Ya, hapus',
+    }
+})
+
+async function openConfirm(payload) {
+    trigger = document.activeElement
+    confirmState.value = payload
+    await nextTick()
+    cancelBtn.value?.focus()
+}
+
+const askRemove = (item) => openConfirm({ type: 'remove', key: item.key, name: item.name })
+const askClear = () => openConfirm({ type: 'clear' })
+
+function closeConfirm() {
+    confirmState.value = null
+    trigger?.focus?.()
+}
+
+function runConfirm() {
+    if (confirmState.value?.type === 'clear') clear()
+    else if (confirmState.value) remove(confirmState.value.key)
+
+    closeConfirm()
+}
+
+function onKeydown(event) {
+    if (!confirmState.value) return
+
+    if (event.key === 'Escape') {
+        closeConfirm()
+        return
+    }
+
+    if (event.key === 'Tab') {
+        const buttons = dialogEl.value?.querySelectorAll('button')
+        if (!buttons?.length) return
+
+        const first = buttons[0]
+        const last = buttons[buttons.length - 1]
+
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault()
+            last.focus()
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault()
+            first.focus()
+        }
+    }
+}
+
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
+
 </script>
 
 <template>
@@ -46,7 +120,7 @@ function checkout() {
                 </h1>
 
                 <button v-if="items.length" type="button"
-                    class="text-sm font-medium text-gray-600 transition hover:text-brand-red" @click="clear">
+                    class="text-sm font-medium text-gray-600 transition hover:text-brand-red" @click="askClear">
                     Kosongkan
                 </button>
             </header>
@@ -90,8 +164,7 @@ function checkout() {
                         <li v-for="item in items" :key="item.key"
                             class="flex items-start gap-3 rounded-2xl border bg-white p-4 transition sm:gap-4"
                             :class="item.selected ? 'border-gray-300' : 'border-gray-200'">
-                            <input type="checkbox"
-                                class="mt-1 h-4.5 w-4.5 shrink-0 cursor-pointer accent-brand-red"
+                            <input type="checkbox" class="mt-1 h-4.5 w-4.5 shrink-0 cursor-pointer accent-brand-red"
                                 :checked="item.selected" :aria-label="`Pilih ${item.name}`"
                                 @change="toggleSelect(item.key)" />
 
@@ -119,7 +192,7 @@ function checkout() {
 
                                     <button type="button" :aria-label="`Hapus ${item.name}`"
                                         class="shrink-0 rounded-full p-1.5 text-gray-400 transition hover:bg-red-50 hover:text-brand-red"
-                                        @click="remove(item.key)">
+                                        @click="askRemove(item)">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
                                             stroke-linecap="round" stroke-linejoin="round" class="h-4.5 w-4.5"
                                             aria-hidden="true">
@@ -205,5 +278,47 @@ function checkout() {
                 </aside>
             </div>
         </div>
+        <Teleport to="body">
+            <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0"
+                enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in"
+                leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <div v-if="confirmState"
+                    class="fixed inset-0 z-[70] grid place-items-center bg-black/50 p-5 backdrop-blur-[2px]"
+                    @click.self="closeConfirm">
+                    <div ref="dialogEl" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title"
+                        aria-describedby="confirm-message"
+                        class="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-black/5">
+                        <span class="grid h-12 w-12 place-items-center rounded-full bg-red-50 text-brand-red">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                                stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6" aria-hidden="true">
+                                <path
+                                    d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 0 0 1 .9h8a1 1 0 0 0 1-.9L18 7M9 7V4h6v3" />
+                            </svg>
+                        </span>
+
+                        <h2 id="confirm-title" class="mb-0 mt-4 text-lg font-semibold tracking-[-0.02em]">
+                            {{ dialog.title }}
+                        </h2>
+                        <p id="confirm-message" class="mb-0 mt-1.5 text-sm leading-6 text-gray-500">
+                            {{ dialog.message }}
+                        </p>
+
+                        <div class="mt-6 grid grid-cols-2 gap-3">
+                            <button ref="cancelBtn" type="button"
+                                class="h-11 cursor-pointer rounded-full border border-gray-200 bg-white transition-colors hover:bg-gray-50"
+                                style="color: #374151; font-size: 14px; font-weight: 600" @click="closeConfirm">
+                                Batal
+                            </button>
+
+                            <button type="button"
+                                class="h-11 cursor-pointer rounded-full border-0 bg-brand-red transition-opacity hover:opacity-90"
+                                style="color: #fff; font-size: 14px; font-weight: 600" @click="runConfirm">
+                                {{ dialog.action }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </main>
 </template>
