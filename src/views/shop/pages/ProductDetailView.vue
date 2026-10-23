@@ -183,7 +183,7 @@ onBeforeUnmount(() => {
                     <div
                         class="group relative flex aspect-square max-h-160 items-center justify-center overflow-hidden rounded-3xl border border-gray-200/70 bg-white p-8 sm:p-12">
                         <div
-                            class="pointer-events-none absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-100/70" />
+                            class="pointer-events-none absolute inset-0 bg-linear-to-br from-gray-50 via-white to-gray-100/70" />
 
                         <img v-if="product.image" :src="product.image" :alt="product.name" fetchpriority="high"
                             class="relative h-full w-full object-contain transition-transform duration-500 group-hover:scale-[1.04]" />
@@ -296,7 +296,7 @@ onBeforeUnmount(() => {
                         <div class="mt-3 grid grid-cols-2 gap-2">
                             <button type="button" :disabled="!canBuy"
                                 class="inline-flex h-11 cursor-pointer items-center justify-center gap-1.5 rounded-lg border-2 border-gray-900 bg-white px-3 transition duration-200 hover:bg-gray-100 disabled:cursor-not-allowed disabled:border-gray-200 disabled:bg-gray-100 disabled:opacity-60"
-                                :class="added ? '!border-emerald-600 !bg-emerald-600' : ''" :style="{
+                                :class="added ? 'border-emerald-600! bg-emerald-600!' : ''" :style="{
                                     color: added ? '#ffffff' : canBuy ? '#171717' : '#9ca3af',
                                     fontSize: '13px',
                                     fontWeight: 600,
@@ -445,7 +445,7 @@ onBeforeUnmount(() => {
                     <RouterLink v-for="item in related" :key="item.slug" :to="`${detailBase}${item.slug}`"
                         class="group block overflow-hidden rounded-2xl border border-gray-200/70 bg-white text-inherit no-underline transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_32px_rgba(0,0,0,0.1)]">
                         <span
-                            class="relative flex aspect-square items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100/70 p-5">
+                            class="relative flex aspect-square items-center justify-center bg-linear-to-br from-gray-50 to-gray-100/70 p-5">
                             <img v-if="item.image" :src="item.image" :alt="item.name" loading="lazy"
                                 class="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105" />
                             <svg v-else class="h-9 w-9 text-gray-300" viewBox="0 0 24 24" fill="none"
@@ -511,7 +511,7 @@ onBeforeUnmount(() => {
                 enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in"
                 leave-from-class="opacity-100" leave-to-class="opacity-0">
                 <div v-if="zoomOpen && product?.image"
-                    class="fixed inset-0 z-[60] grid place-items-center bg-black/80 p-4 backdrop-blur-sm sm:p-10"
+                    class="fixed inset-0 z-60 grid place-items-center bg-black/80 p-4 backdrop-blur-sm sm:p-10"
                     role="dialog" aria-modal="true" :aria-label="product.name" @click.self="zoomOpen = false">
                     <button type="button" aria-label="Tutup"
                         class="absolute right-4 top-4 grid h-11 w-11 cursor-pointer place-items-center rounded-full border-0 bg-white/10 text-white transition-colors hover:bg-white/20 sm:right-6 sm:top-6"

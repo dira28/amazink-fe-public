@@ -84,7 +84,7 @@ const categories = computed(() => {
                         </span>
 
                         <img v-if="category.image" :src="category.image" :alt="category.name" loading="lazy"
-                            class="block h-full w-full object-contain p-5 transition-transform duration-[400ms] group-hover:scale-105 motion-reduce:transition-none" />
+                            class="block h-full w-full object-contain p-5 transition-transform duration-400 group-hover:scale-105 motion-reduce:transition-none" />
                         <span v-else class="text-sm font-bold tracking-[0.12em] text-gray-300">AMAZiNK</span>
                     </div>
 

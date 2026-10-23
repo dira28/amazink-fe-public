@@ -231,7 +231,7 @@ watch(
                         </svg>
                     </div>
 
-                    <h3 class="mt-5 text-lg font-semibold tracking-[-0.025em] text-[#171717]">
+                    <h3 class="mt-5 text-lg font-semibold tracking-tight text-[#171717]">
                         {{ loading ? 'Memuat produk...' : failed ? 'Produk gagal dimuat' : products.length ? 'Produk tidak ditemukan' : 'Belum ada produk' }}
                     </h3>
 
@@ -252,7 +252,7 @@ watch(
                 <!-- Show more -->
                 <div v-if="filteredProducts.length > initialProductCount" class="mt-7 flex justify-center sm:mt-9">
                     <button type="button" :aria-expanded="showAllProducts"
-                        class="inline-flex min-h-10.75 w-full max-w-75 cursor-pointer items-center justify-center gap-3 rounded-full border border-[#d6d3d1] bg-white px-5.5 text-xs font-semibold text-[#292524] transition-colors hover:border-[#171717] hover:bg-[#171717] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-brand-red sm:min-h-11 sm:w-auto"
+                        class="inline-flex min-h-10.75 w-full max-w-75 cursor-pointer items-center justify-center gap-3 rounded-full border border-[#d6d3d1] bg-white px-5.5 text-xs font-semibold text-[#292524] transition-colors hover:border-[#171717] hover:bg-[#171717] hover:text-white focus-visible:outline focus-visible:outline-offset-[3px] focus-visible:outline-brand-red sm:min-h-11 sm:w-auto"
                         @click="showAllProducts = !showAllProducts">
                         {{ showAllProducts ? 'Tampilkan lebih sedikit' : 'Lihat semua produk' }}
 
@@ -269,7 +269,7 @@ watch(
         </section>
 
         <!-- Pemilih printer -->
-        <section id="cari-tinta" class="scroll-mt-[72px] px-5 py-9 sm:scroll-mt-[88px] sm:px-6 sm:py-16"
+        <section id="cari-tinta" class="scroll-mt-18 px-5 py-9 sm:scroll-mt-22 sm:px-6 sm:py-16"
             aria-labelledby="shop-promo-title">
             <div class="mx-auto max-w-295 border-y border-[#e7e5e4] py-7.5 sm:py-10">
                 <div class="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end sm:gap-8">

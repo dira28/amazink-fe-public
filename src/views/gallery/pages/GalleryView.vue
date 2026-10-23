@@ -306,7 +306,7 @@ onBeforeUnmount(() => {
                 </header>
 
                 <div role="tablist" aria-label="Kategori galeri"
-                    class="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 py-1 [scrollbar-width:none] sm:-mx-1 sm:mt-5 sm:flex-wrap sm:px-1 [&::-webkit-scrollbar]:hidden">
+                    class="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 py-1 scrollbar:none sm:-mx-1 sm:mt-5 sm:flex-wrap sm:px-1 [&::-webkit-scrollbar]:hidden">
                     <button v-for="tab in tabs" :key="tab.id" type="button" role="tab"
                         :aria-selected="category === tab.id"
                         class="inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border-0 px-4 transition-colors sm:h-10"

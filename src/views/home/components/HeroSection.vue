@@ -73,7 +73,7 @@ const hero = usePageSection('home', 'hero', {
             <div class="group/visual relative mt-2 flex w-full min-w-0 items-center justify-center sm:mt-0">
                 <img :src="hero.image || '/images/home/hero-home.png'" alt="Produk AMAZiNK berupa tinta, toner, dan printer"
                     fetchpriority="high"
-                    class="relative z-10 block h-auto w-full max-w-full object-contain [mask-image:radial-gradient(ellipse_at_center,#000_60%,transparent_100%)] transition-transform duration-500 motion-reduce:transition-none sm:w-[108%] sm:max-w-212.5 lg:w-[112%] lg:group-hover/visual:-translate-y-1" />
+                    class="relative z-10 block h-auto w-full max-w-full object-contain mask-[radial-gradient(ellipse_at_center,#000_60%,transparent_100%)] transition-transform duration-500 motion-reduce:transition-none sm:w-[108%] sm:max-w-212.5 lg:w-[112%] lg:group-hover/visual:-translate-y-1" />
             </div>
         </div>
     </section>
