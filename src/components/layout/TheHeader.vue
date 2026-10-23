@@ -28,7 +28,6 @@ const infoRef = ref(null)
 let lastScrollY = 0
 let ticking = false
 
-// match: awalan path yang membuat menu ini dianggap aktif
 const navItems = [
     { label: 'Beranda', to: '/', match: ['/'], exact: true },
     { label: 'Catalog Produk', to: '/catalog-produk', match: ['/catalog-produk', '/produk', '/cari-tinta'] },
@@ -39,6 +38,7 @@ const infoItems = [
     { label: 'Reseller', to: '/reseller', match: ['/reseller'] },
     { label: 'News', to: '/news', match: ['/news'] },
     { label: 'Galeri', to: '/galeri', match: ['/galeri'] },
+    { label: 'FAQ', to: '/faq', match: ['/faq'] },
 ]
 
 const startsWithAny = (paths) =>
@@ -78,6 +78,27 @@ const closeMenu = () => {
     menuOpen.value = false
     infoOpen.value = false
     mobileInfoOpen.value = false
+}
+
+const openInfo = () => {
+    infoOpen.value = true
+}
+
+const closeInfo = () => {
+    infoOpen.value = false
+}
+
+const onInfoEnter = (event) => {
+    if (event.pointerType === 'mouse') openInfo()
+}
+
+const onInfoLeave = (event) => {
+    if (event.pointerType === 'mouse') closeInfo()
+}
+
+const onInfoClick = (event) => {
+    if (event.pointerType === 'mouse') return openInfo()
+    infoOpen.value = !infoOpen.value
 }
 
 const onClickOutside = (event) => {
@@ -131,13 +152,13 @@ onBeforeUnmount(() => {
                 </RouterLink>
 
                 <!-- Dropdown Info -->
-                <div ref="infoRef" class="relative">
+                <div ref="infoRef" class="relative" @pointerenter="onInfoEnter" @pointerleave="onInfoLeave">
                     <button type="button"
                         class="flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border-0 px-4 py-2 text-[13px] font-medium transition-colors duration-200"
                         :class="infoActive || infoOpen
                             ? 'bg-red-50 text-brand-red'
                             : 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-950'"
-                        aria-haspopup="menu" :aria-expanded="infoOpen" @click="infoOpen = !infoOpen">
+                        aria-haspopup="menu" :aria-expanded="infoOpen" @click="onInfoClick">
                         Info
                         <svg class="h-3.5 w-3.5 transition-transform duration-200" :class="{ 'rotate-180': infoOpen }"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -150,14 +171,16 @@ onBeforeUnmount(() => {
                         enter-from-class="opacity-0 -translate-y-1" enter-to-class="opacity-100 translate-y-0"
                         leave-active-class="transition duration-100 ease-in"
                         leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-1">
-                        <div v-if="infoOpen" role="menu"
-                            class="absolute left-1/2 top-full z-50 mt-3 w-44 -translate-x-1/2 overflow-hidden rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg">
-                            <RouterLink v-for="item in infoItems" :key="item.to" :to="item.to" role="menuitem"
-                                class="block rounded-lg px-3.5 py-2.5 text-[13px] font-medium transition-colors hover:bg-gray-100 hover:text-brand-red"
-                                :class="isActive(item) ? 'bg-red-50 text-brand-red' : 'text-gray-700'"
-                                @click="closeMenu">
-                                {{ item.label }}
-                            </RouterLink>
+                        <div v-if="infoOpen" class="absolute left-1/2 top-full z-50 w-44 -translate-x-1/2 pt-3">
+                            <div role="menu"
+                                class="overflow-hidden rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg">
+                                <RouterLink v-for="item in infoItems" :key="item.to" :to="item.to" role="menuitem"
+                                    class="block rounded-lg px-3.5 py-2.5 text-[13px] font-medium transition-colors hover:bg-gray-100 hover:text-brand-red"
+                                    :class="isActive(item) ? 'bg-red-50 text-brand-red' : 'text-gray-700'"
+                                    @click="closeMenu">
+                                    {{ item.label }}
+                                </RouterLink>
+                            </div>
                         </div>
                     </Transition>
                 </div>
@@ -267,32 +290,33 @@ onBeforeUnmount(() => {
                     </div>
                 </div>
 
-            <!-- Akses Akun dan Keranjang di Mobile -->
-            <div class="mt-4 grid grid-cols-2 gap-3">
-                <RouterLink :to="accountTo"
-                    class="flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition hover:border-brand-red hover:text-brand-red"
-                    :class="accountActive
-                        ? 'border-brand-red text-brand-red'
-                        : 'border-gray-200 text-gray-800'" @click="closeMenu">
-                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <circle cx="12" cy="8" r="3.5" />
-                        <path d="M5 20c.5-3.5 3.2-5.5 7-5.5s6.5 2 7 5.5" />
-                    </svg>
-                    {{ isLoggedIn ? firstName : 'Masuk' }}
-                </RouterLink>
+                <!-- Akses Akun dan Keranjang di Mobile -->
+                <div class="mt-4 grid grid-cols-2 gap-3">
+                    <RouterLink :to="accountTo"
+                        class="flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition hover:border-brand-red hover:text-brand-red"
+                        :class="accountActive
+                            ? 'border-brand-red text-brand-red'
+                            : 'border-gray-200 text-gray-800'" @click="closeMenu">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="8" r="3.5" />
+                            <path d="M5 20c.5-3.5 3.2-5.5 7-5.5s6.5 2 7 5.5" />
+                        </svg>
+                        {{ isLoggedIn ? firstName : 'Masuk' }}
+                    </RouterLink>
 
-                <RouterLink to="/keranjang"
-                    class="flex items-center justify-center gap-2 rounded-xl bg-brand-red px-3 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
-                    :class="cartActive ? 'ring-2 ring-brand-red/30 ring-offset-2' : ''"
-                    :aria-label="productCount ? `Keranjang, ${productCount} produk` : 'Keranjang'" @click="closeMenu">
-                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H6" />
-                        <circle cx="10" cy="20" r="1" />
-                        <circle cx="18" cy="20" r="1" />
-                    </svg>
-                    Keranjang
+                    <RouterLink to="/keranjang"
+                        class="flex items-center justify-center gap-2 rounded-xl bg-brand-red px-3 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
+                        :class="cartActive ? 'ring-2 ring-brand-red/30 ring-offset-2' : ''"
+                        :aria-label="productCount ? `Keranjang, ${productCount} produk` : 'Keranjang'"
+                        @click="closeMenu">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H6" />
+                            <circle cx="10" cy="20" r="1" />
+                            <circle cx="18" cy="20" r="1" />
+                        </svg>
+                        Keranjang
 
                     <span v-if="productCount"
                         class="min-w-5 rounded-full bg-white px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-brand-red"

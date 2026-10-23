@@ -5,11 +5,8 @@ import { fetchProducts } from '@/services/productService'
 
 const COLORS = ['Black', 'Cyan', 'Magenta', 'Yellow', 'CMYK']
 
-// Warna belum disimpan di backend; dibaca dari nama produk bila ada.
 const detectColor = (name) => COLORS.find((color) => new RegExp(`\\b${color}\\b`, 'i').test(name)) ?? ''
 
-// Bentuk data dari API (/public/products) disesuaikan dengan yang dipakai komponen katalog.
-// Stok belum dikelola di backend, jadi semua produk dianggap tersedia.
 const fromApi = (product) => ({
     id: product.id,
     slug: product.slug,
