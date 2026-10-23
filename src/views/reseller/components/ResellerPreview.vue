@@ -9,25 +9,22 @@ const section = usePageSection('reseller', 'directory', {
     title: 'Daftar Reseller AMAZiNK',
     link_label: 'Lihat selengkapnya',
 })
-import { resellerRegions } from '../data/resellers'
-import { useProducts } from '@/composables/useProducts'
-import { usePolling } from '@/composables/usePolling'
+import { useResellerDirectory } from '@/composables/useResellerDirectory'
 
-const { products, refreshProducts } = useProducts()
-usePolling(refreshProducts, 30000)
+const { regions } = useResellerDirectory()
 
 const AUTO_SLIDE_MS = 5000
 
-const cities = resellerRegions.flatMap((region) =>
-    region.cities.map((city) => ({ ...city, region: region.name }))
+const cities = computed(() =>
+    regions.value.flatMap((region) => region.cities.map((city) => ({ ...city, region: region.name })))
 )
 
 const perSlide = ref(4)
 const currentSlide = ref(0)
 
 const slides = computed(() =>
-    Array.from({ length: Math.ceil(cities.length / perSlide.value) }, (_, index) =>
-        cities.slice(index * perSlide.value, (index + 1) * perSlide.value)
+    Array.from({ length: Math.ceil(cities.value.length / perSlide.value) }, (_, index) =>
+        cities.value.slice(index * perSlide.value, (index + 1) * perSlide.value)
     )
 )
 const slideCount = computed(() => slides.value.length)
@@ -38,6 +35,7 @@ let timer = null
 let reducedMotion = false
 
 function goTo(index) {
+    if (!slideCount.value) return
     currentSlide.value = (index + slideCount.value) % slideCount.value
 }
 
@@ -77,7 +75,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <section id="daftar-reseller" class="scroll-mt-24 bg-[#f7f7f5] px-5 py-14 sm:px-8 sm:py-20">
+    <section v-if="cities.length" id="daftar-reseller" class="scroll-mt-24 bg-[#f7f7f5] px-5 py-14 sm:px-8 sm:py-20">
         <div class="mx-auto max-w-7xl">
             <!-- Header -->
             <header class="flex flex-wrap items-end justify-between gap-4">

@@ -2,7 +2,9 @@
 import { computed } from 'vue'
 import AccentText from '@/components/base/AccentText.vue'
 import { usePageSection } from '@/composables/usePage'
-import { resellerRegions } from '../data/resellers'
+import { useResellerDirectory } from '@/composables/useResellerDirectory'
+
+const { regions } = useResellerDirectory()
 
 const hero = usePageSection('reseller', 'hero', {
     eyebrow: 'Kemitraan AMAZiNK',
@@ -18,13 +20,22 @@ const hero = usePageSection('reseller', 'hero', {
 })
 
 // Urutan barat ke timur supaya busurnya terbaca seperti peta
-const ORDER = ['Sumatera', 'Jawa Barat', 'Jawa Tengah', 'Yogyakarta', 'Jawa Timur', 'Kalimantan', 'Papua']
+const ORDER = [
+    'Aceh', 'Sumatera Utara', 'Sumatera Barat', 'Riau', 'Kepulauan Riau', 'Jambi', 'Sumatera Selatan',
+    'Kepulauan Bangka Belitung', 'Bengkulu', 'Lampung', 'DKI Jakarta', 'Banten', 'Jawa Barat', 'Jawa Tengah',
+    'Daerah Istimewa Yogyakarta', 'Jawa Timur', 'Bali', 'Nusa Tenggara Barat', 'Nusa Tenggara Timur', 'Kalimantan Barat',
+    'Kalimantan Tengah', 'Kalimantan Selatan', 'Kalimantan Timur', 'Kalimantan Utara', 'Sulawesi Utara',
+    'Gorontalo', 'Sulawesi Tengah', 'Sulawesi Barat', 'Sulawesi Selatan', 'Sulawesi Tenggara', 'Maluku',
+    'Maluku Utara', 'Papua Barat Daya', 'Papua Barat', 'Papua Tengah', 'Papua Pegunungan', 'Papua Selatan', 'Papua',
+    // Nama lama pada data contoh
+    'Sumatera', 'Yogyakarta', 'Kalimantan',
+]
 const orderOf = (name) => (ORDER.includes(name) ? ORDER.indexOf(name) : ORDER.length)
 
-const sortedRegions = [...resellerRegions].sort((a, b) => orderOf(a.name) - orderOf(b.name))
+const sortedRegions = computed(() => [...regions.value].sort((a, b) => orderOf(a.name) - orderOf(b.name)))
 
-const totalCities = sortedRegions.reduce((sum, region) => sum + region.cities.length, 0)
-const maxCities = Math.max(...sortedRegions.map((region) => region.cities.length))
+const totalCities = computed(() => sortedRegions.value.reduce((sum, region) => sum + region.cities.length, 0))
+const maxCities = computed(() => Math.max(0, ...sortedRegions.value.map((region) => region.cities.length)))
 
 // Geometri visualisasi
 const W = 1000
@@ -33,9 +44,9 @@ const hub = { x: 500, y: 312 }
 const RX = 430
 const RY = 230
 
-const nodes = sortedRegions.map((region, index) => {
+const nodes = computed(() => sortedRegions.value.map((region, index) => {
     const count = region.cities.length
-    const t = sortedRegions.length === 1 ? 0.5 : index / (sortedRegions.length - 1)
+    const t = sortedRegions.value.length === 1 ? 0.5 : index / (sortedRegions.value.length - 1)
     const angle = Math.PI * (0.07 + 0.86 * t)
 
     return {
@@ -44,15 +55,15 @@ const nodes = sortedRegions.map((region, index) => {
         x: hub.x - RX * Math.cos(angle),
         y: hub.y - RY * Math.sin(angle),
         r: 18 + Math.sqrt(count) * 7,
-        biggest: count === maxCities,
+        biggest: count === maxCities.value,
     }
-})
+}))
 
 // Angka jumlah kota dihitung dari direktori reseller, disisipkan di antara angka dari admin.
 const stats = computed(() => {
     const [first, ...rest] = hero.value.stats
 
-    return [first, { value: String(totalCities), label: 'Kota sudah punya reseller' }, ...rest].filter(Boolean)
+    return [first, { value: String(totalCities.value), label: 'Kota sudah punya reseller' }, ...rest].filter(Boolean)
 })
 </script>
 

@@ -50,8 +50,16 @@ function load() {
         })
 }
 
+// Memuat ulang diam-diam: daftar lama tetap tampil bila permintaan gagal.
+export async function refreshProducts() {
+    if (USE_MOCK) return
+
+    products.value = (await fetchProducts()).map(fromApi)
+    failed.value = false
+}
+
 export function useProducts() {
     load()
 
-    return { products, loading, failed }
+    return { products, loading, failed, refreshProducts }
 }

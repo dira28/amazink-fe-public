@@ -1,10 +1,12 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
 import ShopHero from '../components/ShopHero.vue'
 import ProductCategories from '../components/ProductCategories.vue'
 import ProductCard from '../components/ProductCard.vue'
 import { useProducts } from '@/composables/useProducts'
+import { usePolling } from '@/composables/usePolling'
 import PrinterFinderMini from '../components/PrinterFinderMini.vue'
 import AccentText from '@/components/base/AccentText.vue'
 import { usePageSection } from '@/composables/usePage'
@@ -24,13 +26,10 @@ const help = usePageSection('catalog', 'help', {
     button_link: '/cari-tinta',
 })
 
-import { useProducts } from '@/composables/useProducts'
-import { usePolling } from '@/composables/usePolling'
+const { products, loading, failed, refreshProducts } = useProducts()
 
-const { products, refreshProducts } = useProducts()
-usePolling(refreshProducts, 30000) 
-
-const { products, loading, failed } = useProducts()
+// Harga dan gambar bisa berubah setelah sinkronisasi di admin, jadi daftar dimuat ulang berkala.
+usePolling(refreshProducts, 30000)
 
 // Kategori mengikuti produk yang ada.
 const categories = computed(() => {
@@ -44,7 +43,8 @@ const categories = computed(() => {
 })
 
 
-const activeCategory = ref('all')
+const route = useRoute()
+const activeCategory = ref(String(route.query.kategori || 'all'))
 const searchQuery = ref('')
 const activeColor = ref('all')
 const showAllProducts = ref(false)
@@ -108,6 +108,13 @@ const resetFilters = () => {
     showAllProducts.value = false
 }
 
+// Alamat dengan kategori yang tidak ada (misalnya dari tautan lama) kembali menampilkan semua produk.
+watch(categories, (list) => {
+    if (products.value.length && !list.some((category) => category.slug === activeCategory.value)) {
+        activeCategory.value = 'all'
+    }
+}, { immediate: true })
+
 watch(
     [activeCategory, activeColor, searchQuery],
     () => {
@@ -122,7 +129,7 @@ watch(
         <ShopHero />
 
         <!-- Catalog -->
-        <section id="daftar-produk" class="scroll-mt-[72px] sm:scroll-mt-[88px]">
+        <section id="daftar-produk" class="scroll-mt-18 sm:scroll-mt-22">
             <div class="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14 lg:py-16">
                 <!-- Heading -->
                 <header class="mb-8 text-center">

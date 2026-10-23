@@ -1,4 +1,5 @@
 <script setup>
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import AccentText from '@/components/base/AccentText.vue'
 import { usePageSection } from '@/composables/usePage'
@@ -12,8 +13,43 @@ const hero = usePageSection('about-us', 'hero', {
     primary_button_label: 'Jelajahi Produk',
     primary_button_link: '/#produk',
     secondary_button_label: 'Kenali AMAZiNK',
-    image: '',
+    images: [],
 })
+
+const FALLBACK_IMAGE =
+    'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2200&q=85'
+const SLIDE_MS = 5000
+
+// Gambar dari admin tampil bergantian; bila belum ada, dipakai gambar bawaan.
+const images = computed(() => {
+    const list = hero.value.images.map((item) => item.image).filter(Boolean)
+    return list.length ? list : [FALLBACK_IMAGE]
+})
+
+const current = ref(0)
+let timer
+
+function stop() {
+    clearInterval(timer)
+}
+
+function start() {
+    stop()
+    if (images.value.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    timer = setInterval(() => {
+        if (!document.hidden) current.value = (current.value + 1) % images.value.length
+    }, SLIDE_MS)
+}
+
+// Jumlah gambar bisa berubah setelah data dari API tiba.
+watch(images, () => {
+    if (current.value >= images.value.length) current.value = 0
+    start()
+})
+
+onMounted(start)
+onBeforeUnmount(stop)
 </script>
 
 <template>
@@ -22,8 +58,9 @@ const hero = usePageSection('about-us', 'hero', {
                    items-end overflow-hidden rounded-2xl bg-gray-950
                    sm:min-h-125 sm:rounded-3xl lg:min-h-145">
             <!-- Background image -->
-            <img :src="hero.image || 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2200&q=85'"
-                alt="" aria-hidden="true" class="absolute inset-0 -z-20 h-full w-full object-cover" />
+            <img v-for="(src, index) in images" :key="src + index" :src="src" alt="" aria-hidden="true"
+                class="absolute inset-0 -z-20 h-full w-full object-cover transition-opacity duration-1000 motion-reduce:transition-none"
+                :class="index === current ? 'opacity-100' : 'opacity-0'" />
 
             <!-- Overlay -->
             <div class="absolute inset-0 -z-10
@@ -88,10 +125,12 @@ const hero = usePageSection('about-us', 'hero', {
                     </a>
                 </div>
 
-                <div class="mt-10 flex items-center gap-3">
-                    <span class="h-1.5 w-8 rounded-full bg-brand-red"></span>
-                    <span class="h-1.5 w-3 rounded-full bg-white/40"></span>
-                    <span class="h-1.5 w-3 rounded-full bg-white/40"></span>
+                <div v-if="images.length > 1" class="mt-10 flex items-center gap-3">
+                    <button v-for="(src, index) in images" :key="src + index" type="button"
+                        :aria-label="`Tampilkan gambar ${index + 1}`" :aria-current="index === current ? 'true' : undefined"
+                        class="h-1.5 cursor-pointer rounded-full border-0 p-0 transition-all duration-300"
+                        :class="index === current ? 'w-8 bg-brand-red' : 'w-3 bg-white/40 hover:bg-white/70'"
+                        @click="current = index; start()" />
                 </div>
             </div>
         </div>

@@ -3,19 +3,15 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { useProducts } from '@/composables/useProducts'
-
-import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
-
-const { products, refreshProducts } = useProducts()
-usePolling(refreshProducts, 30000)
 
 const route = useRoute()
 const router = useRouter()
 const { add, qtyInCart } = useCart()
 
 
-const { products, loading } = useProducts()
+const { products, loading, refreshProducts } = useProducts()
+usePolling(refreshProducts, 30000)
 
 const product = computed(() => products.value.find((item) => item.slug === route.params.slug))
 

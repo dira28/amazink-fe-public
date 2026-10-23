@@ -12,5 +12,4 @@ import TestimonialsSection from '../components/TestimonialsSection.vue'
     <CategorySection />
     <HomeCollection />
     <TestimonialsSection />
-    <!-- Collection, dst. -->
 </template> 
