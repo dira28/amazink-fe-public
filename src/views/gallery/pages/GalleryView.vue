@@ -1,19 +1,47 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
 import GalleryCard from '../components/GalleryCard.vue'
 import GalleryLightbox from '../components/GalleryLightbox.vue'
-import { galleryItems } from '../data/gallery'
+import { galleryCategories, galleryItems } from '../data/gallery'
 import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
+import { waLink } from '@/utils/whatsapp'
 
 const { products, refreshProducts } = useProducts()
 usePolling(refreshProducts, 30000)
 
 const AUTOPLAY_MS = 4000
+const MAX_ITEMS = 15
 
-const total = galleryItems.length
-const active = ref(Math.min(2, total - 1))
+const contactLink = waLink('Halo AMAZiNK, saya tertarik dengan hasil cetak di galeri dan ingin konsultasi kebutuhan cetak.')
+
+// Newest first, so the cap keeps the latest works
+const sortedItems = [...galleryItems].sort((a, b) => b.date.localeCompare(a.date))
+
+const category = ref('all')
+
+const items = computed(() =>
+    (category.value === 'all'
+        ? sortedItems
+        : sortedItems.filter((item) => item.category === category.value)
+    ).slice(0, MAX_ITEMS)
+)
+
+const total = computed(() => items.value.length)
+
+const tabs = computed(() => [
+    { id: 'all', label: 'Semua', count: Math.min(sortedItems.length, MAX_ITEMS) },
+    ...galleryCategories
+        .map((item) => ({
+            ...item,
+            count: Math.min(sortedItems.filter((work) => work.category === item.id).length, MAX_ITEMS),
+        }))
+        .filter((tab) => tab.count > 0),
+])
+
+const startIndex = (count) => Math.max(0, Math.min(2, Math.floor((count - 1) / 2)))
+
+const active = ref(startIndex(items.value.length))
 const openId = ref(null)
 
 const viewport = ref(null)
@@ -33,7 +61,7 @@ let moved = false
 let startX = 0
 
 const counter = computed(
-    () => `${String(active.value + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`
+    () => `${String(active.value + 1).padStart(2, '0')} / ${String(total.value).padStart(2, '0')}`
 )
 
 function measure() {
@@ -57,17 +85,40 @@ function startAuto() {
 }
 
 function go(index, { wrap = true } = {}) {
-    active.value = wrap ? (index + total) % total : Math.min(Math.max(index, 0), total - 1)
+    if (!total.value) return
+
+    active.value = wrap
+        ? (index + total.value) % total.value
+        : Math.min(Math.max(index, 0), total.value - 1)
     startAuto()
 }
 
 const next = () => go(active.value + 1)
 const prev = () => go(active.value - 1)
 
+async function selectCategory(id) {
+    if (id === category.value) return
+
+    ready.value = false
+    openId.value = null
+    dragX.value = 0
+    category.value = id
+    active.value = startIndex(total.value)
+
+    await nextTick()
+    measure()
+    await nextTick()
+    requestAnimationFrame(() => {
+        ready.value = true
+    })
+
+    startAuto()
+}
+
 function onSelect(index) {
     if (moved) return
 
-    if (index === active.value) openId.value = galleryItems[index].id
+    if (index === active.value) openId.value = items.value[index].id
     else go(index, { wrap: false })
 }
 
@@ -143,7 +194,7 @@ function onKeydown(event) {
 
 function onLightboxChange(id) {
     openId.value = id
-    const index = galleryItems.findIndex((item) => item.id === id)
+    const index = items.value.findIndex((item) => item.id === id)
     if (index !== -1) active.value = index
 }
 
@@ -208,11 +259,28 @@ onBeforeUnmount(() => {
                         </button>
                     </div>
                 </header>
+
+                <div role="tablist" aria-label="Kategori galeri"
+                    class="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 py-1 [scrollbar-width:none] sm:-mx-1 sm:mt-5 sm:flex-wrap sm:px-1 [&::-webkit-scrollbar]:hidden">
+                    <button v-for="tab in tabs" :key="tab.id" type="button" role="tab"
+                        :aria-selected="category === tab.id"
+                        class="inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border-0 px-4 transition-colors sm:h-10"
+                        :class="category === tab.id
+                            ? 'bg-[#171717]'
+                            : 'bg-white ring-1 ring-black/5 hover:ring-brand-red/40'" :style="{
+                                color: category === tab.id ? '#ffffff' : '#374151',
+                                fontSize: '13px',
+                                fontWeight: 600,
+                            }" @click="selectCategory(tab.id)">
+                        {{ tab.label }}
+                        <span style="opacity: 0.55; font-size: 11px">{{ tab.count }}</span>
+                    </button>
+                </div>
             </div>
 
             <!-- --gallery-h: tinggi bingkai karya tengah, mengalir mengikuti lebar layar (200px - 340px) -->
             <div ref="viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Galeri karya"
-                class="relative mt-6 cursor-grab select-none overflow-hidden py-8 outline-none active:cursor-grabbing sm:mt-12 sm:py-12"
+                class="relative mt-4 cursor-grab select-none overflow-hidden py-8 outline-none active:cursor-grabbing sm:mt-8 sm:py-12"
                 style="touch-action: pan-y; --gallery-h: clamp(200px, 14vw + 140px, 340px)" @pointerdown="onPointerDown"
                 @pointermove="onPointerMove" @pointerup="onPointerEnd" @pointercancel="onPointerEnd" @dragstart.prevent
                 @pointerenter="onPointerEnter" @pointerleave="onPointerLeave" @focusin="onFocusIn"
@@ -220,7 +288,7 @@ onBeforeUnmount(() => {
                 <div ref="track" class="relative flex w-max items-start gap-6 sm:gap-10 lg:gap-12" :class="ready && !dragging
                     ? 'transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none'
                     : ''" :style="{ transform: `translateX(${offset + dragX}px)` }">
-                    <GalleryCard v-for="(item, index) in galleryItems" :key="item.id"
+                    <GalleryCard v-for="(item, index) in items" :key="item.id"
                         :ref="(el) => (slides[index] = el?.$el ?? null)" :item="item"
                         :distance="Math.abs(index - active)" :active="index === active" @select="onSelect(index)" />
                 </div>
@@ -266,13 +334,13 @@ onBeforeUnmount(() => {
                 Ceritakan kebutuhanmu ke tim AMAZiNK, kami bantu pilih tinta dan toner yang cocok untuk hasil
                 cetak terbaik.
             </p>
-            <RouterLink to="/#kontak"
+            <a :href="contactLink" target="_blank" rel="noopener noreferrer"
                 class="mt-8 inline-flex h-12 items-center rounded-md bg-[#2a2830] px-8 text-[13px] font-semibold uppercase tracking-[0.04em] no-underline transition-colors hover:bg-brand-red"
                 style="color: #fff">
                 Hubungi Kami
-            </RouterLink>
+            </a>
         </section>
 
-        <GalleryLightbox :items="galleryItems" :active-id="openId" @close="openId = null" @change="onLightboxChange" />
+        <GalleryLightbox :items="items" :active-id="openId" @close="openId = null" @change="onLightboxChange" />
     </div>
 </template>
