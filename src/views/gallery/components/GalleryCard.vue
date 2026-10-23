@@ -48,7 +48,7 @@ const frameStyle = computed(() => ({
             </span>
             <span class="mt-0.5 block text-[11.5px] leading-4.5 sm:text-[12.5px] sm:leading-5"
                 style="color: #9a9a9a">
-                {{ item.categoryLabel }} · {{ formatMonth(item.date) }}
+                {{ item.categoryLabel }}<template v-if="item.date"> · {{ formatMonth(item.date) }}</template>
             </span>
         </span>
     </button>

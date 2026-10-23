@@ -1,27 +1,54 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { RouterLink } from 'vue-router'
 import GalleryCard from '../components/GalleryCard.vue'
 import GalleryLightbox from '../components/GalleryLightbox.vue'
 import { USE_MOCK } from '@/services/http'
 import { fetchGallery } from '@/services/galleryService'
 import { galleryItems } from '../data/gallery'
-import { useProducts } from '@/composables/useProducts'
-import { usePolling } from '@/composables/usePolling'
-
-const { products, refreshProducts } = useProducts()
-usePolling(refreshProducts, 30000)
+import { waLink } from '@/utils/whatsapp'
 
 const AUTOPLAY_MS = 4000
+const MAX_ITEMS = 15
 const SHAPES = ['portrait', 'landscape', 'square']
 
-// Mode dummy memakai data lokal; selain itu foto diambil dari API (/public/gallery).
-const items = ref(USE_MOCK ? mockItems : [])
+const contactLink = waLink('Halo AMAZiNK, saya tertarik dengan hasil cetak di galeri dan ingin konsultasi kebutuhan cetak.')
+
+// Mode dummy memakai data lokal (terbaru dulu, agar batas tampil mengambil karya terbaru); selain itu foto dari API.
+const mockItems = [...galleryItems].sort((a, b) => b.date.localeCompare(a.date))
+const allItems = ref(USE_MOCK ? mockItems : [])
 const loading = ref(!USE_MOCK)
 const failed = ref(false)
 
+const category = ref('all')
+
+const items = computed(() =>
+    (category.value === 'all'
+        ? allItems.value
+        : allItems.value.filter((item) => item.category === category.value)
+    ).slice(0, MAX_ITEMS)
+)
+
 const total = computed(() => items.value.length)
-const active = ref(Math.max(0, Math.min(2, items.value.length - 1)))
+
+// Tab kategori dibentuk dari data yang tampil, jadi sama untuk data dummy maupun dari API.
+const tabs = computed(() => {
+    const groups = new Map()
+
+    for (const item of allItems.value) {
+        const group = groups.get(item.category) ?? { id: item.category, label: item.categoryLabel, count: 0 }
+        group.count += 1
+        groups.set(item.category, group)
+    }
+
+    return [
+        { id: 'all', label: 'Semua', count: Math.min(allItems.value.length, MAX_ITEMS) },
+        ...[...groups.values()].map((group) => ({ ...group, count: Math.min(group.count, MAX_ITEMS) })),
+    ]
+})
+
+const startIndex = (count) => Math.max(0, Math.min(2, Math.floor((count - 1) / 2)))
+
+const active = ref(startIndex(items.value.length))
 const openId = ref(null)
 
 const viewport = ref(null)
@@ -40,10 +67,8 @@ let pressed = false
 let moved = false
 let startX = 0
 
-const counter = computed(() =>
-    total.value
-        ? `${String(active.value + 1).padStart(2, '0')} / ${String(total.value).padStart(2, '0')}`
-        : ''
+const counter = computed(
+    () => `${String(active.value + 1).padStart(2, '0')} / ${String(total.value).padStart(2, '0')}`
 )
 
 const emptyMessage = computed(() =>
@@ -53,11 +78,12 @@ const emptyMessage = computed(() =>
 // Bentuk data API disesuaikan dengan yang dipakai GalleryCard dan GalleryLightbox.
 function fromApi(categories) {
     return categories
-        .flatMap((category) =>
-            category.items.map((photo) => ({
+        .flatMap((group) =>
+            group.items.map((photo) => ({
                 id: String(photo.id),
-                title: category.name,
-                categoryLabel: category.name,
+                title: group.name,
+                category: String(group.id),
+                categoryLabel: group.name,
                 description: '',
                 image: photo.image,
                 placeholder: '',
@@ -71,8 +97,8 @@ async function loadPhotos() {
     if (USE_MOCK) return
 
     try {
-        items.value = fromApi(await fetchGallery())
-        active.value = Math.max(0, Math.min(2, items.value.length - 1))
+        allItems.value = fromApi(await fetchGallery())
+        active.value = startIndex(items.value.length)
         await nextTick()
         measure()
     } catch {
@@ -113,6 +139,25 @@ function go(index, { wrap = true } = {}) {
 
 const next = () => go(active.value + 1)
 const prev = () => go(active.value - 1)
+
+async function selectCategory(id) {
+    if (id === category.value) return
+
+    ready.value = false
+    openId.value = null
+    dragX.value = 0
+    category.value = id
+    active.value = startIndex(total.value)
+
+    await nextTick()
+    measure()
+    await nextTick()
+    requestAnimationFrame(() => {
+        ready.value = true
+    })
+
+    startAuto()
+}
 
 function onSelect(index) {
     if (moved) return
@@ -259,11 +304,28 @@ onBeforeUnmount(() => {
                         </button>
                     </div>
                 </header>
+
+                <div role="tablist" aria-label="Kategori galeri"
+                    class="-mx-5 mt-4 flex gap-2 overflow-x-auto px-5 py-1 [scrollbar-width:none] sm:-mx-1 sm:mt-5 sm:flex-wrap sm:px-1 [&::-webkit-scrollbar]:hidden">
+                    <button v-for="tab in tabs" :key="tab.id" type="button" role="tab"
+                        :aria-selected="category === tab.id"
+                        class="inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-full border-0 px-4 transition-colors sm:h-10"
+                        :class="category === tab.id
+                            ? 'bg-[#171717]'
+                            : 'bg-white ring-1 ring-black/5 hover:ring-brand-red/40'" :style="{
+                                color: category === tab.id ? '#ffffff' : '#374151',
+                                fontSize: '13px',
+                                fontWeight: 600,
+                            }" @click="selectCategory(tab.id)">
+                        {{ tab.label }}
+                        <span style="opacity: 0.55; font-size: 11px">{{ tab.count }}</span>
+                    </button>
+                </div>
             </div>
 
             <!-- --gallery-h: tinggi bingkai karya tengah, mengalir mengikuti lebar layar (200px - 340px) -->
             <div ref="viewport" tabindex="0" role="region" aria-roledescription="carousel" aria-label="Galeri karya"
-                class="relative mt-6 cursor-grab select-none overflow-hidden py-8 outline-none active:cursor-grabbing sm:mt-12 sm:py-12"
+                class="relative mt-4 cursor-grab select-none overflow-hidden py-8 outline-none active:cursor-grabbing sm:mt-8 sm:py-12"
                 style="touch-action: pan-y; --gallery-h: clamp(200px, 14vw + 140px, 340px)" @pointerdown="onPointerDown"
                 @pointermove="onPointerMove" @pointerup="onPointerEnd" @pointercancel="onPointerEnd" @dragstart.prevent
                 @pointerenter="onPointerEnter" @pointerleave="onPointerLeave" @focusin="onFocusIn"
@@ -322,11 +384,11 @@ onBeforeUnmount(() => {
                 Ceritakan kebutuhanmu ke tim AMAZiNK, kami bantu pilih tinta dan toner yang cocok untuk hasil
                 cetak terbaik.
             </p>
-            <RouterLink to="/#kontak"
+            <a :href="contactLink" target="_blank" rel="noopener noreferrer"
                 class="mt-8 inline-flex h-12 items-center rounded-md bg-[#2a2830] px-8 text-[13px] font-semibold uppercase tracking-[0.04em] no-underline transition-colors hover:bg-brand-red"
                 style="color: #fff">
                 Hubungi Kami
-            </RouterLink>
+            </a>
         </section>
 
         <GalleryLightbox :items="items" :active-id="openId" @close="openId = null" @change="onLightboxChange" />

@@ -10,7 +10,7 @@ const hero = usePageSection('home', 'hero', {
     description:
         'Temukan tinta, toner, dan printer yang sesuai kebutuhanmu. Solusi cetak berkualitas untuk rumah maupun bisnis.',
     primary_button_label: 'Jelajahi Produk',
-    primary_button_link: '/#produk',
+    primary_button_link: '/catalog-produk',
     secondary_button_label: 'Tentang Kami',
     secondary_button_link: '/tentang-kami',
     benefits: [

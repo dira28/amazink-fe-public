@@ -89,7 +89,7 @@ onBeforeUnmount(() => {
                             {{ item.description }}
                         </span>
                         <span class="mt-3 block text-[12px]" style="color: rgba(255, 255, 255, 0.55)">
-                            {{ formatMonth(item.date) }} • {{ index + 1 }} / {{ items.length }}
+                            <template v-if="item.date">{{ formatMonth(item.date) }} • </template>{{ index + 1 }} / {{ items.length }}
                         </span>
                     </figcaption>
                 </figure>

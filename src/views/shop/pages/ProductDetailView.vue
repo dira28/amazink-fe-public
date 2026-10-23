@@ -9,7 +9,6 @@ const route = useRoute()
 const router = useRouter()
 const { add, qtyInCart } = useCart()
 
-
 const { products, loading, refreshProducts } = useProducts()
 usePolling(refreshProducts, 30000)
 
