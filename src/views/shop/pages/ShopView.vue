@@ -4,14 +4,13 @@ import { computed, ref, watch } from 'vue'
 import ShopHero from '../components/ShopHero.vue'
 import ProductCategories from '../components/ProductCategories.vue'
 import ProductCard from '../components/ProductCard.vue'
-import { shopProducts as products } from '@/data/products'
 import PrinterFinderMini from '../components/PrinterFinderMini.vue'
 
 import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
 
 const { products, refreshProducts } = useProducts()
-usePolling(refreshProducts, 30000) 
+usePolling(refreshProducts, 30000)
 
 const categories = [
     { name: 'Semua Produk', slug: 'all' },
@@ -20,7 +19,6 @@ const categories = [
     { name: 'Toner Laser', slug: 'toner-laser' },
     { name: 'Produk Lainnya', slug: 'lainnya' },
 ]
-
 
 const activeCategory = ref('all')
 const searchQuery = ref('')
@@ -48,7 +46,7 @@ const formatPrice = (price) =>
 const filteredProducts = computed(() => {
     const query = searchQuery.value.trim().toLowerCase()
 
-    return products.filter((product) => {
+    return products.value.filter((product) => {
         const matchesCategory =
             activeCategory.value === 'all' ||
             product.categorySlug === activeCategory.value

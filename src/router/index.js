@@ -105,6 +105,11 @@ const router = createRouter({
             name: 'finder',
             component: () => import('@/views/finder/pages/PrinterFinderView.vue'),
         },
+        {
+            path: '/faq',
+            name: 'faq',
+            component: () => import('@/views/faq/pages/FaqView.vue'),
+        },
     ],
 })
 

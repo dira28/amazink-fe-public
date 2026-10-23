@@ -1,17 +1,16 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-
-const PHONE = '6282226667233'
+import { waLink } from '@/utils/whatsapp'
 
 const DEFAULT_MESSAGE = 'Halo AMAZiNK, saya butuh konsultasi tinta dan toner.'
 
-// [awalan path, pesan]. Urutan dari yang paling spesifik.
 const messages = [
     ['/catalog-produk', 'Halo AMAZiNK, saya butuh konsultasi tinta dan toner. Bisa dibantu pilih produk yang cocok?'],
     ['/keranjang', 'Halo AMAZiNK, saya mau tanya soal pesanan di keranjang saya.'],
     ['/reseller', 'Halo AMAZiNK, saya tertarik menjadi reseller. Bisa dijelaskan syarat dan ketentuannya?'],
     ['/galeri', 'Halo AMAZiNK, saya tertarik dengan hasil cetak di galeri. Bisa konsultasi kebutuhan cetak saya?'],
+    ['/faq', 'Halo AMAZiNK, saya punya pertanyaan yang belum ada di halaman FAQ.'],
     ['/tentang-kami', 'Halo AMAZiNK, saya ingin tahu lebih lanjut tentang layanan kalian.'],
 ]
 
@@ -22,14 +21,14 @@ const message = computed(() => {
     return match ? match[1] : DEFAULT_MESSAGE
 })
 
-const href = computed(() => `https://wa.me/${PHONE}?text=${encodeURIComponent(message.value)}`)
+const href = computed(() => waLink(message.value))
 </script>
 
 <template>
     <a :href="href" target="_blank" rel="noopener noreferrer" aria-label="Chat WhatsApp AMAZiNK"
         class="group fixed right-4 z-40 flex items-center gap-3 no-underline sm:right-6"
         style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))">
-        <!-- Label muncul saat hover atau fokus (desktop) -->
+
         <span
             class="pointer-events-none hidden translate-x-2 whitespace-nowrap rounded-full bg-white px-4 py-2 text-[13px] font-semibold opacity-0 shadow-lg ring-1 ring-black/5 transition duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 sm:block"
             style="color: #171717">
