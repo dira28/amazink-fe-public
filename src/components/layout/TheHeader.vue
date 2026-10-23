@@ -31,7 +31,7 @@ let ticking = false
 
 const navItems = [
     { label: 'Beranda', to: '/', match: ['/'], exact: true },
-    { label: 'Catalog Produk', to: '/catalog-produk', match: ['/catalog-produk', '/produk', '/cari-tinta'] },
+    { label: 'Katalog Produk', to: '/catalog-produk', match: ['/catalog-produk', '/produk', '/cari-tinta'] },
     { label: 'Tentang Kami', to: '/tentang-kami', match: ['/tentang-kami'] },
 ]
 

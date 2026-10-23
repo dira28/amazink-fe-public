@@ -39,6 +39,7 @@ onMounted(async () => {
     widgetId = turnstile.render(container.value, {
       sitekey: props.siteKey,
       size: 'flexible',
+      theme: 'light',
       callback: (token) => emit('verify', token),
       'expired-callback': () => emit('verify', ''),
       'error-callback': () => emit('error', 'CAPTCHA gagal dimuat. Muat ulang halaman.'),

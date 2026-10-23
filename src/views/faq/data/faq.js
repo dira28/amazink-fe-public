@@ -13,7 +13,7 @@ export const faqItems = [
         category: 'pemesanan',
         question: 'Bagaimana cara memesan produk di AMAZiNK?',
         answer:
-            'Pilih produk di halaman Catalog Produk, lalu klik tambah ke keranjang. Buka keranjang untuk memeriksa pesananmu, lanjutkan ke checkout, isi data pengiriman, dan pilih metode pembayaran. Pesanan mulai diproses setelah pembayaran terkonfirmasi.',
+            'Pilih produk di halaman Katalog Produk, lalu klik tambah ke keranjang. Buka keranjang untuk memeriksa pesananmu, lanjutkan ke checkout, isi data pengiriman, dan pilih metode pembayaran. Pesanan mulai diproses setelah pembayaran terkonfirmasi.',
     },
     {
         id: 'metode-pembayaran',
@@ -69,7 +69,7 @@ export const faqItems = [
         category: 'produk',
         question: 'Bagaimana memastikan tinta atau toner cocok dengan printer saya?',
         answer:
-            'Cek tipe printermu pada bodi printer atau pada cartridge lama, misalnya Canon G2010 atau HP LaserJet Pro M1136. Lalu gunakan fitur Cari Tinta atau buka Catalog Produk. Setiap produk mencantumkan daftar printer yang kompatibel.',
+            'Cek tipe printermu pada bodi printer atau pada cartridge lama, misalnya Canon G2010 atau HP LaserJet Pro M1136. Lalu gunakan fitur Cari Tinta atau buka Katalog Produk. Setiap produk mencantumkan daftar printer yang kompatibel.',
     },
     {
         id: 'jenis-tinta',

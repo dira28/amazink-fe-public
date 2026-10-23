@@ -155,7 +155,7 @@ function subscribe() {
         </section>
 
         <section class="rounded-3xl bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
-            <h2 class="text-base font-semibold tracking-[-0.02em]">Catalog Product</h2>
+            <h2 class="text-base font-semibold tracking-[-0.02em]">Katalog Product</h2>
 
             <ul class="m-0 mt-4 list-none space-y-4 p-0">
                 <li v-for="product in products" :key="product.name">
