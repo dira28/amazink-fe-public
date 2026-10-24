@@ -3,7 +3,6 @@ import { computed, nextTick, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { shopProducts as products } from '@/data/products'
-import { brands, groups } from '../data/printers'
 import { useSeo } from '@/composables/useSeo'
 
 useSeo(() => ({
