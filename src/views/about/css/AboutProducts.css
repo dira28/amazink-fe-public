@@ -1,0 +1,285 @@
+.product-stage {
+    height: 220px;
+}
+
+@media (min-width: 640px) {
+    .product-stage {
+        height: 250px;
+    }
+}
+
+.about-products {
+    display: flex;
+    align-items: center;
+    min-height: calc(100svh - 88px);
+    background-color: #d8d9da;
+}
+
+.about-products-inner {
+    width: 100%;
+}
+
+.about-card {
+    box-shadow: 0 24px 50px -32px rgb(0 0 0 / 30%);
+}
+
+/* Ink bottles */
+.ink-bottle {
+    position: relative;
+    display: flex;
+    width: clamp(42px, 6vw, 62px);
+    height: clamp(120px, 15vw, 165px);
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgb(255 255 255 / 35%);
+    border-radius: 10px 10px 14px 14px;
+    box-shadow: inset 6px 0 10px rgb(255 255 255 / 10%), 0 18px 24px rgb(0 0 0 / 12%);
+    transition: transform 250ms ease;
+}
+
+.ink-bottle:hover {
+    transform: translateY(-6px);
+}
+
+.ink-black {
+    background: linear-gradient(100deg, #111, #393939 50%, #101010);
+}
+
+.ink-cyan {
+    background: linear-gradient(100deg, #007b9d, #14b6d5 50%, #006a88);
+}
+
+.ink-magenta {
+    background: linear-gradient(100deg, #a5004b, #e82c79 50%, #97003e);
+}
+
+.ink-yellow {
+    background: linear-gradient(100deg, #c78b00, #f4c52d 50%, #b57b00);
+}
+
+.ink-cap {
+    position: absolute;
+    top: -13px;
+    width: 46%;
+    height: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px 5px 3px 3px;
+    background: linear-gradient(90deg, #ddd, #fff, #ccc);
+}
+
+.ink-label {
+    width: 90%;
+    padding: 8px 1px;
+    background: rgb(255 255 255 / 94%);
+    color: #171717;
+    font-size: 6px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 0.04em;
+}
+
+.ink-label small {
+    display: block;
+    margin-top: 4px;
+    font-size: 5px;
+}
+
+/* Toner illustration */
+.toner-body {
+    position: relative;
+    width: min(90%, 300px);
+    height: 90px;
+    transform: rotate(-7deg);
+    border: 2px solid #262626;
+    border-radius: 15px 8px 10px 15px;
+    background: linear-gradient(180deg, #555, #171717 40%, #303030);
+    box-shadow: 0 24px 30px rgb(0 0 0 / 18%);
+}
+
+.toner-panel {
+    position: absolute;
+    left: 15%;
+    top: 18px;
+    display: flex;
+    width: 55%;
+    height: 48px;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 12px;
+    background: #e7e7e7;
+    color: #171717;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.toner-panel small {
+    margin-top: 5px;
+    font-size: 7px;
+    letter-spacing: 0.1em;
+}
+
+.toner-end {
+    position: absolute;
+    right: -12px;
+    top: 10px;
+    width: 22px;
+    height: 66px;
+    border-radius: 5px;
+    background: #101010;
+}
+
+.toner-gear {
+    position: absolute;
+    left: -10px;
+    bottom: -8px;
+    width: 26px;
+    height: 26px;
+    border: 6px dotted #222;
+    border-radius: 50%;
+    background: #888;
+}
+
+/* Ribbon cartridge */
+.ribbon-shell {
+    position: relative;
+    width: min(90%, 300px);
+    height: 120px;
+    transform: rotate(-5deg);
+    border: 9px solid #252525;
+    border-radius: 13px;
+    background: linear-gradient(135deg, #555, #151515);
+    box-shadow: 0 22px 30px rgb(0 0 0 / 16%);
+}
+
+.ribbon-window {
+    position: absolute;
+    inset: 10px;
+    overflow: hidden;
+    border: 3px solid #777;
+    border-radius: 5px;
+    background: #090909;
+}
+
+.ribbon-roll {
+    position: absolute;
+    left: 10%;
+    top: 18%;
+    width: 40px;
+    height: 40px;
+    border: 7px solid #333;
+    border-radius: 50%;
+    background: repeating-radial-gradient(circle, #151515 0 2px, #444 3px 4px);
+}
+
+.ribbon-roll-two {
+    left: auto;
+    right: 10%;
+}
+
+.ribbon-brand {
+    position: absolute;
+    right: 12px;
+    bottom: -27px;
+    color: #555;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+}
+
+/* Paper label */
+.label-roll {
+    position: relative;
+    display: flex;
+    width: 90px;
+    height: 130px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px 14px 14px 8px;
+    background: linear-gradient(90deg, #d2d2d2, #fff 22%, #f4f4f4 75%, #ccc);
+    box-shadow: 0 22px 28px rgb(0 0 0 / 10%);
+}
+
+.label-roll-back {
+    width: 76px;
+    height: 112px;
+    margin-right: -25px;
+    transform: rotate(-8deg);
+}
+
+.label-core {
+    width: 36px;
+    height: 36px;
+    border: 7px solid #c5b9a8;
+    border-radius: 50%;
+    background: #f6f6f6;
+    box-shadow: inset 0 0 0 2px #ddd;
+}
+
+.label-paper {
+    position: absolute;
+    right: -17px;
+    top: 26px;
+    display: grid;
+    width: 60px;
+    gap: 3px;
+    padding: 7px;
+    border: 1px solid #ddd;
+    background: white;
+    box-shadow: 0 5px 10px rgb(0 0 0 / 8%);
+}
+
+.label-paper span {
+    height: 11px;
+    border: 1px solid #eee;
+    background: repeating-linear-gradient(90deg, #222 0 1px, white 1px 4px);
+}
+
+/* Short crossfade when switching category */
+.content-enter-active,
+.content-leave-active,
+.visual-enter-active,
+.visual-leave-active {
+    transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.content-enter-from,
+.visual-enter-from {
+    opacity: 0;
+    transform: translateY(5px);
+}
+
+.content-leave-to,
+.visual-leave-to {
+    opacity: 0;
+    transform: translateY(-5px);
+}
+
+.reveal-section {
+    opacity: 0;
+    transform: translate3d(0, 70px, 0);
+    transition:
+        opacity 1.2s ease,
+        transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-section.is-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .content-enter-active,
+    .content-leave-active,
+    .visual-enter-active,
+    .visual-leave-active,
+    .ink-bottle {
+        transition: none;
+    }
+
+    .reveal-section {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
