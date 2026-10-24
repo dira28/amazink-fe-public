@@ -1,4 +1,5 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import TurnstileWidget from '@/components/base/TurnstileWidget.vue'
@@ -40,6 +41,12 @@ async function submit() {
         loading.value = false
     }
 }
+
+useSeo(() => ({
+    title: 'Masuk',
+    path: '/masuk',
+    noindex: true,
+}))
 </script>
 
 <template>

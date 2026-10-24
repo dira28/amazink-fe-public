@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { usePageLoading } from '@/composables/usePageLoading'
 import { useAuth } from '@/stores/auth'
+import { applySeo } from '@/composables/useSeo'
+import { seoByName } from './seo'
 
 
 const router = createRouter({
@@ -118,6 +120,11 @@ const router = createRouter({
             component: () => import('@/views/auth/pages/ForgotPasswordView.vue'),
             meta: { guestOnly: true },
         },
+        {
+            path: '/:pathMatch(.*)*',
+            name: 'not-found',
+            component: () => import('@/views/errors/pages/NotFoundView.vue'),
+        },
     ],
 })
 
@@ -145,6 +152,12 @@ router.beforeEach(async (to, from) => {
         start()
         await wait(450)
     }
+})
+router.afterEach((to) => {
+    const seo = seoByName[to.name]
+    if (!seo) return // product-detail and news-detail set their own meta
+
+    applySeo({ ...seo, path: to.path })
 })
 
 router.afterEach(stop)

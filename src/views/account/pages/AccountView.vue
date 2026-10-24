@@ -1,8 +1,14 @@
 <script setup>
+<<<<<<< HEAD
+import { useSeo } from '@/composables/useSeo'
+import { computed, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+=======
 import { computed, onMounted, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import PhoneInput from '@/components/base/PhoneInput.vue'
 import { ORDER_STATUS, useOrders } from '@/composables/useOrders'
+>>>>>>> 708a7c30980823f6101598c67978cc1c8fed5f2f
 import { useAuth } from '@/stores/auth'
 import { validatePhoneValue } from '@/utils/phone'
 
@@ -74,6 +80,12 @@ function signOut() {
     logout()
     router.replace({ name: 'login' })
 }
+
+useSeo(() => ({
+    title: 'Akun Saya',
+    path: '/akun',
+    noindex: true,
+}))
 </script>
 
 <template>

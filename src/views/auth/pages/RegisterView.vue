@@ -1,4 +1,5 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { computed, reactive, ref } from 'vue'
 import PasswordInput from '@/components/base/PasswordInput.vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
@@ -58,6 +59,12 @@ async function verify() {
         loading.value = false
     }
 }
+
+useSeo(() => ({
+    title: 'Daftar',
+    path: '/daftar',
+    noindex: true,
+}))
 </script>
 
 <template>

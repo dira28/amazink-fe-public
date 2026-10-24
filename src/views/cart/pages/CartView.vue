@@ -1,4 +1,5 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { RouterLink, useRouter } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
@@ -106,6 +107,12 @@ function onKeydown(event) {
 onMounted(() => window.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 
+
+useSeo(() => ({
+    title: 'Keranjang',
+    path: '/keranjang',
+    noindex: true,
+}))
 </script>
 
 <template>

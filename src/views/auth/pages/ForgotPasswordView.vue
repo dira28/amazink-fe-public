@@ -1,4 +1,5 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import PasswordInput from '@/components/base/PasswordInput.vue'
@@ -101,6 +102,12 @@ async function submitReset() {
 }
 
 onBeforeUnmount(() => clearInterval(timer))
+
+useSeo(() => ({
+    title: 'Lupa Kata Sandi',
+    path: '/lupa-password',
+    noindex: true,
+}))
 </script>
 
 <template>

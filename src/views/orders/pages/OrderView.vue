@@ -1,5 +1,10 @@
 <script setup>
+<<<<<<< HEAD
+import { useSeo } from '@/composables/useSeo'
+import { computed, onBeforeUnmount, ref } from 'vue'
+=======
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+>>>>>>> 708a7c30980823f6101598c67978cc1c8fed5f2f
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ORDER_STATUS, useOrders } from '@/composables/useOrders'
 import { fetchProofUrl } from '@/services/orderService'
@@ -196,6 +201,12 @@ onBeforeUnmount(() => {
     clearSelection()
     clearTimeout(copyTimer)
 })
+
+useSeo(() => ({
+    title: 'Detail Pesanan',
+    path: '/pesanan',
+    noindex: true,
+}))
 </script>
 
 <template>

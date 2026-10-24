@@ -1,4 +1,5 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { computed, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useCart } from '@/composables/useCart'
@@ -84,6 +85,12 @@ async function submit() {
         submitting.value = false
     }
 }
+
+useSeo(() => ({
+    title: 'Checkout',
+    path: '/checkout',
+    noindex: true,
+}))
 </script>
 
 <template>
