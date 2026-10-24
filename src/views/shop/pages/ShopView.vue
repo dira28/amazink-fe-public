@@ -12,6 +12,14 @@ import { usePageSection } from '@/composables/usePage'
 import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
 
+import { useSeo } from '@/composables/useSeo'
+
+useSeo(() => ({
+    title: 'Katalog Tinta, Toner, dan Cartridge',
+    description: 'Pilih tinta botol, cartridge, toner laser, dan aksesori cetak AMAZiNK dengan harga jelas.',
+    path: '/catalog-produk',
+}))
+
 const list = usePageSection('catalog', 'list', {
     eyebrow: 'Katalog AMAZiNK',
     title: 'Temukan kebutuhan cetakmu',

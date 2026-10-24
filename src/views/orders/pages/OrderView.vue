@@ -1,4 +1,5 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ORDER_STATUS, useOrders } from '@/composables/useOrders'
@@ -169,6 +170,12 @@ onBeforeUnmount(() => {
     clearSelection()
     clearTimeout(copyTimer)
 })
+
+useSeo(() => ({
+    title: 'Detail Pesanan',
+    path: '/pesanan',
+    noindex: true,
+}))
 </script>
 
 <template>

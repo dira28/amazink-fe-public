@@ -1,4 +1,5 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { computed, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useCart } from '@/composables/useCart'
@@ -65,6 +66,12 @@ async function submit() {
     removeSelected()
     router.push({ name: 'order', params: { id: order.id } })
 }
+
+useSeo(() => ({
+    title: 'Checkout',
+    path: '/checkout',
+    noindex: true,
+}))
 </script>
 
 <template>

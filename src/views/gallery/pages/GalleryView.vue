@@ -6,6 +6,13 @@ import { USE_MOCK } from '@/services/http'
 import { fetchGallery } from '@/services/galleryService'
 import { galleryItems } from '../data/gallery'
 import { waLink } from '@/utils/whatsapp'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo(() => ({
+    title: 'Galeri Hasil Cetak',
+    description: 'Portofolio hasil cetak dokumen, banner, label, poster, dan kemasan.',
+    path: '/galeri',
+}))
 
 const AUTOPLAY_MS = 4000
 const MAX_ITEMS = 15

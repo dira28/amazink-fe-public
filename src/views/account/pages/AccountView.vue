@@ -1,4 +1,5 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
@@ -35,6 +36,12 @@ function signOut() {
     logout()
     router.replace({ name: 'login' })
 }
+
+useSeo(() => ({
+    title: 'Akun Saya',
+    path: '/akun',
+    noindex: true,
+}))
 </script>
 
 <template>

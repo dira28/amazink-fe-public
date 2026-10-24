@@ -10,6 +10,13 @@ import { fetchNews } from '@/services/newsService'
 import NewsImage from '../components/NewsImage.vue'
 import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo(() => ({
+    title: 'Berita dan Tips Cetak',
+    description: 'Berita, tips, dan panduan seputar tinta, toner, dan printer.',
+    path: '/news',
+}))
 
 const { products, refreshProducts } = useProducts()
 usePolling(refreshProducts, 30000)

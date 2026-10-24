@@ -1,4 +1,5 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { computed, ref, watch } from 'vue'
 import { waLink } from '@/utils/whatsapp'
 import FaqItem from '../components/FaqItem.vue'
@@ -40,6 +41,12 @@ const reset = () => {
 watch([query, category], () => {
     openId.value = null
 })
+
+useSeo(() => ({
+    title: 'Pertanyaan yang Sering Diajukan (FAQ)',
+    description: 'Jawaban atas pertanyaan umum seputar pemesanan, pengiriman, dan produk AMAZiNK.',
+    path: '/faq',
+}))
 </script>
 
 <template>

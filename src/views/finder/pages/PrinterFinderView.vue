@@ -4,6 +4,13 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { shopProducts as products } from '@/data/products'
 import { brands, groups } from '../data/printers'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo(() => ({
+    title: 'Cari Tinta yang Cocok untuk Printermu',
+    description: 'Pilih merek dan seri printer, lihat tinta AMAZiNK yang cocok.',
+    path: '/cari-tinta',
+}))
 
 const PHONE = '6282226667233'
 const DETAIL_BASE = '/produk/'
@@ -306,7 +313,7 @@ onMounted(applyQuery)
                                 </span>
                                 <span class="mt-0.5 block truncate text-xs text-[#737373]">
                                     {{ product.category }}<template v-if="product.volume"> · {{ product.volume
-                                    }}</template>
+                                        }}</template>
                                     · <RouterLink :to="`${DETAIL_BASE}${product.slug}`"
                                         class="text-brand-red no-underline hover:underline">Detail</RouterLink>
                                 </span>
@@ -314,7 +321,7 @@ onMounted(applyQuery)
 
                             <span class="flex shrink-0 flex-col items-end gap-2">
                                 <span class="text-[15px] font-bold tracking-tight">{{ formatPrice(product.price)
-                                }}</span>
+                                    }}</span>
                                 <button type="button" :disabled="product.stock === 0"
                                     class="h-9 cursor-pointer rounded-full border-0 px-4 transition-colors disabled:cursor-not-allowed"
                                     :class="product.stock === 0
