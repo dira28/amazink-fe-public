@@ -1,5 +1,6 @@
 <script setup>
 import { usePageSection } from '@/composables/usePage'
+import { waLink } from '@/utils/whatsapp'
 
 const year = new Date().getFullYear()
 
@@ -29,11 +30,13 @@ const telHref = (phone) => {
 
 const menus = [
     { label: 'Beranda', to: '/' },
-    { label: 'Cari Printer', to: '/#pilih' },
-    { label: 'Reseller', to: '/#reseller' },
-    { label: 'FAQ', to: '/#faq' },
-    { label: 'Kontak', to: '/#kontak' },
+    { label: 'Cari Printer', to: '/cari-tinta' },
+    { label: 'Reseller', to: '/reseller' },
+    { label: 'News', to: '/news' },
+    { label: 'FAQ', to: '/faq' },
+    { label: 'Kontak', href: waLink('Halo AMAZiNK, saya ingin bertanya.') },
 ]
+
 </script>
 
 <template>
@@ -64,7 +67,11 @@ const menus = [
 
                 <ul class="mt-4 space-y-3 text-sm text-muted">
                     <li v-for="item in menus" :key="item.label">
-                        <RouterLink :to="item.to" class="transition-colors duration-200 hover:text-brand-red">
+                        <a v-if="item.href" :href="item.href" target="_blank" rel="noopener noreferrer"
+                            class="transition-colors duration-200 hover:text-brand-red">
+                            {{ item.label }}
+                        </a>
+                        <RouterLink v-else :to="item.to" class="transition-colors duration-200 hover:text-brand-red">
                             {{ item.label }}
                         </RouterLink>
                     </li>
