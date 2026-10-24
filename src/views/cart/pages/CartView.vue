@@ -1,4 +1,5 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { RouterLink, useRouter } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
@@ -106,6 +107,12 @@ function onKeydown(event) {
 onMounted(() => window.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
 
+
+useSeo(() => ({
+    title: 'Keranjang',
+    path: '/keranjang',
+    noindex: true,
+}))
 </script>
 
 <template>
@@ -136,7 +143,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
                     </svg>
                 </span>
 
-                <h2 class="mt-5 text-lg font-semibold">Keranjangmu masih kosong</h2>
+                <h2 class="mt-5 text-lg font-semibold">Keranjang Anda masih kosong</h2>
                 <p class="mt-1 max-w-sm text-sm text-gray-500">
                     Pilih tinta, toner, atau aksesori di katalog, lalu tambahkan ke keranjang.
                 </p>
@@ -268,7 +275,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown))
                     <button type="button" :disabled="!selectedItems.length"
                         class="mt-5 flex w-full items-center justify-center rounded-full bg-brand-red px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:hover:opacity-100"
                         @click="checkout">
-                        {{ selectedItems.length ? `Checkout (${selectedItems.length})` : 'Pilih barang dulu' }}
+                        {{ selectedItems.length ? `Checkout (${selectedItems.length})` : 'Pilih barang terlebih dahulu' }}
                     </button>
 
                     <RouterLink to="/catalog-produk#daftar-produk"

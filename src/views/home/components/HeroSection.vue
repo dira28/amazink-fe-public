@@ -8,7 +8,7 @@ const hero = usePageSection('home', 'hero', {
     badge: 'Print Amazing.',
     title: 'Tinta dan toner yang\n[[pas untuk printer Anda.]]',
     description:
-        'Temukan tinta, toner, dan printer yang sesuai kebutuhanmu. Solusi cetak berkualitas untuk rumah maupun bisnis.',
+        'Temukan tinta, toner, dan printer yang sesuai kebutuhan Anda. Solusi cetak berkualitas untuk rumah maupun bisnis.',
     primary_button_label: 'Jelajahi Produk',
     primary_button_link: '/catalog-produk',
     secondary_button_label: 'Tentang Kami',

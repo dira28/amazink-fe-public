@@ -1,6 +1,13 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import ResellerDirectory from '../components/ResellerDirectory.vue'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo(() => ({
+    title: 'Daftar Reseller Resmi',
+    description: 'Temukan reseller resmi AMAZiNK di kotamu.',
+    path: '/reseller/daftar',
+}))
 </script>
 
 <template>

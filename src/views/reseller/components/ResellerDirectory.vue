@@ -106,7 +106,7 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                     Daftar Reseller AMAZiNK
                 </h1>
                 <p class="mt-3 max-w-md text-sm leading-[1.8] text-[#737373]">
-                    Temukan reseller resmi terdekat di kotamu.
+                    Temukan reseller resmi terdekat di kota Anda.
                 </p>
             </header>
 
@@ -232,7 +232,7 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                 <p class="m-0 text-sm font-semibold">
                     {{ loading ? 'Memuat daftar reseller...' : failed ? 'Daftar reseller gagal dimuat' : allCities.length ? 'Reseller tidak ditemukan' : 'Belum ada reseller' }}
                 </p>
-                <p class="mt-1 text-[13px] text-[#737373]">Coba kata kunci, wilayah, atau kota lainnya.</p>
+                <p class="mt-1 text-[13px] text-[#737373]">Gunakan kata kunci, wilayah, atau kota lainnya.</p>
                 <button type="button"
                     class="mt-5 min-h-10.5 cursor-pointer rounded-full border-0 bg-[#171717] px-5 text-xs font-semibold text-white transition-colors hover:bg-brand-red"
                     @click="resetFilters">

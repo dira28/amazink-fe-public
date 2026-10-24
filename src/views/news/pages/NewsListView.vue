@@ -10,6 +10,13 @@ import { fetchNews } from '@/services/newsService'
 import NewsImage from '../components/NewsImage.vue'
 import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo(() => ({
+    title: 'Berita dan Tips Cetak',
+    description: 'Berita, tips, dan panduan seputar tinta, toner, dan printer.',
+    path: '/news',
+}))
 
 const { products, refreshProducts } = useProducts()
 usePolling(refreshProducts, 30000)
@@ -142,7 +149,7 @@ watch(query, () => {
                         {{ loading ? 'Memuat artikel...' : failed ? 'Artikel gagal dimuat' : newsPosts.length ? 'Artikel tidak ditemukan' : 'Belum ada artikel' }}
                     </p>
                     <p v-if="failed" class="mt-1 text-[13px] text-[#737373]">Periksa koneksi lalu muat ulang halaman.</p>
-                    <p v-else-if="newsPosts.length" class="mt-1 text-[13px] text-[#737373]">Coba kata kunci yang lain.</p>
+                    <p v-else-if="newsPosts.length" class="mt-1 text-[13px] text-[#737373]">Gunakan kata kunci yang lain.</p>
                     <button v-if="query" type="button"
                         class="mt-5 min-h-10.5 cursor-pointer rounded-full border-0 bg-[#171717] px-5 text-xs font-semibold text-white transition-colors hover:bg-brand-red"
                         @click="query = ''">

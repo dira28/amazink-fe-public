@@ -9,6 +9,7 @@ import { fromApi, newsPosts as mockPosts } from '../data/news'
 import { getContent } from '../data/newsContent'
 import { USE_MOCK } from '@/services/http'
 import { fetchNews, fetchNewsPost } from '@/services/newsService'
+import { absoluteUrl, useJsonLd, useSeo } from '@/composables/useSeo'
 
 const route = useRoute()
 
@@ -42,6 +43,45 @@ watch(
 )
 
 const blocks = computed(() => (post.value && USE_MOCK ? getContent(post.value) : []))
+
+const seoDescription = computed(() => {
+    const current = post.value
+    if (!current) return undefined
+    if (current.excerpt) return current.excerpt
+
+    const text = String(current.content ?? '')
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+    return text ? text.slice(0, 155) : undefined
+})
+
+useSeo(() => ({
+    title: post.value?.title ?? (loading.value ? 'Memuat artikel...' : 'Artikel tidak ditemukan'),
+    description: seoDescription.value,
+    image: post.value?.image,
+    path: route.path,
+    type: 'article',
+    noindex: !loading.value && !post.value,
+}))
+
+useJsonLd('article', () =>
+    post.value && {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: post.value.title,
+        description: seoDescription.value,
+        image: post.value.image ? [absoluteUrl(post.value.image)] : undefined,
+        datePublished: post.value.date,
+        author: { '@type': 'Organization', name: post.value.author || 'AMAZiNK' },
+        publisher: {
+            '@type': 'Organization',
+            name: 'AMAZiNK',
+            logo: { '@type': 'ImageObject', url: absoluteUrl('/logo.png') },
+        },
+    }
+)
 
 const formatDate = (iso) =>
     new Intl.DateTimeFormat('id-ID', { dateStyle: 'long' }).format(new Date(iso))

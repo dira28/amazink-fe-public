@@ -1,5 +1,11 @@
 import { computed, reactive } from 'vue'
-import { loginRequest, registerRequest, verifyEmailRequest } from '@/services/authService'
+import {
+    loginRequest,
+    registerRequest,
+    requestPasswordResetRequest,
+    resetPasswordRequest,
+    verifyEmailRequest,
+} from '@/services/authService'
 
 const SESSION_KEY = 'amazink_session'
 const PHONES_KEY = 'amazink_phones'
@@ -52,6 +58,8 @@ export function useAuth() {
         // Mendaftar tidak langsung masuk: pengguna harus memverifikasi OTP lalu login.
         register: registerRequest,
         verifyEmail: verifyEmailRequest,
+        requestPasswordReset: requestPasswordResetRequest,
+        resetPassword: resetPasswordRequest,
         updatePhone(phone) {
             state.phones = { ...state.phones, [state.session.user.id]: phone }
 

@@ -38,7 +38,7 @@ const mockTestimonials = [
         name: 'Maya Kusuma',
         role: 'Reseller',
         rating: 5,
-        quote: 'Jadi reseller AMAZiNK tidak ribet. Stok jelas dan tim selalu siap membantu kalau ada pertanyaan.',
+        quote: 'Menjadi reseller AMAZiNK tidak merepotkan. Stok jelas dan tim selalu siap membantu apabila ada pertanyaan.',
     },
     {
         id: 6,

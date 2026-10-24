@@ -86,6 +86,7 @@ export function useCart() {
         const room = (product.stock ?? DEFAULT_MAX_QTY) - qtyOfProduct(product.slug, key)
 
         if (existing) {
+            existing.id = product.id ?? existing.id
             existing.stock = product.stock
             existing.qty = Math.min(existing.qty + qty, room)
             existing.selected = true
@@ -96,6 +97,7 @@ export function useCart() {
 
         items.value.push({
             key,
+            id: product.id,
             slug: product.slug,
             name: product.name,
             category: product.category,

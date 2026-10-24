@@ -1,4 +1,5 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import TurnstileWidget from '@/components/base/TurnstileWidget.vue'
@@ -40,6 +41,12 @@ async function submit() {
         loading.value = false
     }
 }
+
+useSeo(() => ({
+    title: 'Masuk',
+    path: '/masuk',
+    noindex: true,
+}))
 </script>
 
 <template>
@@ -49,8 +56,8 @@ async function submit() {
             <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">AMAZiNK</p>
             <h1 class="mt-2 text-3xl font-semibold tracking-[-0.04em]">Masuk</h1>
             <p class="mt-2 text-sm leading-6 text-[#737373]">
-                <template v-if="route.query.redirect">Masuk dulu untuk melanjutkan pesanan.</template>
-                <template v-else>Masuk ke akunmu untuk memesan dan melihat riwayat pesanan.</template>
+                <template v-if="route.query.redirect">Silakan masuk terlebih dahulu untuk melanjutkan pesanan.</template>
+                <template v-else>Masuk ke akun Anda untuk memesan dan melihat riwayat pesanan.</template>
             </p>
 
             <p v-if="verified" role="status" class="mb-0 mt-5 rounded-xl bg-green-50 px-4 py-3 text-[13px]"

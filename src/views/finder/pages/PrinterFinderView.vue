@@ -1,9 +1,15 @@
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { shopProducts as products } from '@/data/products'
-import { brands, groups } from '../data/printers'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo(() => ({
+    title: 'Cari Tinta yang Cocok untuk Printermu',
+    description: 'Pilih merek dan seri printer, lihat tinta AMAZiNK yang cocok.',
+    path: '/cari-tinta',
+}))
 
 const PHONE = '6282226667233'
 const DETAIL_BASE = '/produk/'
@@ -12,9 +18,9 @@ const LIMIT = 12
 const route = useRoute()
 const router = useRouter()
 const { add } = useCart()
+const { printers, brands, loading, failed } = usePrinters()
 
 const norm = (text) => String(text ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
-const brandName = (id) => brands.find((b) => b.id === id)?.name ?? ''
 const formatPrice = (price) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price)
 
@@ -26,10 +32,6 @@ const swatchStyle = (color) => ({
             : hex[color] ?? '#d4d4d4',
 })
 
-const allModels = groups.flatMap((group) =>
-    group.models.map((model) => ({ model, group, brand: group.brand }))
-)
-
 const search = ref('')
 const brand = ref('all')
 const selected = ref(null)
@@ -39,30 +41,24 @@ const added = ref({})
 
 const filtered = computed(() => {
     const q = norm(search.value)
-    return allModels.filter(
+    return printers.value.filter(
         (item) =>
-            (brand.value === 'all' || item.brand === brand.value) &&
-            (!q || norm(brandName(item.brand) + item.model).includes(q))
+            (brand.value === 'all' || item.brandId === brand.value) &&
+            (!q || norm(item.brandName + item.model).includes(q))
     )
 })
 
 const visible = computed(() => (showAll.value ? filtered.value : filtered.value.slice(0, LIMIT)))
 
-const isSelected = (item) => selected.value?.model === item.model && selected.value?.group.id === item.group.id
+const isSelected = (item) => selected.value?.id === item.id
 
 const printer = computed(() =>
-    selected.value ? { brand: brandName(selected.value.brand), series: selected.value.model } : null
+    selected.value ? { brand: selected.value.brandName, series: selected.value.model } : null
 )
 
-const matches = computed(() =>
-    selected.value
-        ? selected.value.group.products.map((slug) => products.find((p) => p.slug === slug)).filter(Boolean)
-        : []
-)
+const matches = computed(() => selected.value?.products ?? [])
 
-const setProduct = computed(() =>
-    selected.value?.group.set ? products.find((p) => p.slug === selected.value.group.set) : null
-)
+const setProduct = computed(() => selected.value?.set ?? null)
 
 const allTotal = computed(() => matches.value.reduce((sum, p) => sum + p.price, 0))
 const saving = computed(() => (setProduct.value ? allTotal.value - setProduct.value.price : 0))
@@ -71,7 +67,7 @@ const inStock = computed(() => matches.value.filter((p) => p.stock > 0))
 const whatsapp = computed(() => {
     const text = printer.value
         ? `Halo AMAZiNK, saya pakai printer ${printer.value.brand} ${printer.value.series}. Mohon konfirmasi produk yang cocok.`
-        : `Halo AMAZiNK, saya mencari tinta untuk printer ${search.value || 'saya'}. Bisa dibantu?`
+        : `Halo AMAZiNK, saya mencari tinta untuk printer ${search.value || 'saya'}. Mohon bantuannya.`
     return `https://wa.me/${PHONE}?text=${encodeURIComponent(text)}`
 })
 
@@ -99,7 +95,7 @@ function addSet() {
 
 async function select(item, { scroll = true } = {}) {
     selected.value = item
-    router.replace({ query: { brand: item.brand, seri: item.model } })
+    router.replace({ query: { brand: item.brandId, seri: item.model } })
 
     if (scroll) {
         await nextTick()
@@ -109,12 +105,12 @@ async function select(item, { scroll = true } = {}) {
 
 function applyQuery() {
     const { q, seri, brand: queryBrand } = route.query
-    if (brands.some((b) => b.id === queryBrand)) brand.value = queryBrand
+    if (brands.value.some((b) => b.id === queryBrand)) brand.value = queryBrand
 
     const target = seri || q
     if (!target) return
 
-    const found = allModels.find((item) => norm(item.model) === norm(target))
+    const found = printers.value.find((item) => norm(item.model) === norm(target))
     if (found) select(found, { scroll: !!seri || !!q })
     else search.value = String(q ?? '')
 }
@@ -127,7 +123,14 @@ watch(() => route.query.q, (value) => {
     if (value) applyQuery()
 })
 
-onMounted(applyQuery)
+// Daftar printer datang dari server; pilihan dari alamat (?seri=...) dipasang begitu datanya ada.
+watch(
+    () => printers.value.length,
+    (count) => {
+        if (count) applyQuery()
+    },
+    { immediate: true }
+)
 </script>
 
 <template>
@@ -143,10 +146,10 @@ onMounted(applyQuery)
                 <p class="m-0 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-red">Pemilih Printer</p>
                 <h1
                     class="mx-auto mt-3 max-w-2xl text-[clamp(30px,5vw,52px)] font-semibold leading-[1.08] tracking-[-0.05em]">
-                    Tinta apa yang cocok untuk printermu?
+                    Tinta apa yang cocok untuk printer Anda?
                 </h1>
                 <p class="mx-auto mt-3 max-w-md text-[13px] leading-7 text-[#737373] sm:text-sm">
-                    Tidak perlu hafal kode tinta. Ketik seri printer, kami tunjukkan produk yang pas.
+                    Tidak perlu menghafal kode tinta. Ketik seri printer, kami tunjukkan produk yang sesuai.
                 </p>
 
                 <div class="relative mx-auto mt-7 max-w-xl">
@@ -182,7 +185,7 @@ onMounted(applyQuery)
             </div>
 
             <div v-if="filtered.length" class="mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
-                <button v-for="item in visible" :key="item.group.id + item.model" type="button"
+                <button v-for="item in visible" :key="item.id" type="button"
                     class="cursor-pointer rounded-2xl border-0 px-4 py-3.5 text-left transition duration-200 hover:-translate-y-0.5 motion-reduce:transition-none motion-reduce:hover:transform-none"
                     :class="isSelected(item)
                         ? 'bg-[#171717] shadow-lg'
@@ -190,16 +193,27 @@ onMounted(applyQuery)
                     :style="{ color: isSelected(item) ? '#fff' : '#171717' }" @click="select(item)">
                     <span class="block text-[15px] font-semibold tracking-[-0.01em]">{{ item.model }}</span>
                     <span class="mt-0.5 block text-[11px]" style="opacity: 0.6">
-                        {{ brandName(item.brand) }} · {{ item.group.kind }}
+                        {{ item.brandName }} · {{ item.kind }}
                     </span>
                 </button>
             </div>
 
             <div v-else class="mt-3 rounded-3xl bg-white p-8 text-center ring-1 ring-black/5">
-                <p class="m-0 text-base font-semibold">Seri “{{ search }}” belum ada di daftar kami</p>
-                <p class="mx-auto mb-0 mt-2 max-w-sm text-[13px] leading-6 text-[#737373]">
-                    Tidak masalah, tim AMAZiNK bisa bantu cek tinta yang cocok untuk printermu.
-                </p>
+                <template v-if="loading">
+                    <p class="m-0 text-base font-semibold">Memuat daftar printer...</p>
+                </template>
+                <template v-else-if="failed">
+                    <p class="m-0 text-base font-semibold">Daftar printer gagal dimuat</p>
+                    <p class="mx-auto mb-0 mt-2 max-w-sm text-[13px] leading-6 text-[#737373]">
+                        Periksa koneksi lalu muat ulang halaman, atau hubungi tim AMAZiNK melalui WhatsApp.
+                    </p>
+                </template>
+                <template v-else>
+                    <p class="m-0 text-base font-semibold">Seri “{{ search }}” belum ada di daftar kami</p>
+                    <p class="mx-auto mb-0 mt-2 max-w-sm text-[13px] leading-6 text-[#737373]">
+                        Tim AMAZiNK dapat membantu memeriksa tinta yang cocok untuk printer Anda.
+                    </p>
+                </template>
             </div>
 
             <div v-if="filtered.length > LIMIT" class="mt-4 text-center">
@@ -236,7 +250,7 @@ onMounted(applyQuery)
                                     {{ printer.brand }} {{ printer.series }}
                                 </h2>
                                 <p class="m-0 mt-0.5 text-xs" style="color: #a3a3a3">
-                                    {{ selected.group.label }} · {{ selected.group.kind }}
+                                    {{ selected.label }} · {{ selected.kind }}
                                 </p>
                             </div>
                         </div>
@@ -278,7 +292,7 @@ onMounted(applyQuery)
 
                         <template v-else>
                             <p class="mb-0 mt-6 text-[13px] leading-6" style="color: #a3a3a3">
-                                Produk untuk seri ini belum tersedia di katalog online. Tim kami bisa bantu carikan.
+                                Produk untuk seri ini belum tersedia di katalog online. Tim kami dapat membantu mencarikannya.
                             </p>
                         </template>
                     </div>
@@ -306,7 +320,7 @@ onMounted(applyQuery)
                                 </span>
                                 <span class="mt-0.5 block truncate text-xs text-[#737373]">
                                     {{ product.category }}<template v-if="product.volume"> · {{ product.volume
-                                    }}</template>
+                                        }}</template>
                                     · <RouterLink :to="`${DETAIL_BASE}${product.slug}`"
                                         class="text-brand-red no-underline hover:underline">Detail</RouterLink>
                                 </span>
@@ -314,7 +328,7 @@ onMounted(applyQuery)
 
                             <span class="flex shrink-0 flex-col items-end gap-2">
                                 <span class="text-[15px] font-bold tracking-tight">{{ formatPrice(product.price)
-                                }}</span>
+                                    }}</span>
                                 <button type="button" :disabled="product.stock === 0"
                                     class="h-9 cursor-pointer rounded-full border-0 px-4 transition-colors disabled:cursor-not-allowed"
                                     :class="product.stock === 0
@@ -336,7 +350,7 @@ onMounted(applyQuery)
                     <div v-else class="rounded-2xl border border-dashed border-black/15 bg-white/60 p-8 text-center">
                         <p class="m-0 text-sm font-semibold">Belum ada produk online untuk seri ini</p>
                         <p class="mx-auto mb-0 mt-2 max-w-xs text-[13px] leading-6 text-[#737373]">
-                            Kabari kami lewat WhatsApp, tim AMAZiNK akan bantu cek ketersediaannya.
+                            Hubungi kami melalui WhatsApp, tim AMAZiNK akan membantu memeriksa ketersediaannya.
                         </p>
                     </div>
                 </div>

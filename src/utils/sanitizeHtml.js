@@ -12,7 +12,11 @@ export function sanitizeHtml(html) {
 
     const clean = (node) => {
         for (const child of [...node.childNodes]) {
-            if (child.nodeType === Node.TEXT_NODE) continue
+            if (child.nodeType === Node.TEXT_NODE) {
+                // Editor sering menyimpan spasi biasa sebagai spasi tak terputus, sehingga kalimat tidak bisa turun baris.
+                child.textContent = child.textContent.replace(/ /g, ' ')
+                continue
+            }
 
             if (child.nodeType !== Node.ELEMENT_NODE || !ALLOWED_TAGS.has(child.tagName)) {
                 // Elemen tak dikenal dibuang; teks di dalamnya tetap dipertahankan kecuali skrip/gaya.

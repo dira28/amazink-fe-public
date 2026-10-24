@@ -4,6 +4,7 @@ import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { useProducts } from '@/composables/useProducts'
 import { usePolling } from '@/composables/usePolling'
+import { absoluteUrl, useJsonLd, useSeo } from '@/composables/useSeo'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,6 +14,35 @@ const { products, loading, refreshProducts } = useProducts()
 usePolling(refreshProducts, 30000)
 
 const product = computed(() => products.value.find((item) => item.slug === route.params.slug))
+
+useSeo(() => ({
+    title: product.value?.name ?? (loading.value ? 'Memuat produk...' : 'Produk tidak ditemukan'),
+    description: product.value?.longDescription ?? product.value?.description,
+    image: product.value?.image,
+    path: route.path,
+    type: 'product',
+    noindex: !loading.value && !product.value,
+}))
+
+useJsonLd('product', () =>
+    product.value && {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: product.value.name,
+        description: product.value.longDescription ?? product.value.description,
+        sku: product.value.sku || undefined,
+        image: product.value.image ? [absoluteUrl(product.value.image)] : undefined,
+        brand: { '@type': 'Brand', name: 'AMAZiNK' },
+        offers: {
+            '@type': 'Offer',
+            priceCurrency: 'IDR',
+            price: product.value.price,
+            availability:
+                product.value.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            url: absoluteUrl(route.path),
+        },
+    }
+)
 
 const formatPrice = (price) =>
     new Intl.NumberFormat('id-ID', {
@@ -335,7 +365,7 @@ onBeforeUnmount(() => {
                                 Stok sedang kosong. Hubungi tim kami untuk informasi ketersediaan berikutnya.
                             </template>
                             <template v-else-if="!canBuy">
-                                Seluruh stok produk ini sudah ada di keranjangmu.
+                                Seluruh stok produk ini sudah ada di keranjang Anda.
                                 <RouterLink to="/keranjang"
                                     class="font-semibold text-brand-red no-underline hover:underline">
                                     Lihat keranjang

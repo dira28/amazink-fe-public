@@ -4,6 +4,13 @@ import ResellerAbout from '../components/ResellerAbout.vue'
 import ResellerOpportunity from '../components/ResellerOpportunity.vue'
 import ResellerForm from '../components/ResellerForm.vue'
 import ResellerPreview from '../components/ResellerPreview.vue'
+import { useSeo } from '@/composables/useSeo'
+
+useSeo(() => ({
+    title: 'Program Reseller AMAZiNK',
+    description: 'Gabung jadi reseller tinta dan toner AMAZiNK.',
+    path: '/reseller',
+}))
 </script>
 
 <template>

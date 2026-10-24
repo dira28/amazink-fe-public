@@ -1,9 +1,14 @@
 <script setup>
+import { useSeo } from '@/composables/useSeo'
 import { computed, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { useOrders } from '@/composables/useOrders'
+import { useProducts } from '@/composables/useProducts'
+import { useAuth } from '@/stores/auth'
+import { validatePhoneValue } from '@/utils/phone'
 import PageLoader from '@/components/layout/PageLoader.vue'
+import PhoneInput from '@/components/base/PhoneInput.vue'
 
 const router = useRouter()
 const {
@@ -14,12 +19,14 @@ const {
     printerLabel,
 } = useCart()
 const { createOrder } = useOrders()
+const { products } = useProducts()
+const { user } = useAuth()
 
-const form = reactive({ name: '', phone: '', address: '', note: '' })
+// Nama dan nomor diisi dari akun agar tidak perlu diketik ulang.
+const form = reactive({ name: user.value?.name ?? '', phone: user.value?.phone ?? '', address: '', note: '' })
 const attempted = ref(false)
 const submitting = ref(false)
-
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+const submitError = ref('')
 
 const formatPrice = (price) =>
     new Intl.NumberFormat('id-ID', {
@@ -28,15 +35,11 @@ const formatPrice = (price) =>
         maximumFractionDigits: 0,
     }).format(price)
 
-const errors = computed(() => {
-    const phoneDigits = form.phone.replace(/\D/g, '')
-
-    return {
-        name: form.name.trim().length < 2 ? 'Nama wajib diisi' : '',
-        phone: phoneDigits.length >= 9 && phoneDigits.length <= 15 ? '' : 'Nomor HP tidak valid',
-        address: form.address.trim().length < 10 ? 'Alamat belum lengkap' : '',
-    }
-})
+const errors = computed(() => ({
+    name: form.name.trim().length < 2 ? 'Nama wajib diisi' : '',
+    phone: validatePhoneValue(form.phone),
+    address: form.address.trim().length < 10 ? 'Alamat belum lengkap' : '',
+}))
 
 const hasErrors = computed(() => Object.values(errors.value).some(Boolean))
 
@@ -53,18 +56,41 @@ async function submit() {
     if (hasErrors.value || !items.value.length || submitting.value) return
 
     submitting.value = true
-    await wait(900)
+    submitError.value = ''
 
-    const order = createOrder(items.value, subtotal.value, {
-        name: form.name.trim(),
-        phone: form.phone.trim(),
-        address: form.address.trim(),
-        note: form.note.trim(),
-    })
+    // Barang di keranjang lama belum menyimpan id produk; dicocokkan lewat slug dari katalog.
+    const lines = items.value.map((item) => ({
+        ...item,
+        id: item.id ?? products.value.find((product) => product.slug === item.slug)?.id,
+    }))
 
-    removeSelected()
-    router.push({ name: 'order', params: { id: order.id } })
+    if (lines.some((line) => !line.id)) {
+        submitError.value = 'Sebagian barang di keranjang sudah tidak tersedia. Hapus barang tersebut lalu coba lagi.'
+        submitting.value = false
+        return
+    }
+
+    try {
+        const order = await createOrder(lines, subtotal.value, {
+            name: form.name.trim(),
+            phone: form.phone,
+            address: form.address.trim(),
+            note: form.note.trim(),
+        })
+
+        removeSelected()
+        router.push({ name: 'order', params: { id: order.id } })
+    } catch (e) {
+        submitError.value = e.message
+        submitting.value = false
+    }
 }
+
+useSeo(() => ({
+    title: 'Checkout',
+    path: '/checkout',
+    noindex: true,
+}))
 </script>
 
 <template>
@@ -106,14 +132,16 @@ async function submit() {
                                 </span>
                             </label>
 
-                            <label class="block text-sm font-medium text-gray-700">
-                                Nomor HP / WhatsApp
-                                <input v-model="form.phone" type="tel" inputmode="tel" autocomplete="tel"
-                                    placeholder="08xxxxxxxxxx" :class="inputClass('phone')" />
+                            <div class="block text-sm font-medium text-gray-700">
+                                <label for="checkout-phone">Nomor HP / WhatsApp</label>
+                                <PhoneInput id="checkout-phone" v-model="form.phone" :invalid="!!fieldError('phone')" />
                                 <span v-if="fieldError('phone')" class="mt-1 block text-xs text-brand-red">
                                     {{ fieldError('phone') }}
                                 </span>
-                            </label>
+                                <span v-else class="mt-1 block text-xs font-normal text-gray-400">
+                                    Format: (+62) 8xxx-xxxx-xxxx
+                                </span>
+                            </div>
                         </div>
 
                         <label class="mt-4 block text-sm font-medium text-gray-700">
@@ -183,6 +211,9 @@ async function submit() {
 
                         <p v-if="attempted && hasErrors" class="mt-3 text-center text-xs text-brand-red">
                             Lengkapi data yang ditandai merah.
+                        </p>
+                        <p v-if="submitError" role="alert" class="mt-3 text-center text-xs text-brand-red">
+                            {{ submitError }}
                         </p>
                     </aside>
                 </div>

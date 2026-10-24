@@ -16,3 +16,11 @@ export const registerRequest = ({ name, email, password }) =>
     apiPost('/auth/register', { full_name: name, email, password })
 
 export const verifyEmailRequest = ({ email, code }) => apiPost('/auth/verify-email', { email, code })
+
+// Lupa kata sandi: kode 6 digit dikirim ke email (jawabannya sama untuk email terdaftar maupun tidak),
+// lalu kode dan kata sandi baru dikirim untuk mengganti kata sandi. Permintaan kode memakai CAPTCHA.
+export const requestPasswordResetRequest = ({ email, captchaToken }) =>
+    apiPost('/auth/forgot-password', { email, captcha_token: captchaToken })
+
+export const resetPasswordRequest = ({ email, code, password }) =>
+    apiPost('/auth/reset-password', { email, code, new_password: password })
