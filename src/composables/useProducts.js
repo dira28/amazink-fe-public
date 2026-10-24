@@ -7,7 +7,7 @@ const COLORS = ['Black', 'Cyan', 'Magenta', 'Yellow', 'CMYK']
 
 const detectColor = (name) => COLORS.find((color) => new RegExp(`\\b${color}\\b`, 'i').test(name)) ?? ''
 
-const fromApi = (product) => ({
+export const mapProduct = (product) => ({
     id: product.id,
     slug: product.slug,
     name: product.name,
@@ -36,7 +36,7 @@ function load() {
 
     fetchProducts()
         .then((list) => {
-            products.value = list.map(fromApi)
+            products.value = list.map(mapProduct)
         })
         .catch(() => {
             failed.value = true
@@ -51,7 +51,7 @@ function load() {
 export async function refreshProducts() {
     if (USE_MOCK) return
 
-    products.value = (await fetchProducts()).map(fromApi)
+    products.value = (await fetchProducts()).map(mapProduct)
     failed.value = false
 }
 

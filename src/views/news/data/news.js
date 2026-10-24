@@ -5,7 +5,7 @@ const rawPosts = [
         date: '2022-08-15',
         image: '/images/news/cara-mengatasi-error-0x000000bcb-pada-sharing-printer.jpg',
         excerpt:
-            'Pada era modern seperti ini, banyak pengguna komputer yang sudah menggunakan Jaringan LAN sebagai media berbagi file data. Tidak hanya berbagi file data namun banyak diantaranya juga menggunakan jaringan LAN untuk menyambungkan satu unit printer dengan lebih dari…',
+            'Pada era modern seperti ini, banyak pengguna komputer yang sudah menggunakan Jaringan LAN sebagai media berbagi berkas data. Tidak hanya berbagi berkas data namun banyak diantaranya juga menggunakan jaringan LAN untuk menyambungkan satu unit printer dengan lebih dari…',
     },
     {
         slug: 'cara-mudah-mencetak-dokumen-mulai-dari-halaman-belakang',
@@ -21,7 +21,7 @@ const rawPosts = [
         date: '2022-08-06',
         image: '/images/news/tips-mengatasi-cartridge-printer-salah-isi.jpg',
         excerpt:
-            'Jika kamu masih menggunakan teknologi printer yang masih menggunakan sistem cartridge seperti printer Canon IP2770 atau printer Canon MP287, mungkin kamu pernah melakukan kesalahan dalam pengisian tinta pada cartridgenya. Sebagai contohnya kamu…',
+            'Jika Anda masih menggunakan teknologi printer yang masih menggunakan sistem cartridge seperti printer Canon IP2770 atau printer Canon MP287, mungkin Anda pernah melakukan kesalahan dalam pengisian tinta pada cartridgenya. Sebagai contohnya Anda…',
     },
     {
         slug: 'mengapa-printer-menggunakan-campuran-warna-cmyk',
@@ -29,7 +29,7 @@ const rawPosts = [
         date: '2022-08-05',
         image: '/images/news/mengapa-printer-menggunakan-campuran-warna-cmyk.jpg',
         excerpt:
-            'Kini sudah semakin banyak printer yang beredar dipasaran, jenisnya pun beragam, dari inkjet, hingga laserjet, fungsi sebuah printer pun kini semakin beragam, ada yang memiliki fitur print saja dan ada juga yang memiliki fitu print scan copy. Namun dari keberagaman merk dan jenis…',
+            'Kini sudah semakin banyak printer yang beredar di pasaran, jenisnya pun beragam, dari inkjet, hingga laserjet, fungsi sebuah printer pun kini semakin beragam, ada yang memiliki fitur print saja dan ada juga yang memiliki fitu print scan copy. Namun dari keberagaman merk dan jenis…',
     },
     {
         // TODO: judul terpotong di screenshot, lengkapi judul, tanggal, dan excerpt aslinya
@@ -47,7 +47,7 @@ const rawPosts = [
         date: '2022-07-27',
         image: '/images/news/cara-membersihkan-print-head-printer-inkjet.jpg',
         excerpt:
-            'Hasil cetak yang pudar atau warnanya tidak rata sering disebabkan oleh print head yang tersumbat tinta kering. Sebelum memutuskan untuk membawa printer ke tempat servis, ada beberapa langkah pembersihan yang bisa kamu coba sendiri di rumah…',
+            'Hasil cetak yang pudar atau warnanya tidak rata sering disebabkan oleh print head yang tersumbat tinta kering. Sebelum memutuskan untuk membawa printer ke tempat servis, ada beberapa langkah pembersihan yang dapat Anda coba sendiri di rumah…',
     },
     {
         slug: 'hasil-cetak-bergaris-penyebab-dan-solusinya',
@@ -55,7 +55,7 @@ const rawPosts = [
         date: '2022-07-22',
         image: '/images/news/hasil-cetak-bergaris-penyebab-dan-solusinya.jpg',
         excerpt:
-            'Garis-garis putih atau warna yang tidak konsisten pada hasil cetak tentu sangat mengganggu, apalagi saat mencetak dokumen penting. Masalah ini bisa muncul karena beberapa hal, mulai dari tinta yang hampir habis hingga nozzle yang kotor…',
+            'Garis-garis putih atau warna yang tidak konsisten pada hasil cetak tentu sangat mengganggu, apalagi saat mencetak dokumen penting. Masalah ini dapat muncul karena beberapa hal, mulai dari tinta yang hampir habis hingga nozzle yang kotor…',
     },
     {
         slug: 'perbedaan-tinta-dye-dan-pigment',
@@ -63,7 +63,7 @@ const rawPosts = [
         date: '2022-07-18',
         image: '/images/news/perbedaan-tinta-dye-dan-pigment.jpg',
         excerpt:
-            'Saat memilih tinta untuk printer, kamu mungkin menemukan istilah dye dan pigment. Keduanya punya karakter yang berbeda, baik dari segi ketajaman warna, ketahanan terhadap air, maupun kecocokannya dengan jenis kertas yang digunakan…',
+            'Saat memilih tinta untuk printer, Anda mungkin menemukan istilah dye dan pigment. Keduanya punya karakter yang berbeda, baik dari segi ketajaman warna, ketahanan terhadap air, maupun kecocokannya dengan jenis kertas yang digunakan…',
     },
     {
         slug: 'tips-merawat-printer-agar-awet',
@@ -71,7 +71,7 @@ const rawPosts = [
         date: '2022-07-12',
         image: '/images/news/tips-merawat-printer-agar-awet.jpg',
         excerpt:
-            'Printer yang dirawat dengan baik bisa bertahan bertahun-tahun tanpa masalah berarti. Kebiasaan sederhana seperti mencetak secara rutin, menjaga kebersihan, dan menggunakan tinta yang sesuai akan sangat membantu menjaga performanya…',
+            'Printer yang dirawat dengan baik dapat bertahan bertahun-tahun tanpa masalah berarti. Kebiasaan sederhana seperti mencetak secara rutin, menjaga kebersihan, dan menggunakan tinta yang sesuai akan sangat membantu menjaga performanya…',
     },
     {
         slug: 'cara-mengisi-tinta-botol-tanpa-tumpah',
@@ -79,7 +79,7 @@ const rawPosts = [
         date: '2022-07-08',
         image: '/images/news/cara-mengisi-tinta-botol-tanpa-tumpah.jpg',
         excerpt:
-            'Mengisi ulang tinta botol memang lebih hemat, tetapi kalau caranya kurang tepat, tinta bisa tumpah dan mengotori printer maupun meja kerjamu. Berikut langkah-langkah pengisian yang rapi dan aman untuk dicoba…',
+            'Mengisi ulang tinta botol memang lebih hemat, tetapi jika caranya kurang tepat, tinta dapat tumpah dan mengotori printer maupun meja kerja Anda. Berikut langkah-langkah pengisian yang rapi dan aman untuk dicoba…',
     },
     {
         slug: 'toner-laser-habis-tanda-dan-cara-mengatasinya',
@@ -87,7 +87,7 @@ const rawPosts = [
         date: '2022-07-03',
         image: '/images/news/toner-laser-habis-tanda-dan-cara-mengatasinya.jpg',
         excerpt:
-            'Printer laser biasanya memberi tanda ketika toner mulai menipis, misalnya hasil cetak yang memudar atau muncul garis di sisi kertas. Mengenali tanda-tanda ini lebih awal membantu kamu menyiapkan pengganti sebelum pekerjaan cetak terhenti…',
+            'Printer laser biasanya memberi tanda ketika toner mulai menipis, misalnya hasil cetak yang memudar atau muncul garis di sisi kertas. Mengenali tanda-tanda ini lebih awal membantu Anda menyiapkan pengganti sebelum pekerjaan cetak terhenti…',
     },
     {
         slug: 'mengenal-sistem-infus-printer',
@@ -95,7 +95,7 @@ const rawPosts = [
         date: '2022-06-28',
         image: '/images/news/mengenal-sistem-infus-printer.jpg',
         excerpt:
-            'Sistem infus memungkinkan printer menggunakan tinta dari tangki eksternal, sehingga kamu tidak perlu sering mengganti cartridge. Cocok untuk kebutuhan cetak yang tinggi, tetapi ada beberapa hal yang perlu kamu ketahui sebelum memasangnya…',
+            'Sistem infus memungkinkan printer menggunakan tinta dari tangki eksternal, sehingga Anda tidak perlu sering mengganti cartridge. Cocok untuk kebutuhan cetak yang tinggi, tetapi ada beberapa hal yang perlu Anda ketahui sebelum memasangnya…',
     },
 ]
 const palettes = [

@@ -112,9 +112,6 @@ onBeforeUnmount(() => clearInterval(timer))
             <!-- Langkah 1: email -->
             <template v-if="step === 'email'">
                 <h1 class="mt-2 text-3xl font-semibold tracking-[-0.04em]">Lupa kata sandi?</h1>
-                <p class="mt-2 text-sm leading-6 text-[#737373]">
-                    Masukkan email akunmu. Kami kirim kode 6 digit untuk membuat kata sandi baru.
-                </p>
 
                 <form class="mt-7 space-y-4" @submit.prevent="sendCode">
                     <label class="block">
@@ -146,8 +143,7 @@ onBeforeUnmount(() => clearInterval(timer))
             <template v-else>
                 <h1 class="mt-2 text-3xl font-semibold tracking-[-0.04em]">Buat kata sandi baru</h1>
                 <p class="mt-2 text-sm leading-6 text-[#737373]">
-                    Jika <strong class="text-[#171717]">{{ email }}</strong> terdaftar, kode 6 digit sudah kami
-                    kirim. Cek juga folder spam bila belum masuk.
+                    Jika <strong class="text-[#171717]">{{ email }}</strong> terdaftar, kode 6 digit sudah dikirim dan berlaku 10 menit. Periksa folder spam apabila belum masuk.
                 </p>
 
                 <form class="mt-7 space-y-4" @submit.prevent="submitReset">
@@ -206,7 +202,7 @@ onBeforeUnmount(() => clearInterval(timer))
             </template>
 
             <p class="mb-0 mt-6 text-center text-[13px] text-[#737373]">
-                Ingat kata sandimu?
+                Ingat kata sandi Anda?
                 <RouterLink :to="{ name: 'login', query: route.query }"
                     class="font-semibold text-brand-red no-underline hover:underline">
                     Kembali masuk
