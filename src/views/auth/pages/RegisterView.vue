@@ -116,7 +116,7 @@ async function verify() {
                 <h1 class="mt-2 text-3xl font-semibold tracking-[-0.04em]">Verifikasi email</h1>
                 <p class="mt-2 text-sm leading-6 text-[#737373]">
                     Kami mengirim kode 6 digit ke <strong class="text-[#171717]">{{ form.email }}</strong>.
-                    Kode berlaku 5 menit. Cek juga folder spam bila belum masuk.
+                    Kode berlaku 5 menit. Periksa juga folder spam bila belum masuk.
                 </p>
 
                 <form class="mt-7 space-y-4" @submit.prevent="verify">

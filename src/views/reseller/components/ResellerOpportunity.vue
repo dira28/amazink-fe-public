@@ -22,7 +22,7 @@ const opportunity = usePageSection('reseller', 'opportunity', {
         { id: 'benefit-2', text: 'Proteksi area dan proteksi harga minimal agar profit channel terjaga' },
         { id: 'benefit-3', text: 'Margin keuntungan menarik di setiap produk' },
         { id: 'benefit-4', text: 'Harga bersaing, tetap berorientasi pada kualitas' },
-        { id: 'benefit-5', text: 'Bebas memilih produk sesuai potensi penjualan di wilayahmu' },
+        { id: 'benefit-5', text: 'Bebas memilih produk sesuai potensi penjualan di wilayah Anda' },
     ],
 })
 </script>

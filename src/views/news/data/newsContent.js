@@ -3,11 +3,11 @@ const articleContent = {
     'cara-mengatasi-error-0x000000bcb-pada-sharing-printer': [
         {
             type: 'p',
-            text: 'Error 0x000000bcb biasanya muncul ketika kamu menyambungkan printer yang dibagikan lewat jaringan LAN, dengan pesan "Windows cannot connect to the printer". Masalah ini sering muncul setelah Windows di salah satu komputer diperbarui.',
+            text: 'Error 0x000000bcb biasanya muncul ketika Anda menyambungkan printer yang dibagikan melalui jaringan LAN, dengan pesan "Windows cannot connect to the printer". Masalah ini sering muncul setelah Windows di salah satu komputer diperbarui.',
         },
         {
             type: 'p',
-            text: 'Kabar baiknya, error ini bisa diatasi tanpa perlu membawa printer ke tempat servis. Coba empat cara di bawah ini secara berurutan, mulai dari yang paling mudah.',
+            text: 'Kabar baiknya, error ini dapat diatasi tanpa perlu membawa printer ke tempat servis. Cobalah empat cara di bawah ini secara berurutan, mulai dari yang paling mudah.',
         },
         {
             type: 'related', slugs: [
@@ -20,14 +20,14 @@ const articleContent = {
         { type: 'h2', text: 'Penyebab error 0x000000bcb' },
         {
             type: 'p',
-            text: 'Penyebab paling umum adalah driver printer di komputer server dan komputer client tidak cocok, baik dari sisi versi maupun arsitektur (32-bit dan 64-bit). Selain itu, file pendukung seperti mscms.dll bisa hilang atau rusak, atau layanan Print Spooler sedang bermasalah.',
+            text: 'Penyebab paling umum adalah driver printer di komputer server dan komputer client tidak cocok, baik dari sisi versi maupun arsitektur (32-bit dan 64-bit). Selain itu, file pendukung seperti mscms.dll dapat hilang atau rusak, atau layanan Print Spooler sedang bermasalah.',
         },
         { type: 'h2', text: 'Cara mengatasinya' },
         {
             type: 'steps',
             items: [
                 {
-                    title: 'Salin file mscms.dll',
+                    title: 'Salin berkas mscms.dll',
                     items: [
                         'Buka folder C:\\Windows\\System32.',
                         'Cari file mscms.dll, lalu salin.',
@@ -73,7 +73,7 @@ const articleContent = {
         { type: 'h2', text: 'Kesimpulan' },
         {
             type: 'p',
-            text: 'Dalam kebanyakan kasus, menyalin mscms.dll atau membuat port lokal baru sudah cukup untuk menyelesaikan error ini. Kalau masalah masih muncul, ulangi dari langkah restart Print Spooler dan instal ulang driver.',
+            text: 'Dalam kebanyakan kasus, menyalin mscms.dll atau membuat port lokal baru sudah cukup untuk menyelesaikan error ini. Jika masalah masih muncul, ulangi dari langkah restart Print Spooler dan instal ulang driver.',
         },
     ],
 }
@@ -85,13 +85,13 @@ function fallback(post) {
         ...(intro ? [{ type: 'p', text: intro }] : []),
         {
             type: 'p',
-            text: 'Masalah seperti ini cukup sering dialami pengguna printer di rumah maupun kantor. Dengan langkah yang tepat, kebanyakan kasus bisa diselesaikan sendiri tanpa perlu ke tempat servis.',
+            text: 'Masalah seperti ini cukup sering dialami pengguna printer di rumah maupun kantor. Dengan langkah yang tepat, kebanyakan kasus dapat diselesaikan sendiri tanpa perlu ke tempat servis.',
         },
         { type: 'related' },
         { type: 'h2', text: 'Penyebab yang sering terjadi' },
         {
             type: 'p',
-            text: 'Penyebabnya beragam, mulai dari pengaturan yang kurang tepat, driver yang tidak cocok, hingga komponen printer yang perlu dibersihkan atau diganti. Mengenali gejalanya lebih awal membantu kamu memilih solusi yang paling sesuai.',
+            text: 'Penyebabnya beragam, mulai dari pengaturan yang kurang tepat, driver yang tidak cocok, hingga komponen printer yang perlu dibersihkan atau diganti. Mengenali gejalanya lebih awal membantu Anda memilih solusi yang paling sesuai.',
         },
         {
             type: 'steps',
@@ -100,7 +100,7 @@ function fallback(post) {
                     title: 'Periksa kondisi printer',
                     items: [
                         'Pastikan printer menyala dan semua kabel terpasang dengan benar.',
-                        'Cek indikator lampu atau pesan error di layar printer.',
+                        'Periksa indikator lampu atau pesan error di layar printer.',
                         'Matikan printer selama satu menit, lalu nyalakan kembali.',
                     ],
                 },
@@ -124,7 +124,7 @@ function fallback(post) {
         },
         {
             type: 'note',
-            text: 'Gunakan tinta atau toner yang sesuai dengan tipe printermu agar hasil cetak tetap maksimal dan printer lebih awet.',
+            text: 'Gunakan tinta atau toner yang sesuai dengan tipe printer Anda agar hasil cetak tetap maksimal dan printer lebih awet.',
         },
         { type: 'h2', text: 'Kesimpulan' },
         {

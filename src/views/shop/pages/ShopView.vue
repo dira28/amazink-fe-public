@@ -14,13 +14,13 @@ import { usePolling } from '@/composables/usePolling'
 
 const list = usePageSection('catalog', 'list', {
     eyebrow: 'Katalog AMAZiNK',
-    title: 'Temukan kebutuhan cetakmu',
+    title: 'Temukan kebutuhan cetak Anda',
     search_placeholder: 'Cari nama produk atau kode...',
 })
 
 const help = usePageSection('catalog', 'help', {
     eyebrow: 'BUTUH BANTUAN?',
-    title: 'Bingung memilih tinta\nuntuk printermu?',
+    title: 'Kesulitan memilih tinta\nuntuk printer Anda?',
     description: 'Pilih seri printer, kami tunjukkan tinta yang cocok.',
     button_label: 'Buka halaman lengkap',
     button_link: '/cari-tinta',
@@ -236,7 +236,7 @@ watch(
                         Periksa koneksi lalu muat ulang halaman.
                     </p>
                     <p v-else-if="products.length" class="mt-2 max-w-80 text-[13px] leading-[1.8] text-[#737373]">
-                        Coba kata kunci, kategori, atau warna lainnya.
+                        Gunakan kata kunci, kategori, atau warna lainnya.
                     </p>
 
                     <button v-if="products.length" type="button"

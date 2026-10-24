@@ -2,14 +2,13 @@
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useCart } from '@/composables/useCart'
-import { shopProducts as products } from '@/data/products'
-import { brands, groups } from '../../finder/data/printers'
+import { usePrinters } from '@/composables/usePrinters'
 
 const LIMIT = 10
 const { add } = useCart()
+const { printers, brands, loading, failed } = usePrinters()
 
 const norm = (text) => String(text ?? '').toLowerCase().replace(/[^a-z0-9]/g, '')
-const brandName = (id) => brands.find((b) => b.id === id)?.name ?? ''
 const formatPrice = (price) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price)
 
@@ -21,10 +20,6 @@ const swatchStyle = (color) => ({
             : hex[color] ?? '#d4d4d4',
 })
 
-const allModels = groups.flatMap((group) =>
-    group.models.map((model) => ({ model, group, brand: group.brand }))
-)
-
 const search = ref('')
 const brand = ref('all')
 const selected = ref(null)
@@ -33,26 +28,22 @@ const added = ref({})
 
 const filtered = computed(() => {
     const q = norm(search.value)
-    return allModels.filter(
+    return printers.value.filter(
         (item) =>
-            (brand.value === 'all' || item.brand === brand.value) &&
-            (!q || norm(brandName(item.brand) + item.model).includes(q))
+            (brand.value === 'all' || item.brandId === brand.value) &&
+            (!q || norm(item.brandName + item.model).includes(q))
     )
 })
 
 const visible = computed(() => (showAll.value ? filtered.value : filtered.value.slice(0, LIMIT)))
 
-const isSelected = (item) => selected.value?.model === item.model && selected.value?.group.id === item.group.id
+const isSelected = (item) => selected.value?.id === item.id
 
 const printer = computed(() =>
-    selected.value ? { brand: brandName(selected.value.brand), series: selected.value.model } : null
+    selected.value ? { brand: selected.value.brandName, series: selected.value.model } : null
 )
 
-const matches = computed(() =>
-    selected.value
-        ? selected.value.group.products.map((slug) => products.find((p) => p.slug === slug)).filter(Boolean)
-        : []
-)
+const matches = computed(() => selected.value?.products ?? [])
 
 const inStock = computed(() => matches.value.filter((p) => p.stock > 0))
 const inStockTotal = computed(() => inStock.value.reduce((sum, p) => sum + p.price, 0))
@@ -121,7 +112,7 @@ watch([search, brand], () => {
             </p>
 
             <div v-if="filtered.length" class="mt-3 flex flex-wrap gap-2">
-                <button v-for="item in visible" :key="item.group.id + item.model" type="button"
+                <button v-for="item in visible" :key="item.id" type="button"
                     :aria-pressed="isSelected(item)"
                     class="h-9 cursor-pointer rounded-full border-0 px-3.5 transition duration-200" :class="isSelected(item)
                         ? 'bg-brand-red shadow-md'
@@ -132,8 +123,14 @@ watch([search, brand], () => {
                 </button>
             </div>
 
+            <p v-else-if="loading" class="mb-0 mt-3 text-[13px] leading-6 text-[#737373]">Memuat daftar printer...</p>
+
+            <p v-else-if="failed" class="mb-0 mt-3 text-[13px] leading-6 text-[#737373]">
+                Daftar printer gagal dimuat. Muat ulang halaman, atau hubungi tim kami melalui tombol WhatsApp.
+            </p>
+
             <p v-else class="mb-0 mt-3 text-[13px] leading-6 text-[#737373]">
-                Seri “{{ search }}” belum ada di daftar. Coba kata kunci lain, atau tanya tim kami lewat tombol
+                Seri “{{ search }}” belum ada di daftar. Gunakan kata kunci lain, atau hubungi tim kami melalui tombol
                 WhatsApp.
             </p>
 
@@ -170,11 +167,11 @@ watch([search, brand], () => {
                             {{ printer.brand }} {{ printer.series }}
                         </h3>
                         <p class="m-0 mt-0.5 text-xs text-[#737373]">
-                            {{ selected.group.label }} · {{ selected.group.kind }}
+                            {{ selected.label }} · {{ selected.kind }}
                         </p>
                     </div>
 
-                    <RouterLink :to="{ name: 'finder', query: { brand: selected.brand, seri: selected.model } }"
+                    <RouterLink :to="{ name: 'finder', query: { brand: selected.brandId, seri: selected.model } }"
                         class="shrink-0 text-xs font-semibold text-brand-red no-underline hover:underline">
                         Detail lengkap
                     </RouterLink>
@@ -213,7 +210,7 @@ watch([search, brand], () => {
                 </ul>
 
                 <p v-else class="mb-0 mt-4 rounded-xl bg-[#f7f7f5] p-4 text-[13px] leading-6 text-[#737373]">
-                    Produk untuk seri ini belum tersedia di katalog online. Tim kami bisa bantu carikan lewat
+                    Produk untuk seri ini belum tersedia di katalog online. Tim kami dapat membantu mencarikannya melalui
                     tombol WhatsApp.
                 </p>
 

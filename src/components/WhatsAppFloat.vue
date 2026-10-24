@@ -6,12 +6,12 @@ import { waLink } from '@/utils/whatsapp'
 const DEFAULT_MESSAGE = 'Halo AMAZiNK, saya butuh konsultasi tinta dan toner.'
 
 const messages = [
-    ['/catalog-produk', 'Halo AMAZiNK, saya butuh konsultasi tinta dan toner. Bisa dibantu pilih produk yang cocok?'],
-    ['/keranjang', 'Halo AMAZiNK, saya mau tanya soal pesanan di keranjang saya.'],
-    ['/reseller', 'Halo AMAZiNK, saya tertarik menjadi reseller. Bisa dijelaskan syarat dan ketentuannya?'],
-    ['/galeri', 'Halo AMAZiNK, saya tertarik dengan hasil cetak di galeri. Bisa konsultasi kebutuhan cetak saya?'],
+    ['/catalog-produk', 'Halo AMAZiNK, saya butuh konsultasi tinta dan toner. Mohon bantuannya untuk memilih produk yang sesuai.'],
+    ['/keranjang', 'Halo AMAZiNK, saya ingin menanyakan pesanan di keranjang saya.'],
+    ['/reseller', 'Halo AMAZiNK, saya tertarik menjadi reseller. Mohon dijelaskan syarat dan ketentuannya.'],
+    ['/galeri', 'Halo AMAZiNK, saya tertarik dengan hasil cetak di galeri. Mohon dibantu konsultasi kebutuhan cetak saya.'],
     ['/faq', 'Halo AMAZiNK, saya punya pertanyaan yang belum ada di halaman FAQ.'],
-    ['/tentang-kami', 'Halo AMAZiNK, saya ingin tahu lebih lanjut tentang layanan kalian.'],
+    ['/tentang-kami', 'Halo AMAZiNK, saya ingin mengetahui lebih lanjut tentang layanan AMAZiNK.'],
 ]
 
 const route = useRoute()

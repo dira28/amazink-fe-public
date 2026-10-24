@@ -10,7 +10,7 @@ const defaults = {
     eyebrow: 'Produk Kami',
     title: 'Solusi lengkap untuk setiap kebutuhan cetak.',
     description:
-        'Dari tinta, toner, hingga printer, temukan kebutuhan cetakmu dalam satu tempat bersama AMAZiNK.',
+        'Dari tinta, toner, hingga printer, temukan kebutuhan cetak Anda dalam satu tempat bersama AMAZiNK.',
     button_label: 'Lihat Semua Produk',
     button_link: '/catalog-produk',
 }
