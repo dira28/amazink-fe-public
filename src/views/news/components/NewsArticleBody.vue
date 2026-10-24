@@ -75,6 +75,11 @@ function relatedFor(block) {
 </template>
 
 <style scoped>
+.news-content { overflow-wrap: anywhere; white-space: normal; }
+.news-content :deep(pre) { white-space: pre-wrap; overflow-x: auto; margin: 0 0 1.1em; padding: 1em; background: #f4f3ee; border-radius: 1rem; font-size: 0.875rem; line-height: 1.7; }
+.news-content :deep(table) { display: block; max-width: 100%; overflow-x: auto; margin: 0 0 1.1em; border-collapse: collapse; }
+.news-content :deep(td),
+.news-content :deep(th) { padding: 0.5em 0.75em; border: 1px solid #e5e5e0; }
 .news-content :deep(p) { margin: 0 0 1.1em; }
 .news-content :deep(h1),
 .news-content :deep(h2),
