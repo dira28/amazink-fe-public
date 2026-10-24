@@ -365,7 +365,7 @@ onBeforeUnmount(() => {
                                 Stok sedang kosong. Hubungi tim kami untuk informasi ketersediaan berikutnya.
                             </template>
                             <template v-else-if="!canBuy">
-                                Seluruh stok produk ini sudah ada di keranjangmu.
+                                Seluruh stok produk ini sudah ada di keranjang Anda.
                                 <RouterLink to="/keranjang"
                                     class="font-semibold text-brand-red no-underline hover:underline">
                                     Lihat keranjang

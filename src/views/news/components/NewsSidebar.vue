@@ -137,12 +137,12 @@ function subscribe() {
             </p>
 
             <p v-if="subscribed" class="mt-4 rounded-2xl bg-white/10 px-4 py-3 text-[13px]" role="status">
-                Terima kasih, kamu sudah terdaftar.
+                Terima kasih, Anda telah terdaftar.
             </p>
 
             <form v-else class="mt-4" novalidate @submit.prevent="subscribe">
                 <label class="sr-only" for="newsletter-email">Email</label>
-                <input id="newsletter-email" v-model="email" type="email" placeholder="Email kamu" autocomplete="email"
+                <input id="newsletter-email" v-model="email" type="email" placeholder="Email Anda" autocomplete="email"
                     class="h-11 w-full rounded-full border-0 bg-white/10 px-4 text-sm text-white outline-none transition-colors placeholder:text-[#777] focus:bg-white/15" />
 
                 <p v-if="emailError" class="mt-1.5 px-2 text-xs text-[#ff858b]" role="alert">{{ emailError }}</p>

@@ -53,11 +53,13 @@ const router = createRouter({
             path: '/checkout',
             name: 'checkout',
             component: () => import('@/views/checkout/pages/CheckoutView.vue'),
+            meta: { requiresAuth: true },
         },
         {
             path: '/pesanan/:id',
             name: 'order',
             component: () => import('@/views/orders/pages/OrderView.vue'),
+            meta: { requiresAuth: true },
         },
         {
             path: '/reseller',

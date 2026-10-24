@@ -392,7 +392,7 @@ onBeforeUnmount(() => {
                 Punya kebutuhan cetak sendiri?
             </h2>
             <p class="mx-auto mt-4 max-w-md text-[13px] leading-7 sm:text-sm" style="color: #8f8d94">
-                Ceritakan kebutuhanmu ke tim AMAZiNK, kami bantu pilih tinta dan toner yang cocok untuk hasil
+                Sampaikan kebutuhan Anda kepada tim AMAZiNK, kami membantu memilih tinta dan toner yang cocok untuk hasil
                 cetak terbaik.
             </p>
             <a :href="contactLink" target="_blank" rel="noopener noreferrer"

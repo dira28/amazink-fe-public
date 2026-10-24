@@ -1,11 +1,46 @@
 <script setup>
+<<<<<<< HEAD
 import { useSeo } from '@/composables/useSeo'
 import { computed, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+=======
+import { computed, onMounted, reactive, ref } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
+import PhoneInput from '@/components/base/PhoneInput.vue'
+import { ORDER_STATUS, useOrders } from '@/composables/useOrders'
+>>>>>>> 708a7c30980823f6101598c67978cc1c8fed5f2f
 import { useAuth } from '@/stores/auth'
+import { validatePhoneValue } from '@/utils/phone'
 
 const router = useRouter()
 const { user, updatePhone, logout } = useAuth()
+
+const { orders, loadOrders } = useOrders()
+const ordersLoaded = ref(false)
+const ordersFailed = ref(false)
+
+onMounted(async () => {
+    try {
+        await loadOrders()
+    } catch {
+        ordersFailed.value = true
+    }
+
+    ordersLoaded.value = true
+})
+
+const formatPrice = (price) =>
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price)
+
+const formatDate = (iso) =>
+    new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso))
+
+const TONE_CLASSES = {
+    amber: 'bg-amber-50 text-amber-700',
+    blue: 'bg-blue-50 text-blue-700',
+    green: 'bg-green-50 text-green-700',
+    gray: 'bg-gray-100 text-gray-600',
+}
 
 const form = reactive({ phone: user.value.phone })
 const saving = ref(false)
@@ -15,15 +50,24 @@ const error = ref('')
 const initial = computed(() => user.value.name.trim().charAt(0).toUpperCase() || '?')
 const dirty = computed(() => form.phone !== user.value.phone)
 
+// Nomor boleh dikosongkan; bila diisi harus valid.
+const phoneProblem = computed(() => (form.phone ? validatePhoneValue(form.phone) : ''))
+
 const input =
     'mt-1.5 h-12 w-full rounded-xl border-0 bg-[#f7f7f5] px-4 text-sm outline-none ring-1 ring-black/10 focus:ring-2 focus:ring-brand-red'
 
 async function save() {
     error.value = ''
     saved.value = false
+
+    if (phoneProblem.value) {
+        error.value = phoneProblem.value
+        return
+    }
+
     saving.value = true
     try {
-        updatePhone(form.phone.trim())
+        updatePhone(form.phone)
         saved.value = true
     } catch (e) {
         error.value = e.message
@@ -74,10 +118,11 @@ useSeo(() => ({
                         <span class="text-[13px] font-semibold">Nama lengkap</span>
                         <input :value="user.name" type="text" disabled :class="input + ' opacity-60'" />
                     </label>
-                    <label class="block">
-                        <span class="text-[13px] font-semibold">Nomor WhatsApp</span>
-                        <input v-model="form.phone" type="tel" placeholder="08xxxxxxxxxx" :class="input" />
-                    </label>
+                    <div class="block">
+                        <label for="account-phone" class="text-[13px] font-semibold">Nomor WhatsApp</label>
+                        <PhoneInput id="account-phone" v-model="form.phone" variant="soft" :invalid="!!phoneProblem" />
+                        <span class="mt-1.5 block text-xs text-[#737373]">Format: (+62) 8xxx-xxxx-xxxx</span>
+                    </div>
                     <label class="block sm:col-span-2">
                         <span class="text-[13px] font-semibold">Email</span>
                         <input :value="user.email" type="email" disabled :class="input + ' opacity-60'" />
@@ -97,9 +142,36 @@ useSeo(() => ({
 
             <section class="mt-6 rounded-3xl bg-white p-6 ring-1 ring-black/5 sm:p-8">
                 <h2 class="m-0 text-lg font-semibold tracking-[-0.02em]">Riwayat pesanan</h2>
-                <p class="mb-0 mt-3 text-sm leading-6 text-[#737373]">
-                    Belum ada pesanan. Pesanan yang kamu buat akan muncul di sini.
+
+                <p v-if="!ordersLoaded" class="mb-0 mt-3 text-sm leading-6 text-[#737373]">Memuat pesanan...</p>
+                <p v-else-if="ordersFailed" class="mb-0 mt-3 text-sm leading-6 text-[#737373]">
+                    Riwayat pesanan gagal dimuat. Muat ulang halaman ini.
                 </p>
+                <p v-else-if="!orders.length" class="mb-0 mt-3 text-sm leading-6 text-[#737373]">
+                    Belum ada pesanan. Pesanan yang Anda buat akan muncul di sini.
+                </p>
+
+                <ul v-else class="m-0 mt-4 grid list-none gap-3 p-0">
+                    <li v-for="order in orders" :key="order.id">
+                        <RouterLink :to="{ name: 'order', params: { id: order.id } }"
+                            class="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#f7f7f5] px-4 py-3.5 no-underline ring-1 ring-black/5 transition hover:ring-brand-red/40"
+                            style="color: inherit">
+                            <span class="min-w-0">
+                                <span class="block text-sm font-semibold">{{ order.id }}</span>
+                                <span class="mt-0.5 block text-xs text-[#737373]">
+                                    {{ formatDate(order.createdAt) }} · {{ order.items.length }} barang
+                                </span>
+                            </span>
+                            <span class="flex items-center gap-3">
+                                <span class="text-sm font-semibold">{{ formatPrice(order.subtotal) }}</span>
+                                <span class="rounded-full px-3 py-1 text-xs font-semibold"
+                                    :class="TONE_CLASSES[(ORDER_STATUS[order.status] ?? { tone: 'gray' }).tone]">
+                                    {{ (ORDER_STATUS[order.status] ?? { label: order.status }).label }}
+                                </span>
+                            </span>
+                        </RouterLink>
+                    </li>
+                </ul>
             </section>
         </div>
     </div>

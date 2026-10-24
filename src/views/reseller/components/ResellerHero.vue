@@ -8,7 +8,7 @@ const { regions } = useResellerDirectory()
 
 const hero = usePageSection('reseller', 'hero', {
     eyebrow: 'Kemitraan AMAZiNK',
-    title: 'Jual AMAZiNK di kotamu',
+    title: 'Jual AMAZiNK di kota Anda',
     description:
         'Bergabung dengan jaringan reseller consumable printer yang sudah teruji, dengan margin menarik dan pelanggan yang membeli berulang.',
     primary_button_label: 'Daftar Jadi Reseller',

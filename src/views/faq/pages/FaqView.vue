@@ -114,7 +114,7 @@ useSeo(() => ({
                     <div v-else
                         class="rounded-3xl bg-white px-5 py-14 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
                         <p class="m-0 text-sm font-semibold">Pertanyaan tidak ditemukan</p>
-                        <p class="mt-1 text-[13px] text-[#737373]">Coba kata kunci lain atau pilih kategori berbeda.</p>
+                        <p class="mt-1 text-[13px] text-[#737373]">Gunakan kata kunci lain atau pilih kategori berbeda.</p>
                         <button type="button"
                             class="mt-5 min-h-[42px] cursor-pointer rounded-full border-0 bg-[#171717] px-5 transition-colors hover:bg-brand-red"
                             style="color: #fff; font-size: 12px; font-weight: 600" @click="reset">
@@ -131,7 +131,7 @@ useSeo(() => ({
                         Tidak menemukan jawabannya?
                     </h2>
                     <p class="mt-2 text-sm leading-7" style="color: #929292">
-                        Tim AMAZiNK siap membantu. Hubungi kami dan sebutkan pertanyaanmu.
+                        Tim AMAZiNK siap membantu. Hubungi kami dan sebutkan pertanyaan Anda.
                     </p>
                 </div>
 

@@ -1,14 +1,16 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import AccentText from '@/components/base/AccentText.vue'
+import PhoneInput from '@/components/base/PhoneInput.vue'
 import TurnstileWidget from '@/components/base/TurnstileWidget.vue'
 import { usePageSection } from '@/composables/usePage'
 import { USE_MOCK } from '@/services/http'
 import { submitReseller } from '@/services/resellerService'
+import { validatePhoneValue } from '@/utils/phone'
 
 const content = usePageSection('reseller', 'form', {
     title: 'Berminat jadi reseller?',
-    description: 'Isi formulir di samping. Tim kami akan menghubungimu untuk langkah berikutnya.',
+    description: 'Isi formulir di samping. Tim kami akan menghubungi Anda untuk langkah berikutnya.',
 })
 
 const form = reactive({ name: '', email: '', address: '', phone: '', message: '' })
@@ -26,13 +28,11 @@ const submitError = ref('')
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const errors = computed(() => {
-    const phoneDigits = form.phone.replace(/\D/g, '')
-
     return {
         name: form.name.trim().length < 2 ? 'Nama wajib diisi' : '',
         email: /^\S+@\S+\.\S+$/.test(form.email.trim()) ? '' : 'Email tidak valid',
         address: form.address.trim().length < 5 ? 'Alamat belum lengkap' : '',
-        phone: phoneDigits.length >= 9 && phoneDigits.length <= 15 ? '' : 'Nomor telepon tidak valid',
+        phone: validatePhoneValue(form.phone),
         captcha: USE_MOCK || captchaToken.value ? '' : captchaError.value || 'Selesaikan CAPTCHA terlebih dahulu',
     }
 })
@@ -102,11 +102,11 @@ async function submit() {
                     </span>
                     <h3 class="mt-4 text-lg font-semibold">Terima kasih!</h3>
                     <p class="mt-1 max-w-xs text-sm text-gray-500">
-                        Data kamu sudah kami terima. Kami akan segera menghubungi.
+                        Data Anda telah kami terima. Kami akan segera menghubungi Anda.
                     </p>
                     <button type="button" class="mt-5 text-sm font-medium text-gray-500 transition hover:text-brand-red"
                         @click="sent = false">
-                        Kirim lagi
+                        Kirim kembali
                     </button>
                 </div>
 
@@ -130,14 +130,16 @@ async function submit() {
                         </label>
                     </div>
 
-                    <label class="mt-4 block text-sm font-medium text-gray-700">
-                        No. Telp
-                        <input v-model="form.phone" type="tel" inputmode="tel" autocomplete="tel"
-                            placeholder="08xxxxxxxxxx" :class="inputClass('phone')" />
+                    <div class="mt-4 block text-sm font-medium text-gray-700">
+                        <label for="reseller-phone">No. Telp</label>
+                        <PhoneInput id="reseller-phone" v-model="form.phone" :invalid="!!fieldError('phone')" />
                         <span v-if="fieldError('phone')" class="mt-1 block text-xs text-brand-red">
                             {{ fieldError('phone') }}
                         </span>
-                    </label>
+                        <span v-else class="mt-1 block text-xs font-normal text-gray-400">
+                            Format: (+62) 8xxx-xxxx-xxxx
+                        </span>
+                    </div>
 
                     <label class="mt-4 block text-sm font-medium text-gray-700">
                         Alamat

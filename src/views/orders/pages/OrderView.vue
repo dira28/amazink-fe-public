@@ -1,8 +1,16 @@
 <script setup>
+<<<<<<< HEAD
 import { useSeo } from '@/composables/useSeo'
 import { computed, onBeforeUnmount, ref } from 'vue'
+=======
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+>>>>>>> 708a7c30980823f6101598c67978cc1c8fed5f2f
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ORDER_STATUS, useOrders } from '@/composables/useOrders'
+import { fetchProofUrl } from '@/services/orderService'
+import { USE_MOCK } from '@/services/http'
+import { formatPhone } from '@/utils/phone'
+import { waLink } from '@/utils/whatsapp'
 import ConfirmDialog from '@/components/base/ConfirmDialog.vue'
 
 // Replace with the real payment accounts
@@ -22,16 +30,48 @@ const TONE_CLASSES = {
 
 const route = useRoute()
 const router = useRouter()
-const { getOrder, uploadProof, cancelOrder } = useOrders()
+const { getOrder, loadOrder, uploadProof, cancelOrder } = useOrders()
 
 const order = computed(() => getOrder(route.params.id))
+const loading = ref(true)
+const cancelError = ref('')
+
+// Bukti transfer bersifat pribadi: dimuat lewat permintaan berotentikasi, hasilnya alamat sementara di browser.
+const proofUrl = ref('')
+const proofSrc = computed(() => proofUrl.value || order.value?.proof?.dataUrl || '')
+
+async function refreshProof() {
+    if (proofUrl.value) URL.revokeObjectURL(proofUrl.value)
+
+    proofUrl.value = ''
+
+    if (USE_MOCK || !order.value?.proof) return
+
+    try {
+        proofUrl.value = await fetchProofUrl(order.value.id)
+    } catch {
+        // Gambar gagal dimuat; nama dan waktu kirim tetap tampil.
+    }
+}
+
+onMounted(async () => {
+    await loadOrder(route.params.id)
+    loading.value = false
+    refreshProof()
+})
+
+watch(() => order.value?.proof?.uploadedAt, refreshProof)
+
+// Hubungi admin lewat WhatsApp dengan kode pesanan sudah terisi.
+const whatsapp = computed(() =>
+    waLink(`Halo AMAZiNK, saya ingin menanyakan pesanan ${order.value?.id ?? ''}.`)
+)
 
 const selectedFile = ref(null)
 const selectedPreview = ref('')
 const fileError = ref('')
 const sending = ref(false)
 const justSent = ref(false)
-const replacing = ref(false)
 const confirmingCancel = ref(false)
 const copiedNumber = ref('')
 const previewSrc = ref('')
@@ -55,7 +95,7 @@ const formatSize = (bytes) =>
         ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
         : `${Math.max(1, Math.round(bytes / 1024))} KB`
 
-const printerText = (printer) => (printer ? `${printer.brand} ${printer.series}` : '')
+const printerText = (printer) => (typeof printer === 'string' ? printer : printer ? `${printer.brand} ${printer.series}` : '')
 
 const status = computed(
     () => ORDER_STATUS[order.value?.status] ?? { label: order.value?.status, tone: 'gray' }
@@ -71,13 +111,10 @@ const currentStep = computed(
         })[order.value?.status] ?? 0
 )
 
-const canUpload = computed(
-    () => order.value?.status === 'menunggu_pembayaran' || order.value?.status === 'menunggu_verifikasi'
-)
+// Bukti hanya dapat dikirim satu kali; setelah terkirim tidak dapat diganti (kecuali admin menolaknya).
+const canUpload = computed(() => order.value?.status === 'menunggu_pembayaran')
 
-const showDropzone = computed(
-    () => canUpload.value && (!order.value.proof || replacing.value) && !selectedFile.value
-)
+const showDropzone = computed(() => canUpload.value && !order.value.proof && !selectedFile.value)
 
 function clearSelection() {
     if (selectedPreview.value) URL.revokeObjectURL(selectedPreview.value)
@@ -97,12 +134,12 @@ function onFileChange(event) {
     if (!file) return
 
     if (!file.type.startsWith('image/')) {
-        fileError.value = 'File harus berupa gambar (JPG atau PNG).'
+        fileError.value = 'Berkas harus berupa gambar (JPG atau PNG).'
         return
     }
 
     if (file.size > MAX_FILE_SIZE) {
-        fileError.value = `Ukuran file maksimal ${formatSize(MAX_FILE_SIZE)}.`
+        fileError.value = `Ukuran berkas maksimal ${formatSize(MAX_FILE_SIZE)}.`
         return
     }
 
@@ -130,26 +167,19 @@ async function sendProof() {
     }
 
     clearSelection()
-    replacing.value = false
     justSent.value = true
 }
 
-function startReplace() {
-    replacing.value = true
-    justSent.value = false
-    fileError.value = ''
-}
-
-function cancelReplace() {
-    clearSelection()
-    replacing.value = false
-    fileError.value = ''
-}
-
-function onCancelOrder() {
-    cancelOrder(order.value.id)
+async function onCancelOrder() {
+    cancelError.value = ''
     confirmingCancel.value = false
-    router.push('/keranjang')
+
+    try {
+        await cancelOrder(order.value.id)
+        router.push('/keranjang')
+    } catch (e) {
+        cancelError.value = e.message
+    }
 }
 
 async function copyNumber(number) {
@@ -167,6 +197,7 @@ async function copyNumber(number) {
 }
 
 onBeforeUnmount(() => {
+    if (proofUrl.value) URL.revokeObjectURL(proofUrl.value)
     clearSelection()
     clearTimeout(copyTimer)
 })
@@ -181,10 +212,12 @@ useSeo(() => ({
 <template>
     <main class="min-h-[calc(100svh-88px)] bg-white text-gray-950">
         <div class="mx-auto max-w-5xl px-5 py-8 sm:px-8 sm:py-10">
-            <div v-if="!order" class="flex flex-col items-center py-14 text-center">
+            <p v-if="loading" class="py-24 text-center text-sm text-gray-500">Memuat pesanan...</p>
+
+            <div v-else-if="!order" class="flex flex-col items-center py-14 text-center">
                 <h1 class="text-lg font-semibold">Pesanan tidak ditemukan</h1>
                 <p class="mt-1 max-w-sm text-sm text-gray-500">
-                    Pesanan ini tidak ada di browser ini. Pastikan kodenya benar.
+                    Pesanan ini tidak ada di akun Anda. Pastikan kodenya benar.
                 </p>
 
                 <RouterLink to="/catalog-produk#daftar-produk"
@@ -246,7 +279,7 @@ useSeo(() => ({
                         <section v-else class="rounded-2xl border border-gray-200 bg-gray-50 p-5">
                             <h2 class="text-base font-semibold">Pesanan dibatalkan</h2>
                             <p class="mt-1 text-sm text-gray-500">
-                                Pesanan ini tidak akan diproses. Kamu bisa berbelanja lagi kapan saja.
+                                Pesanan ini tidak akan diproses. Anda dapat berbelanja kembali kapan saja.
                             </p>
 
                             <RouterLink to="/catalog-produk#daftar-produk"
@@ -284,6 +317,12 @@ useSeo(() => ({
                         <section v-if="canUpload || order.proof" class="rounded-2xl border border-gray-200 p-5">
                             <h2 class="text-base font-semibold">Bukti pembayaran</h2>
 
+                            <p v-if="order.rejectReason" role="alert"
+                                class="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+                                <span class="font-semibold">Bukti pembayaran sebelumnya ditolak.</span>
+                                {{ order.rejectReason }} Silakan kirim bukti yang baru.
+                            </p>
+
                             <p v-if="justSent"
                                 class="mt-3 flex items-start gap-2 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700"
                                 role="status">
@@ -292,14 +331,14 @@ useSeo(() => ({
                                     aria-hidden="true">
                                     <path d="m5 12 4 4L19 6" />
                                 </svg>
-                                Bukti pembayaran terkirim. Pesananmu menunggu verifikasi.
+                                Bukti pembayaran terkirim. Pesanan Anda menunggu verifikasi.
                             </p>
 
-                            <div v-if="order.proof && !replacing" class="mt-4 flex items-center gap-4">
+                            <div v-if="order.proof" class="mt-4 flex items-center gap-4">
                                 <button type="button"
                                     class="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-200"
-                                    aria-label="Lihat bukti pembayaran" @click="previewSrc = order.proof.dataUrl">
-                                    <img :src="order.proof.dataUrl" alt="Bukti pembayaran"
+                                    aria-label="Lihat bukti pembayaran" @click="previewSrc = proofSrc">
+                                    <img :src="proofSrc" alt="Bukti pembayaran"
                                         class="h-full w-full object-cover" />
                                 </button>
 
@@ -307,14 +346,14 @@ useSeo(() => ({
                                     <p class="text-sm font-medium">Bukti terkirim</p>
                                     <p class="mt-0.5 truncate text-xs text-gray-400">{{ order.proof.name }}</p>
                                     <p class="text-xs text-gray-400">{{ formatDate(order.proof.uploadedAt) }}</p>
-
-                                    <button v-if="canUpload" type="button"
-                                        class="mt-2 text-sm font-medium text-gray-500 transition hover:text-brand-red"
-                                        @click="startReplace">
-                                        Ganti bukti
-                                    </button>
                                 </div>
                             </div>
+
+                            <p v-if="order.proof && order.status === 'menunggu_verifikasi'"
+                                class="mt-3 text-xs leading-5 text-gray-500">
+                                Bukti yang sudah dikirim tidak dapat diganti. Jika ada kesalahan, hubungi admin melalui
+                                WhatsApp.
+                            </p>
 
                             <label v-if="showDropzone"
                                 class="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 px-4 py-9 text-center transition hover:border-brand-red hover:bg-red-50/40">
@@ -370,19 +409,8 @@ useSeo(() => ({
                                         <input type="file" accept="image/*" class="sr-only" @change="onFileChange" />
                                     </label>
 
-                                    <button v-if="!sending && order.proof" type="button"
-                                        class="text-sm font-medium text-gray-500 transition hover:text-brand-red"
-                                        @click="cancelReplace">
-                                        Batal
-                                    </button>
                                 </div>
                             </div>
-
-                            <button v-else-if="replacing" type="button"
-                                class="mt-3 text-sm font-medium text-gray-500 transition hover:text-brand-red"
-                                @click="cancelReplace">
-                                Batal ganti bukti
-                            </button>
 
                             <p v-if="fileError" class="mt-3 text-xs text-brand-red" role="alert">{{ fileError }}</p>
                         </section>
@@ -400,6 +428,11 @@ useSeo(() => ({
                                 </svg>
                                 Lanjut belanja
                             </RouterLink>
+
+                            <a :href="whatsapp" target="_blank" rel="noopener noreferrer"
+                                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-6 text-sm font-semibold text-gray-700 no-underline transition-colors hover:border-green-600 hover:bg-green-50 hover:text-green-700">
+                                Hubungi admin via WhatsApp
+                            </a>
 
                             <button v-if="order.status === 'menunggu_pembayaran'" type="button"
                                 class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-6 text-sm font-semibold text-gray-700 transition-colors hover:border-brand-red hover:bg-red-50 hover:text-brand-red"
@@ -461,7 +494,7 @@ useSeo(() => ({
                                     </div>
                                     <div>
                                         <dt class="text-xs text-gray-400">Nomor HP</dt>
-                                        <dd class="font-medium">{{ order.customer.phone }}</dd>
+                                        <dd class="font-medium">{{ formatPhone(order.customer.phone) || order.customer.phone }}</dd>
                                     </div>
                                     <div>
                                         <dt class="text-xs text-gray-400">Alamat</dt>
@@ -487,7 +520,11 @@ useSeo(() => ({
         </Teleport>
 
         <ConfirmDialog :open="confirmingCancel" danger title="Batalkan pesanan?"
-            description="Pesanan ini tidak akan diproses dan tidak bisa dikembalikan." confirm-label="Ya, batalkan"
+            description="Pesanan ini tidak akan diproses dan tidak dapat dikembalikan." confirm-label="Ya, batalkan"
             cancel-label="Tidak" @confirm="onCancelOrder" @cancel="confirmingCancel = false" />
+
+        <p v-if="cancelError" role="alert" class="mx-auto mt-3 max-w-5xl px-5 text-sm text-brand-red sm:px-8">
+            {{ cancelError }}
+        </p>
     </main>
 </template>

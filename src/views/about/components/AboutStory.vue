@@ -9,8 +9,8 @@ const activeStory = ref(0)
 // Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
 const content = usePageSection('about-us', 'story', {
     eyebrow: 'The AMAZiNK Story',
-    title: 'Kami percaya, [[printing]] bisa lebih baik',
-    description: 'Setiap hasil cetak punya cerita. Di baliknya, ada kebutuhan akan kualitas, efisiensi, dan solusi yang bisa diandalkan. Di situlah perjalanan AMAZINK berawal.',
+    title: 'Kami percaya, [[printing]] dapat lebih baik',
+    description: 'Setiap hasil cetak punya cerita. Di baliknya, ada kebutuhan akan kualitas, efisiensi, dan solusi yang dapat diandalkan. Di situlah perjalanan AMAZINK berawal.',
     link_label: 'Kenali produk kami',
     stories: [
         {
