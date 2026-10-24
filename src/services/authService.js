@@ -1,0 +1,18 @@
+import { apiPost } from './http'
+
+// Login memakai CAPTCHA Turnstile; backend menolak permintaan tanpa token yang valid.
+export async function loginRequest({ email, password, captchaToken }) {
+    const data = await apiPost('/auth/login', { email, password, captcha_token: captchaToken })
+
+    return {
+        token: data.access_token,
+        expiresAt: Date.now() + data.expires_in * 1000,
+        user: { id: data.user.id, name: data.user.full_name, email: data.user.email, role: data.user.role },
+    }
+}
+
+// Mendaftar lalu backend mengirim kode OTP ke email; akun baru aktif setelah OTP diverifikasi.
+export const registerRequest = ({ name, email, password }) =>
+    apiPost('/auth/register', { full_name: name, email, password })
+
+export const verifyEmailRequest = ({ email, code }) => apiPost('/auth/verify-email', { email, code })

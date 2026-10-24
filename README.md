@@ -44,6 +44,10 @@ npm run preview
 
 Selama backend belum siap, biarkan `VITE_USE_MOCK=true`.
 
+### Konten dari admin
+
+Teks halaman Beranda, Reseller, dan footer dibaca dari backend (`GET /public/pages/{slug}`) lewat `usePageSection('home', 'hero', { ...teks bawaan })` di `src/composables/usePage.js`. Teks bawaan di komponen dipakai saat mode dummy, saat backend belum bisa dihubungi, atau saat sebuah field dikosongkan di admin. Judul bisa memuat `[[kata]]` untuk aksen merah (komponen `AccentText`). Halaman About Us belum tersambung.
+
 ## Palet Warna
 
 | Token | Kegunaan |
