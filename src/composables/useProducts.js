@@ -7,6 +7,13 @@ const COLORS = ['Black', 'Cyan', 'Magenta', 'Yellow', 'CMYK']
 
 const detectColor = (name) => COLORS.find((color) => new RegExp(`\\b${color}\\b`, 'i').test(name)) ?? ''
 
+// Ringkasan satu paragraf untuk kartu, judul halaman, dan meta SEO; teks penuh tetap di longDescription.
+const summarize = (text, max = 160) => {
+    const flat = text.replace(/\s+/g, ' ').trim()
+
+    return flat.length > max ? `${flat.slice(0, max - 1).trimEnd()}…` : flat
+}
+
 export const mapProduct = (product) => ({
     id: product.id,
     slug: product.slug,
@@ -14,13 +21,14 @@ export const mapProduct = (product) => ({
     sku: product.code,
     category: product.category,
     categorySlug: product.category_slug,
-    description: `Produk ${product.category} dari AMAZiNK.`,
-    longDescription: '',
+    description: summarize(product.description ?? '') || `Produk ${product.category} dari AMAZiNK.`,
+    longDescription: (product.description ?? '').trim(),
+    specs: product.specifications ?? [],
     image: product.image,
     color: detectColor(product.name),
     volume: '',
     price: product.price,
-    stock: 99,
+    stock: product.stock ?? 0,
     badge: '',
 })
 
