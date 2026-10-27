@@ -553,7 +553,7 @@ onBeforeUnmount(() => {
                     </button>
 
                     <img :src="product.image" :alt="product.name"
-                        class="max-h-full max-w-full rounded-2xl bg-white object-contain p-6 shadow-2xl" />
+                        class="max-h-[calc(100svh-2rem)] max-w-[calc(100vw-2rem)] rounded-2xl bg-white object-contain p-6 shadow-2xl sm:max-h-[calc(100svh-5rem)] sm:max-w-[calc(100vw-5rem)]" />
                 </div>
             </Transition>
         </Teleport>
