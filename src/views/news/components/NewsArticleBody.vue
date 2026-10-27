@@ -76,6 +76,9 @@ function relatedFor(block) {
 
 <style scoped>
 .news-content { overflow-wrap: anywhere; white-space: normal; }
+.news-content :deep(.ql-align-center) { text-align: center; }
+.news-content :deep(.ql-align-right) { text-align: right; }
+.news-content :deep(.ql-align-justify) { text-align: justify; }
 .news-content :deep(pre) { white-space: pre-wrap; overflow-x: auto; margin: 0 0 1.1em; padding: 1em; background: #f4f3ee; border-radius: 1rem; font-size: 0.875rem; line-height: 1.7; }
 .news-content :deep(table) { display: block; max-width: 100%; overflow-x: auto; margin: 0 0 1.1em; border-collapse: collapse; }
 .news-content :deep(td),

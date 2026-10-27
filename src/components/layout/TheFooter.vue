@@ -32,7 +32,7 @@ const menus = [
     { label: 'Beranda', to: '/' },
     { label: 'Cari Printer', to: '/cari-tinta' },
     { label: 'Reseller', to: '/reseller' },
-    { label: 'News', to: '/news' },
+    { label: 'Berita', to: '/news' },
     { label: 'FAQ', to: '/faq' },
     { label: 'Kontak', href: waLink('Halo AMAZiNK, saya ingin bertanya.') },
 ]
@@ -81,13 +81,13 @@ const menus = [
             <!-- CONTACT -->
             <div>
                 <h2 class="text-sm font-bold uppercase tracking-wider">
-                    Contact Us
+                    Hubungi Kami
                 </h2>
 
                 <ul class="mt-4 space-y-4 text-sm">
                     <li>
                         <p class="mb-1 text-xs font-medium uppercase tracking-wider text-muted">
-                            Phone Number
+                            Nomor Telepon
                         </p>
                         <a :href="telHref(contact.phone)" class="text-gray-200 transition-colors hover:text-brand-red">
                             {{ contact.phone }}
@@ -96,7 +96,7 @@ const menus = [
 
                     <li>
                         <p class="mb-1 text-xs font-medium uppercase tracking-wider text-muted">
-                            Email Address
+                            Alamat Email
                         </p>
                         <a :href="`mailto:${contact.email}`"
                             class="break-words text-gray-200 transition-colors hover:text-brand-red">
@@ -109,7 +109,7 @@ const menus = [
             <!-- OFFICE & HOURS -->
             <div>
                 <h2 class="text-sm font-bold uppercase tracking-wider">
-                    Our Office
+                    Kantor Kami
                 </h2>
 
                 <p class="mt-4 whitespace-pre-line text-sm leading-6 text-gray-300">
@@ -117,7 +117,7 @@ const menus = [
                 </p>
 
                 <h3 class="mt-6 text-sm font-bold">
-                    Working Hours
+                    Jam Kerja
                 </h3>
 
                 <ul class="mt-3 space-y-2 text-sm text-muted">
@@ -135,11 +135,11 @@ const menus = [
                 class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 text-center text-xs text-muted sm:flex-row sm:text-left">
                 <p>
                     © {{ year }} {{ brand.company_name }}.
-                    All rights reserved.
+                    Hak cipta dilindungi.
                 </p>
 
                 <p>
-                    Made for amazing printing.
+                    Dibuat untuk hasil cetak terbaik.
                 </p>
             </div>
         </div>

@@ -39,11 +39,11 @@ const imageFailed = ref(false)
 
             <div class="mt-auto flex items-center justify-between gap-3 pt-4">
                 <span class="text-[11px] text-gray-400">
-                    {{ formatShortDate(post.date) }} • {{ post.readTime }} min read
+                    {{ formatShortDate(post.date) }} • {{ post.readTime }} menit baca
                 </span>
                 <span
                     class="inline-flex items-center gap-1.5 text-[13px] font-semibold text-gray-950 transition-colors group-hover:text-brand-red">
-                    Read more
+                    Baca selengkapnya
                     <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
                 </span>
             </div>

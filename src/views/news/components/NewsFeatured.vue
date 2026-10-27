@@ -22,7 +22,7 @@ defineProps({
                 {{ post.title }}
             </h2>
             <p class="mt-2 text-[11px] text-white/75">
-                {{ formatShortDate(post.date) }} • {{ post.readTime }} min read
+                {{ formatShortDate(post.date) }} • {{ post.readTime }} menit baca
             </p>
         </div>
     </RouterLink>

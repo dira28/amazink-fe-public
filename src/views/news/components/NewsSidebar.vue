@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import NewsImage from './NewsImage.vue'
 import { usePageSection } from '@/composables/usePage'
@@ -68,22 +68,6 @@ const formatDate = (iso) =>
 
 const formatPrice = (value) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value)
-
-const email = ref('')
-const emailError = ref('')
-const subscribed = ref(false)
-
-function subscribe() {
-    if (!/^\S+@\S+\.\S+$/.test(email.value.trim())) {
-        emailError.value = 'Email tidak valid'
-        return
-    }
-
-    emailError.value = ''
-    // TODO: send to newsletter API
-    subscribed.value = true
-    email.value = ''
-}
 </script>
 
 <template>
@@ -109,7 +93,7 @@ function subscribe() {
         </section>
 
         <section class="rounded-3xl bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
-            <h2 class="text-base font-semibold tracking-[-0.02em]">Latest Posts</h2>
+            <h2 class="text-base font-semibold tracking-[-0.02em]">Berita Terbaru</h2>
 
             <ul class="m-0 mt-4 list-none space-y-4 p-0">
                 <li v-for="post in latest" :key="post.slug">
@@ -130,32 +114,8 @@ function subscribe() {
             </ul>
         </section>
 
-        <section class="rounded-3xl bg-[#111] p-6 text-[#f7f7f5]">
-            <h2 class="text-base font-semibold tracking-[-0.02em]">Newsletter</h2>
-            <p class="mt-2 text-[13px] leading-6 text-[#929292]">
-                Dapatkan informasi dan membership dengan bergabung di website kami.
-            </p>
-
-            <p v-if="subscribed" class="mt-4 rounded-2xl bg-white/10 px-4 py-3 text-[13px]" role="status">
-                Terima kasih, Anda telah terdaftar.
-            </p>
-
-            <form v-else class="mt-4" novalidate @submit.prevent="subscribe">
-                <label class="sr-only" for="newsletter-email">Email</label>
-                <input id="newsletter-email" v-model="email" type="email" placeholder="Email Anda" autocomplete="email"
-                    class="h-11 w-full rounded-full border-0 bg-white/10 px-4 text-sm text-white outline-none transition-colors placeholder:text-[#777] focus:bg-white/15" />
-
-                <p v-if="emailError" class="mt-1.5 px-2 text-xs text-[#ff858b]" role="alert">{{ emailError }}</p>
-
-                <button type="submit"
-                    class="mt-3 h-11 w-full cursor-pointer rounded-full border-0 bg-brand-red text-[13px] font-semibold text-white transition hover:opacity-90">
-                    Berlangganan
-                </button>
-            </form>
-        </section>
-
         <section class="rounded-3xl bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
-            <h2 class="text-base font-semibold tracking-[-0.02em]">Katalog Product</h2>
+            <h2 class="text-base font-semibold tracking-[-0.02em]">Katalog Produk</h2>
 
             <ul class="m-0 mt-4 list-none space-y-4 p-0">
                 <li v-for="product in products" :key="product.name">

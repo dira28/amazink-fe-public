@@ -3,13 +3,20 @@ import { fetchPage } from '@/services/pageService'
 
 // Satu halaman hanya diambil sekali, lalu dipakai bersama oleh semua komponen.
 const pages = new Map()
+const requests = new Map()
 
-function loadPage(slug) {
+function requestPage(slug) {
+    if (!requests.has(slug)) requests.set(slug, fetchPage(slug))
+
+    return requests.get(slug)
+}
+
+export function loadPage(slug) {
     if (!pages.has(slug)) {
         const state = ref(null)
         pages.set(slug, state)
 
-        fetchPage(slug)
+        requestPage(slug)
             .then((page) => {
                 state.value = page
             })

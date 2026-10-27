@@ -2,11 +2,11 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useCart } from '@/composables/useCart'
-import { shopProducts as products } from '@/data/products'
+import { usePrinters } from '@/composables/usePrinters'
 import { useSeo } from '@/composables/useSeo'
 
 useSeo(() => ({
-    title: 'Cari Tinta yang Cocok untuk Printermu',
+    title: 'Cari Tinta yang Cocok untuk Printer Anda',
     description: 'Pilih merek dan seri printer, lihat tinta AMAZiNK yang cocok.',
     path: '/cari-tinta',
 }))

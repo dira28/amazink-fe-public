@@ -79,7 +79,7 @@ watch(query, () => {
             <header>
                 <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">Blog AMAZiNK</p>
                 <h1 class="mt-2.5 text-[clamp(32px,4.5vw,52px)] font-semibold leading-[1.08] tracking-[-0.05em]">
-                    Latest News
+                    Berita Terbaru
                 </h1>
                 <p class="mt-3 max-w-lg text-sm leading-[1.8] text-[#737373]">
                     Tips, panduan, dan kabar terbaru seputar printer dan produk AMAZiNK.
@@ -90,7 +90,7 @@ watch(query, () => {
                 <NewsFeatured :post="featured" />
 
                 <div class="min-w-0">
-                    <h2 class="text-xl font-semibold tracking-[-0.03em]">Latest post</h2>
+                    <h2 class="text-xl font-semibold tracking-[-0.03em]">Artikel terbaru</h2>
                     <ul class="mt-5 space-y-5">
                         <li v-for="post in latest" :key="post.slug">
                             <RouterLink :to="`/news/${post.slug}`" class="group flex items-center gap-3.5 no-underline">
@@ -104,7 +104,7 @@ watch(query, () => {
                                         {{ post.title }}
                                     </span>
                                     <span class="mt-1 block text-[11px] text-gray-400">
-                                        {{ formatShortDate(post.date) }} • {{ post.readTime }} min read
+                                        {{ formatShortDate(post.date) }} • {{ post.readTime }} menit baca
                                     </span>
                                 </span>
                             </RouterLink>

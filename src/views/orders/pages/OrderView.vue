@@ -4,14 +4,15 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ORDER_STATUS, useOrders } from '@/composables/useOrders'
 import { fetchProofUrl } from '@/services/orderService'
+import { fetchPaymentAccounts, formatAccountNumber } from '@/services/paymentService'
 import { USE_MOCK } from '@/services/http'
 import { formatPhone } from '@/utils/phone'
 import { waLink } from '@/utils/whatsapp'
 import ConfirmDialog from '@/components/base/ConfirmDialog.vue'
 
-// Replace with the real payment accounts
-const PAYMENT_ACCOUNTS = [
-    { bank: 'Nama bank', number: '0000 0000 0000', holder: 'Atas nama' },
+// Data contoh untuk mode dummy; pada mode API rekening diambil dari server (diatur admin).
+const MOCK_PAYMENT_ACCOUNTS = [
+    { id: 0, bank: 'Nama bank', number: '000000000000', holder: 'Atas nama' },
 ]
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -50,7 +51,24 @@ async function refreshProof() {
     }
 }
 
+const paymentAccounts = ref(USE_MOCK ? MOCK_PAYMENT_ACCOUNTS : [])
+const accountsState = ref(USE_MOCK ? 'ready' : 'loading')
+
+async function loadPaymentAccounts() {
+    if (USE_MOCK) return
+
+    accountsState.value = 'loading'
+
+    try {
+        paymentAccounts.value = await fetchPaymentAccounts()
+        accountsState.value = 'ready'
+    } catch {
+        accountsState.value = 'failed'
+    }
+}
+
 onMounted(async () => {
+    loadPaymentAccounts()
     await loadOrder(route.params.id)
     loading.value = false
     refreshProof()
@@ -293,12 +311,33 @@ useSeo(() => ({
 
                             <h2 class="mt-5 text-sm font-semibold">Transfer ke rekening</h2>
 
-                            <ul class="mt-3 space-y-2">
-                                <li v-for="account in PAYMENT_ACCOUNTS" :key="account.number"
+                            <p v-if="accountsState === 'loading'" class="mt-3 text-sm text-gray-400">
+                                Memuat rekening...
+                            </p>
+
+                            <p v-else-if="accountsState === 'failed'" role="alert"
+                                class="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+                                Rekening tujuan gagal dimuat.
+                                <button type="button" class="font-semibold underline" @click="loadPaymentAccounts">
+                                    Coba lagi
+                                </button>
+                            </p>
+
+                            <p v-else-if="!paymentAccounts.length"
+                                class="mt-3 rounded-xl bg-gray-50 px-4 py-3 text-sm text-gray-600">
+                                Rekening pembayaran belum tersedia. Silakan
+                                <a :href="whatsapp" target="_blank" rel="noopener noreferrer"
+                                    class="font-semibold text-brand-red underline">hubungi kami melalui WhatsApp</a>.
+                            </p>
+
+                            <ul v-else class="mt-3 space-y-2">
+                                <li v-for="account in paymentAccounts" :key="account.id"
                                     class="flex items-center justify-between gap-3 rounded-xl bg-gray-50 px-4 py-3">
                                     <div class="min-w-0">
                                         <p class="text-xs text-gray-400">{{ account.bank }} · {{ account.holder }}</p>
-                                        <p class="mt-0.5 text-sm font-semibold tracking-wide">{{ account.number }}</p>
+                                        <p class="mt-0.5 text-sm font-semibold tracking-wide">
+                                            {{ formatAccountNumber(account.number) }}
+                                        </p>
                                     </div>
 
                                     <button type="button"
@@ -412,11 +451,11 @@ useSeo(() => ({
                         </section>
 
                         <!-- Aksi -->
-                        <div class="flex flex-col gap-3 pt-1 sm:flex-row">
+                        <div class="flex flex-col gap-3 pt-1 sm:flex-row sm:flex-wrap">
                             <RouterLink to="/keranjang"
-                                class="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-[#171717] px-6 text-sm font-semibold text-white no-underline transition-colors hover:bg-brand-red">
+                                class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-[#171717] px-6 text-sm font-semibold whitespace-nowrap text-white no-underline transition-colors hover:bg-brand-red sm:flex-1">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                                    stroke-linecap="round" stroke-linejoin="round" class="h-4.5 w-4.5"
+                                    stroke-linecap="round" stroke-linejoin="round" class="h-4.5 w-4.5 shrink-0"
                                     aria-hidden="true">
                                     <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H6" />
                                     <circle cx="10" cy="20" r="1" />
@@ -426,12 +465,12 @@ useSeo(() => ({
                             </RouterLink>
 
                             <a :href="whatsapp" target="_blank" rel="noopener noreferrer"
-                                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-6 text-sm font-semibold text-gray-700 no-underline transition-colors hover:border-green-600 hover:bg-green-50 hover:text-green-700">
-                                Hubungi admin via WhatsApp
+                                class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-6 text-sm font-semibold whitespace-nowrap text-gray-700 no-underline transition-colors hover:border-green-600 hover:bg-green-50 hover:text-green-700">
+                                Hubungi admin
                             </a>
 
                             <button v-if="order.status === 'menunggu_pembayaran'" type="button"
-                                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-6 text-sm font-semibold text-gray-700 transition-colors hover:border-brand-red hover:bg-red-50 hover:text-brand-red"
+                                class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-6 text-sm font-semibold whitespace-nowrap text-gray-700 transition-colors hover:border-brand-red hover:bg-red-50 hover:text-brand-red"
                                 @click="confirmingCancel = true">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                                     stroke-linecap="round" class="h-4 w-4" aria-hidden="true">
