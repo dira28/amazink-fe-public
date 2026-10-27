@@ -7,7 +7,7 @@ const router = useRouter()
 
 useSeo(() => ({
     title: 'Halaman tidak ditemukan',
-    description: 'Halaman yang kamu cari tidak ada atau sudah dipindahkan.',
+    description: 'Halaman yang Anda cari tidak ada atau sudah dipindahkan.',
     path: route.path,
     noindex: true,
 }))
@@ -18,10 +18,10 @@ const canGoBack = !!window.history.state?.back
 const goBack = () => router.back()
 
 const shortcuts = [
-    { label: 'Catalog Produk', to: '/catalog-produk' },
+    { label: 'Katalog Produk', to: '/catalog-produk' },
     { label: 'Cari Tinta', to: '/cari-tinta' },
     { label: 'Galeri', to: '/galeri' },
-    { label: 'News', to: '/news' },
+    { label: 'Berita', to: '/news' },
 ]
 </script>
 
@@ -34,7 +34,7 @@ const shortcuts = [
         </div>
 
         <div class="relative w-full max-w-lg text-center">
-            <p class="m-0 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-red">Error 404</p>
+            <p class="m-0 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-red">Kesalahan 404</p>
 
             <p class="m-0 mt-3 select-none text-[clamp(96px,22vw,168px)] font-black leading-none tracking-[-0.07em]"
                 aria-hidden="true">
@@ -46,7 +46,7 @@ const shortcuts = [
             </h1>
 
             <p class="mx-auto mb-0 mt-3 max-w-sm text-sm leading-7 text-[#737373]">
-                Alamat yang kamu buka tidak ada atau sudah dipindahkan. Periksa lagi alamatnya, atau lanjut dari
+                Alamat yang Anda buka tidak ada atau sudah dipindahkan. Periksa lagi alamatnya, atau lanjut dari
                 halaman di bawah.
             </p>
 

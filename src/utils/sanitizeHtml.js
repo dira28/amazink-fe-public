@@ -29,11 +29,16 @@ export function sanitizeHtml(html) {
                 continue
             }
 
+            // Satu-satunya kelas yang dipertahankan adalah perataan teks dari editor (rata tengah/kanan/rata kiri-kanan).
+            const align = (child.getAttribute('class') || '').match(/ql-align-(?:center|right|justify)/)?.[0]
+
             const allowed = ALLOWED_ATTRS[child.tagName] ?? []
             for (const attr of [...child.attributes]) {
                 const keep = allowed.includes(attr.name) && (!['href', 'src'].includes(attr.name) || SAFE_URL.test(attr.value.trim()))
                 if (!keep) child.removeAttribute(attr.name)
             }
+
+            if (align) child.setAttribute('class', align)
 
             if (child.tagName === 'A') {
                 child.setAttribute('rel', 'noopener noreferrer')

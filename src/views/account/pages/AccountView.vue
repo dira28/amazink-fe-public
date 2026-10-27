@@ -37,13 +37,16 @@ const TONE_CLASSES = {
     gray: 'bg-gray-100 text-gray-600',
 }
 
-const form = reactive({ phone: user.value.phone })
+// Sesi bisa menjadi kosong sesaat (keluar atau kedaluwarsa) sebelum halaman berpindah; jangan sampai tampilan error.
+const profile = computed(() => user.value ?? { name: '', email: '', phone: '' })
+
+const form = reactive({ phone: profile.value.phone })
 const saving = ref(false)
 const saved = ref(false)
 const error = ref('')
 
-const initial = computed(() => user.value.name.trim().charAt(0).toUpperCase() || '?')
-const dirty = computed(() => form.phone !== user.value.phone)
+const initial = computed(() => profile.value.name.trim().charAt(0).toUpperCase() || '?')
+const dirty = computed(() => form.phone !== profile.value.phone)
 
 // Nomor boleh dikosongkan; bila diisi harus valid.
 const phoneProblem = computed(() => (form.phone ? validatePhoneValue(form.phone) : ''))
@@ -72,6 +75,8 @@ async function save() {
 }
 
 function signOut() {
+    // Sesi dihapus dulu: halaman login hanya untuk tamu, jadi penjaga rute menolaknya selama pengguna masih masuk.
+    // Halaman ini aman dirender sesaat tanpa pengguna (lihat `profile`).
     logout()
     router.replace({ name: 'login' })
 }
@@ -93,8 +98,8 @@ useSeo(() => ({
                         {{ initial }}
                     </span>
                     <div>
-                        <h1 class="m-0 text-2xl font-semibold tracking-[-0.03em]">{{ user.name }}</h1>
-                        <p class="m-0 text-sm text-[#737373]">{{ user.email }}</p>
+                        <h1 class="m-0 text-2xl font-semibold tracking-[-0.03em]">{{ profile.name }}</h1>
+                        <p class="m-0 text-sm text-[#737373]">{{ profile.email }}</p>
                     </div>
                 </div>
 
@@ -111,7 +116,7 @@ useSeo(() => ({
                 <form class="mt-5 grid gap-4 sm:grid-cols-2" @submit.prevent="save">
                     <label class="block">
                         <span class="text-[13px] font-semibold">Nama lengkap</span>
-                        <input :value="user.name" type="text" disabled :class="input + ' opacity-60'" />
+                        <input :value="profile.name" type="text" disabled :class="input + ' opacity-60'" />
                     </label>
                     <div class="block">
                         <label for="account-phone" class="text-[13px] font-semibold">Nomor WhatsApp</label>
@@ -120,7 +125,7 @@ useSeo(() => ({
                     </div>
                     <label class="block sm:col-span-2">
                         <span class="text-[13px] font-semibold">Email</span>
-                        <input :value="user.email" type="email" disabled :class="input + ' opacity-60'" />
+                        <input :value="profile.email" type="email" disabled :class="input + ' opacity-60'" />
                     </label>
 
                     <div class="flex items-center gap-4 sm:col-span-2">

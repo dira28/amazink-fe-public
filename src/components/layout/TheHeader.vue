@@ -37,7 +37,7 @@ const navItems = [
 
 const infoItems = [
     { label: 'Reseller', to: '/reseller', match: ['/reseller'] },
-    { label: 'News', to: '/news', match: ['/news'] },
+    { label: 'Berita', to: '/news', match: ['/news'] },
     { label: 'Galeri', to: '/galeri', match: ['/galeri'] },
     { label: 'FAQ', to: '/faq', match: ['/faq'] },
 ]
