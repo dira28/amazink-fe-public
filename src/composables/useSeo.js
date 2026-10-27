@@ -1,10 +1,11 @@
 import { onBeforeUnmount, watchEffect } from 'vue'
+import { loadPage } from '@/composables/usePage'
 
 const SITE_NAME = 'AMAZiNK'
 const SITE_URL = (import.meta.env.VITE_SITE_URL || '').replace(/\/$/, '')
 const DEFAULT_TITLE = 'AMAZiNK | Tinta, Toner, dan Printer'
 const DEFAULT_DESCRIPTION =
-    'AMAZiNK menyediakan tinta, toner, dan kebutuhan printer untuk rumah dan kantor. Cari tinta sesuai tipe printermu dan pesan online.'
+    'AMAZiNK menyediakan tinta, toner, dan kebutuhan printer untuk rumah dan kantor. Cari tinta sesuai tipe printer Anda dan pesan secara online.'
 const DEFAULT_IMAGE = '/og-default.jpg'
 
 export const absoluteUrl = (value = '/') => (/^https?:\/\//.test(value) ? value : `${SITE_URL}${value}`)
@@ -45,13 +46,14 @@ function setCanonical(href) {
     el.setAttribute('href', href)
 }
 
-export function applySeo({ title, description, image, path = '/', type = 'website', noindex = false } = {}) {
+export function applySeo({ title, description, keywords, image, path = '/', type = 'website', noindex = false } = {}) {
     const fullTitle = title ? `${title} | ${SITE_NAME}` : DEFAULT_TITLE
     const desc = trim(description || DEFAULT_DESCRIPTION)
     const url = SITE_URL ? `${SITE_URL}${path}` : ''
 
     document.title = fullTitle
     setMeta('name', 'description', desc)
+    setMeta('name', 'keywords', keywords)
     setMeta('name', 'robots', noindex ? 'noindex, nofollow' : 'index, follow')
     setCanonical(noindex ? '' : url)
 
@@ -66,6 +68,23 @@ export function applySeo({ title, description, image, path = '/', type = 'websit
 // For pages whose data loads at runtime (product detail, news detail)
 export function useSeo(getOptions) {
     watchEffect(() => applySeo(getOptions()))
+}
+
+// Halaman yang SEO-nya diatur dari admin: judul, deskripsi, dan kata kunci dari admin menggantikan nilai bawaan
+// (yang kosong tetap memakai bawaan). Diterapkan ulang otomatis begitu datanya tiba.
+export function usePageSeo(slug, getDefaults) {
+    const page = loadPage(slug)
+
+    useSeo(() => {
+        const defaults = getDefaults()
+
+        return {
+            ...defaults,
+            title: page.value?.meta_title || defaults.title,
+            description: page.value?.meta_description || defaults.description,
+            keywords: page.value?.meta_keywords || '',
+        }
+    })
 }
 
 export function useJsonLd(key, getData) {

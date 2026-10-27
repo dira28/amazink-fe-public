@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import NewsArticleBody from '../components/NewsArticleBody.vue'
 import NewsChip from '../components/NewsChip.vue'
 import NewsImage from '../components/NewsImage.vue'
@@ -12,6 +12,7 @@ import { fetchNews, fetchNewsPost } from '@/services/newsService'
 import { absoluteUrl, useJsonLd, useSeo } from '@/composables/useSeo'
 
 const route = useRoute()
+const router = useRouter()
 
 const post = ref(null)
 const newsPosts = ref(USE_MOCK ? mockPosts : [])
@@ -33,6 +34,12 @@ watch(
             const [detail, list] = await Promise.all([fetchNewsPost(slug), fetchNews()])
             post.value = { ...fromApi(detail), content: detail.content }
             newsPosts.value = list.map(fromApi)
+
+            // Berita dikenali dari nomor di akhir slug. Slug yang salah ketik atau sudah lama (judul diubah)
+            // diarahkan ke slug yang benar, agar satu berita hanya punya satu alamat.
+            if (detail.slug && detail.slug !== slug) {
+                router.replace({ name: 'news-detail', params: { slug: detail.slug }, query: route.query, hash: route.hash })
+            }
         } catch {
             post.value = null
         } finally {
@@ -92,7 +99,7 @@ const formatDate = (iso) =>
         <div class="mx-auto max-w-7xl px-5 pb-16 pt-8 sm:px-8 sm:pb-24 sm:pt-10">
             <RouterLink to="/news"
                 class="inline-flex items-center gap-2 text-[13px] font-semibold text-gray-950 no-underline transition-colors hover:text-brand-red">
-                <span aria-hidden="true">←</span> Back to news
+                <span aria-hidden="true">←</span> Kembali ke berita
             </RouterLink>
 
             <div v-if="post" class="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-10">
@@ -105,8 +112,8 @@ const formatDate = (iso) =>
                     </h1>
 
                     <p class="mt-3 text-[13px] text-gray-500">
-                        By {{ post.author || 'Admin AMAZiNK' }} •
-                        <time :datetime="post.date">{{ formatDate(post.date) }}</time> • {{ post.readTime }} min read
+                        Oleh {{ post.author || 'Admin AMAZiNK' }} •
+                        <time :datetime="post.date">{{ formatDate(post.date) }}</time> • {{ post.readTime }} menit baca
                     </p>
 
                     <div class="mt-6 aspect-[16/9] overflow-hidden rounded-2xl bg-[#ebeae5]">
@@ -120,9 +127,9 @@ const formatDate = (iso) =>
             </div>
 
             <div v-else class="mt-10 rounded-3xl bg-white px-5 py-14 text-center ring-1 ring-black/5">
-                <p class="m-0 text-sm font-semibold">{{ loading ? 'Memuat artikel...' : 'Article not found' }}</p>
+                <p class="m-0 text-sm font-semibold">{{ loading ? 'Memuat artikel...' : 'Artikel tidak ditemukan' }}</p>
                 <RouterLink v-if="!loading" to="/news" class="mt-4 inline-block text-[13px] font-semibold text-brand-red no-underline">
-                    Back to news
+                    Kembali ke berita
                 </RouterLink>
             </div>
         </div>

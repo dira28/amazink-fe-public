@@ -25,13 +25,18 @@ const hero = usePageSection('home', 'hero', {
 <template>
     <section id="beranda" aria-labelledby="hero-title"
         class="relative isolate flex min-h-[calc(100svh-96px)] items-center overflow-hidden bg-[rgb(216_217_218)] text-[#1d1f24]">
+        <!-- Gambar latar di belakang teks -->
+        <img :src="hero.image || '/images/home/hero-home.png'" alt="" aria-hidden="true" fetchpriority="high"
+            class="pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover object-[78%_center] sm:object-right" />
+
+        <!-- Lapisan pudar agar teks tetap terbaca: penuh di layar kecil, memudar ke kanan di layar lebar -->
         <div aria-hidden="true"
-            class="pointer-events-none absolute -right-12.5 -top-15 h-95 w-95 rounded-full bg-[rgb(255_205_210/0.35)] opacity-65 blur-[100px]" />
+            class="pointer-events-none absolute inset-0 -z-10 bg-[rgb(216_217_218/0.55)] sm:bg-transparent sm:bg-linear-to-r sm:from-[rgb(216_217_218/0.96)] sm:from-0% sm:via-[rgb(216_217_218/0.9)] sm:via-38% sm:to-transparent sm:to-75%" />
 
         <div
-            class="relative mx-auto grid w-full max-w-400 grid-cols-1 items-center gap-3 px-5.5 pb-7.5 pt-8 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] sm:gap-4.5 sm:px-8 sm:py-9.5 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:gap-7 lg:px-[clamp(24px,4vw,68px)] lg:py-11">
+            class="relative mx-auto w-full max-w-400 px-5.5 pb-7.5 pt-8 sm:px-8 sm:py-9.5 lg:px-[clamp(24px,4vw,68px)] lg:py-11">
             <!-- Konten kiri -->
-            <div class="relative z-10 min-w-0 sm:max-w-162.5">
+            <div class="relative z-10 min-w-0 sm:max-w-[min(46%,40rem)]">
                 <div
                     class="mb-4.5 inline-flex items-center gap-2.25 rounded-full border border-red-200 bg-white/85 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#e91d2d] sm:mb-5 sm:px-3.5 sm:py-2.25 sm:text-[11px]">
                     <span class="h-2 w-2 rounded-full bg-brand-red" />
@@ -44,7 +49,7 @@ const hero = usePageSection('home', 'hero', {
                 </h1>
 
                 <p
-                    class="mt-4 max-w-full text-sm leading-[1.7] text-[#626a76] sm:mt-5 sm:max-w-122.5 sm:text-[15px] sm:leading-[1.8]">
+                    class="mt-4 max-w-full text-sm leading-[1.7] text-[#3f4652] sm:mt-5 sm:max-w-122.5 sm:text-[15px] sm:leading-[1.8]">
                     {{ hero.description }}
                 </p>
 
@@ -58,7 +63,7 @@ const hero = usePageSection('home', 'hero', {
                 </div>
 
                 <div
-                    class="mt-5.5 flex flex-wrap gap-x-4 gap-y-2.5 text-[10px] font-medium text-[#626a76] sm:mt-7 sm:gap-x-5 sm:text-[11px]">
+                    class="mt-5.5 flex flex-wrap gap-x-4 gap-y-2.5 text-[10px] font-medium text-[#3f4652] sm:mt-7 sm:gap-x-5 sm:text-[11px]">
                     <span v-for="benefit in hero.benefits" :key="benefit.id" class="flex items-center gap-2">
                         <svg class="h-4 w-4 shrink-0 text-brand-red" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -67,13 +72,6 @@ const hero = usePageSection('home', 'hero', {
                         {{ benefit.text }}
                     </span>
                 </div>
-            </div>
-
-            <!-- Gambar -->
-            <div class="group/visual relative mt-2 flex w-full min-w-0 items-center justify-center sm:mt-0">
-                <img :src="hero.image || '/images/home/hero-home.png'" alt="Produk AMAZiNK berupa tinta, toner, dan printer"
-                    fetchpriority="high"
-                    class="relative z-10 block h-auto w-full max-w-full object-contain mask-[radial-gradient(ellipse_at_center,#000_60%,transparent_100%)] transition-transform duration-500 motion-reduce:transition-none sm:w-[108%] sm:max-w-212.5 lg:w-[112%] lg:group-hover/visual:-translate-y-1" />
             </div>
         </div>
     </section>

@@ -3,9 +3,9 @@ import HeroSection from '../components/HeroSection.vue'
 import CategorySection from '../components/CategorySection.vue'
 import HomeCollection from '../components/HomeCollection.vue'
 import TestimonialsSection from '../components/TestimonialsSection.vue'
-import { absoluteUrl, useJsonLd, useSeo } from '@/composables/useSeo'
+import { absoluteUrl, useJsonLd, usePageSeo } from '@/composables/useSeo'
 
-useSeo(() => ({
+usePageSeo('home', () => ({
     title: 'Tinta, Toner, dan Printer Berkualitas',
     description: 'Print Amazing. Solusi kebutuhan tinta, toner, dan printer untuk mendukung produktivitas Anda.',
     path: '/',

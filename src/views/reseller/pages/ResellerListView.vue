@@ -5,7 +5,7 @@ import { useSeo } from '@/composables/useSeo'
 
 useSeo(() => ({
     title: 'Daftar Reseller Resmi',
-    description: 'Temukan reseller resmi AMAZiNK di kotamu.',
+    description: 'Temukan reseller resmi AMAZiNK di kota Anda.',
     path: '/reseller/daftar',
 }))
 </script>
