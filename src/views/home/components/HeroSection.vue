@@ -29,10 +29,17 @@ const hero = usePageSection('home', 'hero', {
         <img :src="hero.image || '/images/home/hero-home.png'" alt="" aria-hidden="true" fetchpriority="high"
             class="pointer-events-none absolute inset-0 -z-20 h-full w-full object-cover object-[78%_center] sm:object-right" />
 
-        <!-- Lapisan pudar agar teks tetap terbaca: penuh di layar kecil, memudar ke kanan di layar lebar -->
+        <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10 hidden backdrop-blur-sm sm:block"
+            style="-webkit-mask-image: linear-gradient(to right, #000 0%, #000 35%, transparent 72%); mask-image: linear-gradient(to right, #000 0%, #000 35%, transparent 72%)">
+        </div>
         <div aria-hidden="true"
-            class="pointer-events-none absolute inset-0 -z-10 bg-[rgb(216_217_218/0.55)] sm:bg-transparent sm:bg-linear-to-r sm:from-[rgb(216_217_218/0.96)] sm:from-0% sm:via-[rgb(216_217_218/0.9)] sm:via-38% sm:to-transparent sm:to-75%" />
+            class="pointer-events-none absolute inset-0 -z-10 hidden bg-white/30 backdrop-blur-2xl sm:block"
+            style="-webkit-mask-image: linear-gradient(to right, #000 0%, #000 22%, transparent 52%); mask-image: linear-gradient(to right, #000 0%, #000 22%, transparent 52%)">
+        </div>
 
+        <div aria-hidden="true"
+            class="pointer-events-none absolute inset-0 -z-10 bg-white/45 backdrop-blur-md sm:hidden">
+        </div>
         <div
             class="relative mx-auto w-full max-w-400 px-5.5 pb-7.5 pt-8 sm:px-8 sm:py-9.5 lg:px-[clamp(24px,4vw,68px)] lg:py-11">
             <!-- Konten kiri -->
