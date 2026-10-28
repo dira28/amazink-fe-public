@@ -1,13 +1,14 @@
 import { computed, reactive } from 'vue'
 import {
     loginRequest,
+    logoutRequest,
     registerRequest,
     requestPasswordResetRequest,
     resetPasswordRequest,
     verifyEmailRequest,
 } from '@/services/authService'
+import { sessionState, setSession } from '@/services/session'
 
-const SESSION_KEY = 'amazink_session'
 const PHONES_KEY = 'amazink_phones'
 
 const read = (key, fallback) => {
@@ -18,30 +19,15 @@ const read = (key, fallback) => {
     }
 }
 
-// Sesi yang tokennya sudah kedaluwarsa dibuang saat aplikasi dibuka.
-const loadSession = () => {
-    const session = read(SESSION_KEY, null)
-    return session && session.expiresAt > Date.now() ? session : null
-}
-
-const state = reactive({ session: loadSession(), phones: read(PHONES_KEY, {}) })
-
-function saveSession(session) {
-    state.session = session
-    try {
-        if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session))
-        else localStorage.removeItem(SESSION_KEY)
-    } catch {
-        // Penyimpanan browser bisa diblokir; sesi tetap berlaku selama halaman terbuka.
-    }
-}
+const state = reactive({ phones: read(PHONES_KEY, {}) })
 
 // Backend belum menyimpan nomor WhatsApp, jadi nomor hanya disimpan di browser ini per akun.
+// Token akses yang sudah habis tidak membuat pengguna keluar: selama masih ada refresh token, sesi diperbarui
+// otomatis pada permintaan berikutnya (lihat services/http.js).
 const currentUser = computed(() => {
-    const session = state.session
+    const session = sessionState.session
 
     if (!session) return null
-    if (session.expiresAt <= Date.now()) return null
 
     return { ...session.user, phone: state.phones[session.user.id] ?? '' }
 })
@@ -49,11 +35,11 @@ const currentUser = computed(() => {
 export function useAuth() {
     return {
         user: currentUser,
-        token: computed(() => state.session?.token ?? null),
+        token: computed(() => sessionState.session?.token ?? null),
         isLoggedIn: computed(() => !!currentUser.value),
 
         async login(payload) {
-            saveSession(await loginRequest(payload))
+            setSession(await loginRequest(payload))
         },
         // Mendaftar tidak langsung masuk: pengguna harus memverifikasi OTP lalu login.
         register: registerRequest,
@@ -61,7 +47,7 @@ export function useAuth() {
         requestPasswordReset: requestPasswordResetRequest,
         resetPassword: resetPasswordRequest,
         updatePhone(phone) {
-            state.phones = { ...state.phones, [state.session.user.id]: phone }
+            state.phones = { ...state.phones, [sessionState.session.user.id]: phone }
 
             try {
                 localStorage.setItem(PHONES_KEY, JSON.stringify(state.phones))
@@ -70,7 +56,9 @@ export function useAuth() {
             }
         },
         logout() {
-            saveSession(null)
+            // Sesi di server dicabut tanpa menunggu; sesi di browser langsung dihapus.
+            logoutRequest(sessionState.session?.refreshToken)
+            setSession(null)
         },
     }
 }

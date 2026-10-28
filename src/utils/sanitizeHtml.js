@@ -12,7 +12,11 @@ export function sanitizeHtml(html) {
 
     const clean = (node) => {
         for (const child of [...node.childNodes]) {
-            if (child.nodeType === Node.TEXT_NODE) continue
+            if (child.nodeType === Node.TEXT_NODE) {
+                // Editor sering menyimpan spasi biasa sebagai spasi tak terputus, sehingga kalimat tidak bisa turun baris.
+                child.textContent = child.textContent.replace(/ /g, ' ')
+                continue
+            }
 
             if (child.nodeType !== Node.ELEMENT_NODE || !ALLOWED_TAGS.has(child.tagName)) {
                 // Elemen tak dikenal dibuang; teks di dalamnya tetap dipertahankan kecuali skrip/gaya.
@@ -25,11 +29,16 @@ export function sanitizeHtml(html) {
                 continue
             }
 
+            // Satu-satunya kelas yang dipertahankan adalah perataan teks dari editor (rata tengah/kanan/rata kiri-kanan).
+            const align = (child.getAttribute('class') || '').match(/ql-align-(?:center|right|justify)/)?.[0]
+
             const allowed = ALLOWED_ATTRS[child.tagName] ?? []
             for (const attr of [...child.attributes]) {
                 const keep = allowed.includes(attr.name) && (!['href', 'src'].includes(attr.name) || SAFE_URL.test(attr.value.trim()))
                 if (!keep) child.removeAttribute(attr.name)
             }
+
+            if (align) child.setAttribute('class', align)
 
             if (child.tagName === 'A') {
                 child.setAttribute('rel', 'noopener noreferrer')

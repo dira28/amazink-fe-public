@@ -17,7 +17,7 @@ const product = computed(() => products.value.find((item) => item.slug === route
 
 useSeo(() => ({
     title: product.value?.name ?? (loading.value ? 'Memuat produk...' : 'Produk tidak ditemukan'),
-    description: product.value?.longDescription ?? product.value?.description,
+    description: product.value?.description,
     image: product.value?.image,
     path: route.path,
     type: 'product',
@@ -29,7 +29,7 @@ useJsonLd('product', () =>
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: product.value.name,
-        description: product.value.longDescription ?? product.value.description,
+        description: product.value.longDescription || product.value.description,
         sku: product.value.sku || undefined,
         image: product.value.image ? [absoluteUrl(product.value.image)] : undefined,
         brand: { '@type': 'Brand', name: 'AMAZiNK' },
@@ -141,6 +141,7 @@ const specs = computed(() => {
         p.color && { label: 'Warna', value: p.color, swatch: swatches[p.color] },
         p.volume && { label: 'Ukuran / Isi', value: p.volume },
         { label: 'Merek', value: 'AMAZiNK' },
+        ...(p.specs ?? []),
     ].filter(Boolean)
 })
 
@@ -442,7 +443,7 @@ onBeforeUnmount(() => {
 
                 <div class="p-5 sm:p-8" role="tabpanel">
                     <div v-if="tab === 'deskripsi'" class="max-w-3xl">
-                        <p class="m-0 text-sm leading-8 text-gray-600 sm:text-[15px]">
+                        <p class="m-0 text-sm leading-8 whitespace-pre-line text-gray-600 sm:text-[15px]">
                             {{ product.longDescription || product.description }}
                         </p>
                     </div>
@@ -553,7 +554,7 @@ onBeforeUnmount(() => {
                     </button>
 
                     <img :src="product.image" :alt="product.name"
-                        class="max-h-full max-w-full rounded-2xl bg-white object-contain p-6 shadow-2xl" />
+                        class="max-h-[calc(100svh-2rem)] max-w-[calc(100vw-2rem)] rounded-2xl bg-white object-contain p-6 shadow-2xl sm:max-h-[calc(100svh-5rem)] sm:max-w-[calc(100vw-5rem)]" />
                 </div>
             </Transition>
         </Teleport>

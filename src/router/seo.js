@@ -12,7 +12,7 @@ export const seoByName = {
     },
     finder: {
         title: 'Cari Tinta Sesuai Printer',
-        description: 'Pilih seri printermu dan temukan tinta atau toner AMAZiNK yang cocok.',
+        description: 'Pilih seri printer Anda dan temukan tinta atau toner AMAZiNK yang cocok.',
     },
     reseller: {
         title: 'Jadi Reseller AMAZiNK',
@@ -23,7 +23,7 @@ export const seoByName = {
         description: 'Temukan reseller AMAZiNK terdekat berdasarkan nama, kota, atau provinsi.',
     },
     news: {
-        title: 'News',
+        title: 'Berita',
         description: 'Tips, panduan, dan kabar terbaru seputar printer dan produk AMAZiNK.',
     },
     gallery: {
