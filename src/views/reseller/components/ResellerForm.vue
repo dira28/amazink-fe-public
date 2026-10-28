@@ -28,8 +28,10 @@ const submitError = ref('')
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const errors = computed(() => {
+    const name = form.name.trim()
+
     return {
-        name: form.name.trim().length < 2 ? 'Nama wajib diisi' : '',
+        name: name.length === 0 ? 'Nama wajib diisi' : name.length < 3 ? 'Nama minimal 3 huruf' : '',
         email: /^\S+@\S+\.\S+$/.test(form.email.trim()) ? '' : 'Email tidak valid',
         address: form.address.trim().length < 5 ? 'Alamat belum lengkap' : '',
         phone: validatePhoneValue(form.phone),
