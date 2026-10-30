@@ -125,6 +125,11 @@ const router = createRouter({
             name: 'not-found',
             component: () => import('@/views/errors/pages/NotFoundView.vue'),
         },
+        {
+            path: '/sewa-printer',
+            name: 'printer-rental',
+            component: () => import('@/views/rental/pages/RentalView.vue'),
+        },
     ],
 })
 

@@ -30,13 +30,13 @@ let lastScrollY = 0
 let ticking = false
 
 const navItems = [
-    { label: 'Beranda', to: '/', match: ['/'], exact: true },
     { label: 'Katalog Produk', to: '/catalog-produk', match: ['/catalog-produk', '/produk', '/cari-tinta'] },
+    { label: 'Sewa Printer', to: '/sewa-printer', match: ['/sewa-printer'] },
+    { label: 'Reseller', to: '/reseller', match: ['/reseller'] },
     { label: 'Tentang Kami', to: '/tentang-kami', match: ['/tentang-kami'] },
 ]
 
 const infoItems = [
-    { label: 'Reseller', to: '/reseller', match: ['/reseller'] },
     { label: 'Berita', to: '/news', match: ['/news'] },
     { label: 'Galeri', to: '/galeri', match: ['/galeri'] },
     { label: 'FAQ', to: '/faq', match: ['/faq'] },
@@ -132,8 +132,8 @@ onBeforeUnmount(() => {
         :class="isHeaderVisible ? 'translate-y-0' : '-translate-y-full'">
         <div class="mx-auto flex h-18 max-w-7xl items-center justify-between gap-6 px-5 lg:px-8">
             <!-- Logo -->
-            <RouterLink to="/"
-                class="shrink-0 transition-opacity hover:opacity-75" aria-label="Amazink Beranda" @click="closeMenu">
+            <RouterLink to="/" class="shrink-0 transition-opacity hover:opacity-75" aria-label="Amazink Beranda"
+                @click="closeMenu">
                 <img :src="logo" alt="Amazink" width="1703" height="227" class="block h-6 w-auto sm:h-5" />
             </RouterLink>
 
@@ -210,8 +210,8 @@ onBeforeUnmount(() => {
                     :class="cartActive ? 'bg-gray-100 text-brand-red' : 'text-gray-800'"
                     :aria-label="productCount ? `Keranjang belanja, ${productCount} produk` : 'Keranjang belanja'"
                     title="Keranjang" @click="closeMenu">
-                    <svg class="h-5.25 w-5.25" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <svg class="h-5.25 w-5.25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H6" />
                         <circle cx="10" cy="20" r="1" />
                         <circle cx="18" cy="20" r="1" />
@@ -229,8 +229,8 @@ onBeforeUnmount(() => {
                     class="ml-1 flex h-10 w-10 items-center justify-center rounded-full text-gray-900 transition hover:bg-gray-100 md:hidden"
                     :aria-expanded="menuOpen" aria-controls="mobile-navigation"
                     :aria-label="menuOpen ? 'Tutup menu' : 'Buka menu'" @click="menuOpen = !menuOpen">
-                    <svg class="h-5.5 w-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.7" stroke-linecap="round" aria-hidden="true">
+                    <svg class="h-5.5 w-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+                        stroke-linecap="round" aria-hidden="true">
                         <path v-if="!menuOpen" d="M4 8h16M4 16h16" />
                         <path v-else d="M6 6l12 12M18 6L6 18" />
                     </svg>
@@ -315,13 +315,13 @@ onBeforeUnmount(() => {
                         </svg>
                         Keranjang
 
-                    <span v-if="productCount"
-                        class="min-w-5 rounded-full bg-white px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-brand-red"
-                        aria-hidden="true">
-                        {{ cartBadge }}
-                    </span>
-                </RouterLink>
-            </div>
+                        <span v-if="productCount"
+                            class="min-w-5 rounded-full bg-white px-1.5 py-0.5 text-center text-[11px] font-bold leading-none text-brand-red"
+                            aria-hidden="true">
+                            {{ cartBadge }}
+                        </span>
+                    </RouterLink>
+                </div>
             </nav>
         </Transition>
     </header>
