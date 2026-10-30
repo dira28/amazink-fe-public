@@ -8,7 +8,7 @@ export async function loginRequest({ email, password, captchaToken }) {
         token: data.access_token,
         refreshToken: data.refresh_token,
         expiresAt: Date.now() + data.expires_in * 1000,
-        user: { id: data.user.id, name: data.user.full_name, email: data.user.email, role: data.user.role },
+        user: { id: data.user.id, name: data.user.full_name, email: data.user.email, phone: data.user.phone ?? '', role: data.user.role },
     }
 }
 
@@ -17,8 +17,8 @@ export const logoutRequest = (refreshToken) =>
     refreshToken ? apiPost('/auth/logout', { refresh_token: refreshToken }).catch(() => {}) : Promise.resolve()
 
 // Mendaftar lalu backend mengirim kode OTP ke email; akun baru aktif setelah OTP diverifikasi.
-export const registerRequest = ({ name, email, password }) =>
-    apiPost('/auth/register', { full_name: name, email, password })
+export const registerRequest = ({ name, email, phone, password }) =>
+    apiPost('/auth/register', { full_name: name, email, phone, password })
 
 export const verifyEmailRequest = ({ email, code }) => apiPost('/auth/verify-email', { email, code })
 
