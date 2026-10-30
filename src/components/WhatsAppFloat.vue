@@ -26,9 +26,7 @@ const href = computed(() => waLink(message.value))
 
 <template>
     <a :href="href" target="_blank" rel="noopener noreferrer" aria-label="Chat WhatsApp AMAZiNK"
-        class="group fixed right-4 z-40 flex items-center gap-3 no-underline sm:right-6"
-        style="bottom: calc(1rem + env(safe-area-inset-bottom, 0px))">
-
+        class="group fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-40 flex items-center gap-3 no-underline sm:right-6 sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
         <span
             class="pointer-events-none hidden translate-x-2 whitespace-nowrap rounded-full bg-white px-4 py-2 text-[13px] font-semibold opacity-0 shadow-lg ring-1 ring-black/5 transition duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 sm:block"
             style="color: #171717">
@@ -36,7 +34,7 @@ const href = computed(() => waLink(message.value))
         </span>
 
         <span
-            class="relative grid h-14 w-14 place-items-center rounded-full shadow-[0_10px_28px_-6px_rgba(37,211,102,0.65)] transition-transform duration-200 group-hover:scale-105 group-active:scale-95"
+            class="relative grid h-12 w-12 place-items-center rounded-full shadow-[0_10px_28px_-6px_rgba(37,211,102,0.65)] transition-transform duration-200 group-hover:scale-105 group-active:scale-95 sm:h-14 sm:w-14"
             style="background-color: #25d366">
             <span class="absolute inset-0 animate-ping rounded-full opacity-30 motion-reduce:hidden"
                 style="background-color: #25d366; animation-duration: 2.4s" aria-hidden="true"></span>
