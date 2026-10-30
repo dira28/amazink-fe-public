@@ -1,6 +1,4 @@
-import { USE_MOCK } from '@/services/http'
-
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+import { waLinkTo } from '@/utils/whatsapp'
 
 export const formatRupiah = (value) =>
     new Intl.NumberFormat('id-ID', {
@@ -20,86 +18,80 @@ export function rentalTotals(printer) {
     )
 }
 
-// DATA CONTOH. Ganti dengan paket sewa yang sebenarnya (atau dari API).
-// asset = nilai satuan jika dibeli, rent = biaya sewa satuan per bulan.
-const mockPrinters = [
-    {
-        id: 'inkjet-tank-a4',
-        brand: 'Inkjet Tank',
-        name: 'Printer contoh A',
-        image: '',
-        functions: 'Print, scan, copy. Cocok untuk dokumen dan foto.',
-        components: [
-            { name: 'Printer inkjet tank A4', qty: 1, asset: 2400000, rent: 220000, benefits: ['Servis gratis', 'Unit pengganti saat rusak'] },
-            { name: 'Tinta botol 4 warna', qty: 1, asset: 280000, rent: 40000, benefits: ['Pengiriman tinta rutin'] },
-            { name: 'Kabel dan adaptor', qty: 1, asset: 150000, rent: 10000, benefits: ['Diganti bila rusak'] },
-        ],
-    },
-    {
-        id: 'laser-mono-a4',
-        brand: 'Laser Mono',
-        name: 'Printer contoh B',
-        image: '',
-        functions: 'Print hitam putih. Cocok untuk dokumen kantor volume tinggi.',
-        components: [
-            { name: 'Printer laser mono A4', qty: 1, asset: 3100000, rent: 260000, benefits: ['Servis gratis', 'Unit pengganti saat rusak'] },
-            { name: 'Toner hitam', qty: 2, asset: 650000, rent: 60000, benefits: ['Pengiriman toner rutin'] },
-        ],
-    },
-    {
-        id: 'laser-color-a4',
-        brand: 'Laser Warna',
-        name: 'Printer contoh C',
-        image: '',
-        functions: 'Print, scan, copy warna. Cocok untuk brosur dan materi warna.',
-        components: [
-            { name: 'Printer laser warna A4', qty: 1, asset: 5800000, rent: 450000, benefits: ['Servis gratis', 'Unit pengganti saat rusak'] },
-            { name: 'Set toner CMYK', qty: 1, asset: 2600000, rent: 180000, benefits: ['Pengiriman toner rutin'] },
-        ],
-    },
-]
+const toNumber = (text) => Number(String(text ?? '').replace(/\D/g, '')) || 0
 
-// DATA CONTOH. Ganti logo dengan file asli, misal '/images/rental/customers/nama.png'.
-const mockCustomers = Array.from({ length: 12 }, (_, i) => ({
-    id: i + 1,
-    name: `Pelanggan ${i + 1}`,
-    logo: '',
-}))
-
-export async function getRentablePrinters() {
-    if (USE_MOCK) {
-        await wait(400)
-        return structuredClone(mockPrinters)
+// Format lama (teks), satu komponen per baris:
+//   Nama | jumlah | nilai aset satuan | sewa satuan per bulan | benefit 1; benefit 2
+// Baris tanpa nama diabaikan; jumlah minimal 1.
+export function parseComponents(value) {
+    // Format baru: daftar objek dari editor admin.
+    if (Array.isArray(value)) {
+        return value
+            .filter((item) => item?.name?.trim())
+            .map((item) => ({
+                name: item.name.trim(),
+                qty: Math.max(1, Number(item.qty) || 1),
+                asset: Number(item.asset) || 0,
+                rent: Number(item.rent) || 0,
+                benefits: (item.benefits ?? []).map((b) => String(b).trim()).filter(Boolean),
+            }))
     }
 
-    // TODO (backend): ambil daftar paket sewa dari API.
-    throw new Error('Daftar printer sewa belum tersambung ke server.')
+    return String(value ?? '')
+        .split('\n')
+        .map((line) => line.split('|').map((part) => part.trim()))
+        .filter(([name]) => name)
+        .map(([name, qty, asset, rent, benefits]) => ({
+            name,
+            qty: Math.max(1, toNumber(qty)),
+            asset: toNumber(asset),
+            rent: toNumber(rent),
+            benefits: String(benefits ?? '')
+                .split(';')
+                .map((benefit) => benefit.trim())
+                .filter(Boolean),
+        }))
 }
 
-export async function getCustomers() {
-    if (USE_MOCK) {
-        await wait(200)
-        return structuredClone(mockCustomers)
-    }
-
-    // TODO (backend): ambil daftar pelanggan dari API.
-    return []
+// Paket sewa dari konten halaman (diatur admin) menjadi bentuk yang dipakai komponen.
+export function toPrinters(packages) {
+    return (packages ?? [])
+        .map((item, index) => ({
+            id: item.id || `paket-${index}`,
+            brand: item.brand ?? '',
+            name: item.name ?? '',
+            image: item.image ?? '',
+            functions: item.functions ?? '',
+            components: parseComponents(item.components),
+        }))
+        .filter((item) => item.name || item.brand)
 }
 
-// payload: { printerId, printerLabel, note, photo }  (photo: File atau null)
-// printerId bernilai null jika user menulis model printer sendiri.
-export async function submitRental(payload) {
-    if (USE_MOCK) {
-        await wait(900)
-        return { id: `RNT-${Date.now().toString().slice(-6)}` }
-    }
+// Pesan pengajuan sewa untuk WhatsApp. Alasan dan lama sewa dari modal; nama dan email terisi bila pelanggan sudah masuk,
+// selain itu dikosongkan agar diisi sendiri.
+// printer bernilai null bila pelanggan belum memilih paket.
+export function buildRentalMessage(printer, user, { reason = '', duration = '' } = {}) {
+    if (!printer) return 'Halo AMAZiNK, saya ingin bertanya tentang sewa printer.'
 
-    // TODO (backend): kirim sebagai multipart/form-data, contoh:
-    //   const body = new FormData()
-    //   body.append('printer_id', payload.printerId ?? '')
-    //   body.append('printer_label', payload.printerLabel)
-    //   body.append('note', payload.note)
-    //   if (payload.photo) body.append('photo', payload.photo)
-    // lalu POST ke endpoint sewa dengan token login.
-    throw new Error('Pengajuan sewa belum tersambung ke server.')
+    const { rent } = rentalTotals(printer)
+    const components = printer.components.map((item) => `- ${item.qty}x ${item.name}`)
+
+    return [
+        'Halo AMAZiNK, saya ingin mengajukan sewa printer.',
+        '',
+        '*Paket yang dipilih*',
+        [printer.brand, printer.name].filter(Boolean).join(' - '),
+        `Sewa per bulan: ${formatRupiah(rent)}`,
+        ...(components.length ? ['Komponen:', ...components] : []),
+        '',
+        '*Data saya*',
+        `Nama: ${user?.name ?? ''}`,
+        `Email: ${user?.email ?? ''}`,
+        `Keperluan / alasan: ${reason}`,
+        `Lama sewa: ${duration}`,
+        '',
+        'Mohon informasinya. Terima kasih.',
+    ].join('\n')
 }
+
+export const rentalWhatsappLink = (phone, message) => waLinkTo(phone, message)

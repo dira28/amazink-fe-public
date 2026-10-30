@@ -65,10 +65,10 @@ const frame = computed(() =>
 
 <template>
     <div class="mt-1.5 flex items-stretch overflow-hidden rounded-xl transition" :class="frame">
-        <!-- Pilihan kode negara: tampilannya "(+62)", daftar lengkap memuat nama negara -->
+        <!-- Pilihan kode negara: tampilannya "+62", daftar lengkap memuat nama negara -->
         <div class="relative flex shrink-0 items-center border-r border-black/10">
             <span class="pointer-events-none flex items-center gap-1 pl-4 pr-3 text-sm font-medium text-gray-700">
-                ({{ country }})
+                {{ country }}
                 <svg class="h-3 w-3 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="m6 9 6 6 6-6" />
@@ -85,7 +85,7 @@ const frame = computed(() =>
         </div>
 
         <input :id="id" :value="shown" type="tel" inputmode="numeric" autocomplete="tel-national"
-            placeholder="8xxx-xxxx-xxxx" :aria-invalid="invalid || undefined"
+            placeholder="812-3456-7890" :aria-invalid="invalid || undefined"
             class="min-w-0 flex-1 border-0 bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-gray-400"
             @input="onInput" />
     </div>

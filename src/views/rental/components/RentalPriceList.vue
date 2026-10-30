@@ -1,5 +1,6 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
+import { usePageSection } from '@/composables/usePage'
 import { formatRupiah, rentalTotals } from '../services/rentalService'
 
 const props = defineProps({
@@ -9,6 +10,12 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['apply', 'compare', 'retry'])
+
+// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
+const content = usePageSection('sewa-printer', 'prices', {
+    title: 'Daftar dan price list sewa',
+    description: 'Harga sudah termasuk printer, tinta atau toner, dan servis. Geser untuk melihat paket lainnya.',
+})
 
 const index = ref(0)
 const current = computed(() => props.printers[index.value] ?? null)
@@ -31,10 +38,10 @@ function go(step) {
 <template>
     <section id="daftar-harga" aria-labelledby="rental-price" class="mx-auto max-w-6xl scroll-mt-24 px-5 sm:px-8">
         <h2 id="rental-price" class="m-0 text-[clamp(22px,3vw,30px)] font-semibold tracking-[-0.03em]">
-            Daftar dan price list sewa
+            {{ content.title }}
         </h2>
         <p class="mb-0 mt-2 max-w-xl text-[13px] leading-6 text-[#737373]">
-            Harga sudah termasuk printer, tinta atau toner, dan servis. Geser untuk melihat paket lainnya.
+            {{ content.description }}
         </p>
 
         <div v-if="loading" class="mt-6 h-72 animate-pulse rounded-[32px] bg-white ring-1 ring-black/5" role="status"
@@ -52,7 +59,7 @@ function go(step) {
         <div v-else-if="current" class="mt-6 rounded-[32px] bg-white p-4 ring-1 ring-black/5 sm:p-6">
             <div class="grid items-center gap-6 md:grid-cols-2 md:gap-10">
                 <div
-                    class="grid aspect-[4/3] place-items-center overflow-hidden rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100">
+                    class="grid aspect-[4/3] place-items-center overflow-hidden rounded-3xl bg-white ring-1 ring-black/5">
                     <img v-if="current.image" :src="current.image" :alt="`${current.brand} ${current.name}`"
                         class="h-full w-full object-contain p-6" />
                     <svg v-else class="h-12 w-12 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"
