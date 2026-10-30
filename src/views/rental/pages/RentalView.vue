@@ -1,10 +1,13 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useSeo } from '@/composables/useSeo'
+import RentalHero from '../components/RentalHero.vue'
+import RentalBenefit from '../components/RentalBenefit.vue'
+import RentalPriceList from '../components/RentalPriceList.vue'
+import RentalCustomers from '../components/RentalCustomers.vue'
+import RentalCompare from '../components/RentalCompare.vue'
 import RentalForm from '../components/RentalForm.vue'
-import RentalSpecs from '../components/RentalSpecs.vue'
-import { getRentablePrinters } from '../services/rentalService'
-import RentalInfo from '../components/RentalInfo.vue'
+import { getCustomers, getRentablePrinters } from '../services/rentalService'
 
 useSeo(() => ({
     title: 'Sewa Printer',
@@ -13,9 +16,13 @@ useSeo(() => ({
 }))
 
 const printers = ref([])
+const customers = ref([])
 const loading = ref(true)
 const loadError = ref('')
-const selectedId = ref(null)
+
+const selected = ref(null)
+const formOpen = ref(false)
+const compareOpen = ref(false)
 
 async function load() {
     loading.value = true
@@ -29,40 +36,44 @@ async function load() {
     }
 }
 
-function pick(id) {
-    selectedId.value = id
-    document.getElementById('form-sewa')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+async function loadCustomers() {
+    try {
+        customers.value = await getCustomers()
+    } catch {
+        customers.value = []
+    }
 }
 
-onMounted(load)
+function openForm(printer) {
+    selected.value = printer
+    compareOpen.value = false
+    formOpen.value = true
+}
+
+function openCompare(printer) {
+    selected.value = printer
+    compareOpen.value = true
+}
+
+onMounted(() => {
+    load()
+    loadCustomers()
+})
 </script>
 
 <template>
-    <main class="bg-[#f7f7f5] text-[#171717]">
-        <section class="relative overflow-hidden bg-gradient-to-b from-white to-[#f7f7f5]">
-            <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-red/10 blur-3xl">
-            </div>
+    <main class="space-y-12 bg-[#f7f7f5] pb-16 text-[#171717] sm:space-y-16 sm:pb-24">
+        <RentalHero />
 
-            <div class="relative mx-auto max-w-3xl px-5 pb-8 pt-10 text-center sm:px-8 sm:pb-12 sm:pt-16">
-                <p class="m-0 text-[10px] font-bold uppercase tracking-[0.2em] text-brand-red">Sewa Printer</p>
-                <h1
-                    class="mx-auto mt-3 max-w-2xl text-[clamp(28px,4.6vw,46px)] font-semibold leading-[1.08] tracking-[-0.05em]">
-                    Butuh printer tanpa harus membeli?
-                </h1>
-                <p class="mx-auto mb-0 mt-3 max-w-md text-[13px] leading-7 text-[#737373] sm:text-sm">
-                    Pilih printer, tulis kebutuhanmu, lalu tim AMAZiNK akan menghubungimu.
-                </p>
-            </div>
-        </section>
+        <RentalBenefit />
 
-        <div class="mx-auto max-w-4xl space-y-12 px-5 pb-16 sm:space-y-16 sm:px-8 sm:pb-24">
-            <RentalForm v-model:selected-id="selectedId" :printers="printers" :loading="loading" :load-error="loadError"
-                @retry="load" />
+        <RentalPriceList :printers="printers" :loading="loading" :load-error="loadError" @apply="openForm"
+            @compare="openCompare" @retry="load" />
 
-            <RentalSpecs :printers="printers" :loading="loading" @pick="pick" />
+        <RentalCustomers :customers="customers" />
 
-            <RentalInfo />
-        </div>
+        <RentalCompare :open="compareOpen" :printer="selected" @close="compareOpen = false" @apply="openForm" />
 
+        <RentalForm :open="formOpen" :printers="printers" :printer="selected" @close="formOpen = false" />
     </main>
 </template>
