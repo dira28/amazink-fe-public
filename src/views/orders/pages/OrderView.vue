@@ -1,22 +1,14 @@
 <script setup>
 import { useSeo } from '@/composables/useSeo'
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import { ORDER_STATUS, useOrders } from '@/composables/useOrders'
-import { fetchProofUrl } from '@/services/orderService'
-import { fetchPaymentAccounts, formatAccountNumber } from '@/services/paymentService'
-import { USE_MOCK } from '@/services/http'
+import { useStoreContact } from '@/composables/useStoreContact'
+import { buildIssueMessage, buildOrderMessage } from '@/utils/orderMessage'
 import { formatPhone } from '@/utils/phone'
-import { waLink } from '@/utils/whatsapp'
-import ConfirmDialog from '@/components/base/ConfirmDialog.vue'
+import OrderIssueDialog from '../components/OrderIssueDialog.vue'
 
-// Data contoh untuk mode dummy; pada mode API rekening diambil dari server (diatur admin).
-const MOCK_PAYMENT_ACCOUNTS = [
-    { id: 0, bank: 'Nama bank', number: '000000000000', holder: 'Atas nama' },
-]
-
-const MAX_FILE_SIZE = 5 * 1024 * 1024
-const STEPS = ['Pesanan dibuat', 'Pembayaran', 'Verifikasi', 'Diproses']
+const STEPS = ['Pesanan dibuat', 'Diproses lewat WhatsApp', 'Selesai']
 
 const TONE_CLASSES = {
     amber: 'bg-amber-50 text-amber-700',
@@ -26,73 +18,27 @@ const TONE_CLASSES = {
 }
 
 const route = useRoute()
-const router = useRouter()
-const { getOrder, loadOrder, uploadProof, cancelOrder } = useOrders()
+const { getOrder, loadOrder } = useOrders()
+const store = useStoreContact()
 
 const order = computed(() => getOrder(route.params.id))
 const loading = ref(true)
-const cancelError = ref('')
-
-// Bukti transfer bersifat pribadi: dimuat lewat permintaan berotentikasi, hasilnya alamat sementara di browser.
-const proofUrl = ref('')
-const proofSrc = computed(() => proofUrl.value || order.value?.proof?.dataUrl || '')
-
-async function refreshProof() {
-    if (proofUrl.value) URL.revokeObjectURL(proofUrl.value)
-
-    proofUrl.value = ''
-
-    if (USE_MOCK || !order.value?.proof) return
-
-    try {
-        proofUrl.value = await fetchProofUrl(order.value.id)
-    } catch {
-        // Gambar gagal dimuat; nama dan waktu kirim tetap tampil.
-    }
-}
-
-const paymentAccounts = ref(USE_MOCK ? MOCK_PAYMENT_ACCOUNTS : [])
-const accountsState = ref(USE_MOCK ? 'ready' : 'loading')
-
-async function loadPaymentAccounts() {
-    if (USE_MOCK) return
-
-    accountsState.value = 'loading'
-
-    try {
-        paymentAccounts.value = await fetchPaymentAccounts()
-        accountsState.value = 'ready'
-    } catch {
-        accountsState.value = 'failed'
-    }
-}
 
 onMounted(async () => {
-    loadPaymentAccounts()
     await loadOrder(route.params.id)
     loading.value = false
-    refreshProof()
 })
 
-watch(() => order.value?.proof?.uploadedAt, refreshProof)
+// Transaksi dilakukan lewat WhatsApp; tombol ini membuka chat dengan ringkasan pesanan terisi.
+const whatsapp = computed(() => (order.value ? store.link(buildOrderMessage(order.value)) : '#'))
 
-// Hubungi admin lewat WhatsApp dengan kode pesanan sudah terisi.
-const whatsapp = computed(() =>
-    waLink(`Halo AMAZiNK, saya ingin menanyakan pesanan ${order.value?.id ?? ''}.`)
-)
+// Pesanan selesai yang bermasalah: kendala ditulis di modal, lalu dikirim ke WhatsApp bersama ringkasan pesanan.
+const issueOpen = ref(false)
 
-const selectedFile = ref(null)
-const selectedPreview = ref('')
-const fileError = ref('')
-const sending = ref(false)
-const justSent = ref(false)
-const confirmingCancel = ref(false)
-const copiedNumber = ref('')
-const previewSrc = ref('')
-
-let copyTimer
-
-const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+function sendIssue(issue) {
+    issueOpen.value = false
+    window.open(store.link(buildIssueMessage(order.value, issue)), '_blank', 'noopener,noreferrer')
+}
 
 const formatPrice = (price) =>
     new Intl.NumberFormat('id-ID', {
@@ -104,117 +50,14 @@ const formatPrice = (price) =>
 const formatDate = (iso) =>
     new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso))
 
-const formatSize = (bytes) =>
-    bytes >= 1024 * 1024
-        ? `${(bytes / 1024 / 1024).toFixed(1)} MB`
-        : `${Math.max(1, Math.round(bytes / 1024))} KB`
-
 const printerText = (printer) => (typeof printer === 'string' ? printer : printer ? `${printer.brand} ${printer.series}` : '')
 
 const status = computed(
     () => ORDER_STATUS[order.value?.status] ?? { label: order.value?.status, tone: 'gray' }
 )
 
-const currentStep = computed(
-    () =>
-        ({
-            menunggu_pembayaran: 1,
-            menunggu_verifikasi: 2,
-            diproses: 3,
-            selesai: STEPS.length,
-        })[order.value?.status] ?? 0
-)
-
-// Bukti hanya dapat dikirim satu kali; setelah terkirim tidak dapat diganti (kecuali admin menolaknya).
-const canUpload = computed(() => order.value?.status === 'menunggu_pembayaran')
-
-const showDropzone = computed(() => canUpload.value && !order.value.proof && !selectedFile.value)
-
-function clearSelection() {
-    if (selectedPreview.value) URL.revokeObjectURL(selectedPreview.value)
-
-    selectedPreview.value = ''
-    selectedFile.value = null
-}
-
-function onFileChange(event) {
-    const input = event.target
-    const file = input.files?.[0]
-
-    input.value = ''
-    fileError.value = ''
-    justSent.value = false
-
-    if (!file) return
-
-    if (!file.type.startsWith('image/')) {
-        fileError.value = 'Berkas harus berupa gambar (JPG atau PNG).'
-        return
-    }
-
-    if (file.size > MAX_FILE_SIZE) {
-        fileError.value = `Ukuran berkas maksimal ${formatSize(MAX_FILE_SIZE)}.`
-        return
-    }
-
-    clearSelection()
-    selectedFile.value = file
-    selectedPreview.value = URL.createObjectURL(file)
-}
-
-async function sendProof() {
-    if (!selectedFile.value || sending.value) return
-
-    sending.value = true
-    fileError.value = ''
-
-    const [result] = await Promise.all([
-        uploadProof(order.value.id, selectedFile.value),
-        wait(700),
-    ])
-
-    sending.value = false
-
-    if (!result.ok) {
-        fileError.value = result.error
-        return
-    }
-
-    clearSelection()
-    justSent.value = true
-}
-
-async function onCancelOrder() {
-    cancelError.value = ''
-    confirmingCancel.value = false
-
-    try {
-        await cancelOrder(order.value.id)
-        router.push('/keranjang')
-    } catch (e) {
-        cancelError.value = e.message
-    }
-}
-
-async function copyNumber(number) {
-    try {
-        await navigator.clipboard.writeText(number.replace(/\s/g, ''))
-        copiedNumber.value = number
-
-        clearTimeout(copyTimer)
-        copyTimer = setTimeout(() => {
-            copiedNumber.value = ''
-        }, 1800)
-    } catch {
-        // Clipboard can be blocked
-    }
-}
-
-onBeforeUnmount(() => {
-    if (proofUrl.value) URL.revokeObjectURL(proofUrl.value)
-    clearSelection()
-    clearTimeout(copyTimer)
-})
+// Langkah yang sedang berjalan: 1 = diproses, 2 = selesai (semua langkah tercentang).
+const currentStep = computed(() => ({ diproses: 1, selesai: STEPS.length })[order.value?.status] ?? 0)
 
 useSeo(() => ({
     title: 'Detail Pesanan',
@@ -243,7 +86,7 @@ useSeo(() => ({
             <template v-else>
                 <header class="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                        <h1 class="text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">Pembayaran</h1>
+                        <h1 class="text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">Detail pesanan</h1>
                         <p class="mt-1 text-sm text-gray-500">
                             <span class="font-semibold text-gray-950">{{ order.id }}</span>
                             · {{ formatDate(order.createdAt) }}
@@ -302,183 +145,38 @@ useSeo(() => ({
                             </RouterLink>
                         </section>
 
-                        <section v-if="order.status === 'menunggu_pembayaran'"
-                            class="rounded-2xl border border-gray-200 p-5">
-                            <p class="text-sm text-gray-500">Total yang harus dibayar</p>
+                        <section v-if="order.status === 'diproses'" class="rounded-2xl border border-gray-200 p-5">
+                            <p class="text-sm text-gray-500">Total pesanan</p>
                             <p class="mt-1 text-3xl font-semibold tracking-[-0.03em]">
                                 {{ formatPrice(order.subtotal) }}
                             </p>
 
-                            <h2 class="mt-5 text-sm font-semibold">Transfer ke rekening</h2>
-
-                            <p v-if="accountsState === 'loading'" class="mt-3 text-sm text-gray-400">
-                                Memuat rekening...
+                            <p class="mt-3 rounded-xl bg-gray-50 px-4 py-3 text-sm leading-6 text-gray-600">
+                                Pesanan Anda sedang diproses. Pembayaran dan pengiriman dilakukan lewat WhatsApp
+                                bersama tim kami. Status di halaman ini diperbarui oleh admin setelah transaksi
+                                selesai.
                             </p>
-
-                            <p v-else-if="accountsState === 'failed'" role="alert"
-                                class="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-                                Rekening tujuan gagal dimuat.
-                                <button type="button" class="font-semibold underline" @click="loadPaymentAccounts">
-                                    Coba lagi
-                                </button>
-                            </p>
-
-                            <p v-else-if="!paymentAccounts.length"
-                                class="mt-3 rounded-xl bg-gray-50 px-4 py-3 text-sm text-gray-600">
-                                Rekening pembayaran belum tersedia. Silakan
-                                <a :href="whatsapp" target="_blank" rel="noopener noreferrer"
-                                    class="font-semibold text-brand-red underline">hubungi kami melalui WhatsApp</a>.
-                            </p>
-
-                            <ul v-else class="mt-3 space-y-2">
-                                <li v-for="account in paymentAccounts" :key="account.id"
-                                    class="flex items-center justify-between gap-3 rounded-xl bg-gray-50 px-4 py-3">
-                                    <div class="min-w-0">
-                                        <p class="text-xs text-gray-400">{{ account.bank }} · {{ account.holder }}</p>
-                                        <p class="mt-0.5 text-sm font-semibold tracking-wide">
-                                            {{ formatAccountNumber(account.number) }}
-                                        </p>
-                                    </div>
-
-                                    <button type="button"
-                                        class="shrink-0 rounded-full border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:border-brand-red hover:text-brand-red"
-                                        @click="copyNumber(account.number)">
-                                        {{ copiedNumber === account.number ? 'Tersalin' : 'Salin' }}
-                                    </button>
-                                </li>
-                            </ul>
-                        </section>
-
-                        <section v-if="canUpload || order.proof" class="rounded-2xl border border-gray-200 p-5">
-                            <h2 class="text-base font-semibold">Bukti pembayaran</h2>
-
-                            <p v-if="order.rejectReason" role="alert"
-                                class="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
-                                <span class="font-semibold">Bukti pembayaran sebelumnya ditolak.</span>
-                                {{ order.rejectReason }} Silakan kirim bukti yang baru.
-                            </p>
-
-                            <p v-if="justSent"
-                                class="mt-3 flex items-start gap-2 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700"
-                                role="status">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                                    stroke-linecap="round" stroke-linejoin="round" class="mt-0.5 h-4 w-4 shrink-0"
-                                    aria-hidden="true">
-                                    <path d="m5 12 4 4L19 6" />
-                                </svg>
-                                Bukti pembayaran terkirim. Pesanan Anda menunggu verifikasi.
-                            </p>
-
-                            <div v-if="order.proof" class="mt-4 flex items-center gap-4">
-                                <button type="button"
-                                    class="h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-gray-200"
-                                    aria-label="Lihat bukti pembayaran" @click="previewSrc = proofSrc">
-                                    <img :src="proofSrc" alt="Bukti pembayaran"
-                                        class="h-full w-full object-cover" />
-                                </button>
-
-                                <div class="min-w-0 flex-1">
-                                    <p class="text-sm font-medium">Bukti terkirim</p>
-                                    <p class="mt-0.5 truncate text-xs text-gray-400">{{ order.proof.name }}</p>
-                                    <p class="text-xs text-gray-400">{{ formatDate(order.proof.uploadedAt) }}</p>
-                                </div>
-                            </div>
-
-                            <p v-if="order.proof && order.status === 'menunggu_verifikasi'"
-                                class="mt-3 text-xs leading-5 text-gray-500">
-                                Bukti yang sudah dikirim tidak dapat diganti. Jika ada kesalahan, hubungi admin melalui
-                                WhatsApp.
-                            </p>
-
-                            <label v-if="showDropzone"
-                                class="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 px-4 py-9 text-center transition hover:border-brand-red hover:bg-red-50/40">
-                                <span
-                                    class="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-500">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                                        stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"
-                                        aria-hidden="true">
-                                        <path d="M12 16V5m0 0-4 4m4-4 4 4M5 19h14" />
-                                    </svg>
-                                </span>
-                                <span class="mt-3 text-sm font-semibold">Pilih foto bukti transfer</span>
-                                <span class="mt-1 text-xs text-gray-400">
-                                    JPG atau PNG, maksimal {{ formatSize(MAX_FILE_SIZE) }}
-                                </span>
-                                <input type="file" accept="image/*" class="sr-only" @change="onFileChange" />
-                            </label>
-
-                            <div v-if="selectedFile" class="mt-4">
-                                <div class="flex items-center gap-4 rounded-xl border border-gray-200 p-3">
-                                    <img :src="selectedPreview" alt="Pratinjau bukti pembayaran"
-                                        class="h-20 w-20 shrink-0 rounded-lg object-cover" />
-
-                                    <div class="min-w-0 flex-1">
-                                        <p class="truncate text-sm font-medium">{{ selectedFile.name }}</p>
-                                        <p class="text-xs text-gray-400">{{ formatSize(selectedFile.size) }}</p>
-                                        <p class="mt-1 text-xs text-gray-500">Belum dikirim</p>
-                                    </div>
-                                </div>
-
-                                <div class="mt-3 flex flex-wrap items-center gap-3">
-                                    <button type="button" :disabled="sending"
-                                        class="inline-flex min-w-35 items-center justify-center gap-2 rounded-full bg-brand-red px-6 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
-                                        @click="sendProof">
-                                        <svg v-if="sending" viewBox="0 0 24 24" fill="none"
-                                            class="h-4 w-4 animate-spin motion-reduce:animate-none" aria-hidden="true">
-                                            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3"
-                                                stroke-width="3" />
-                                            <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3"
-                                                stroke-linecap="round" />
-                                        </svg>
-                                        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-                                            class="h-4 w-4" aria-hidden="true">
-                                            <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />
-                                        </svg>
-                                        {{ sending ? 'Mengirim...' : 'Kirim bukti' }}
-                                    </button>
-
-                                    <label v-if="!sending"
-                                        class="cursor-pointer text-sm font-medium text-gray-500 transition hover:text-brand-red">
-                                        Pilih foto lain
-                                        <input type="file" accept="image/*" class="sr-only" @change="onFileChange" />
-                                    </label>
-
-                                </div>
-                            </div>
-
-                            <p v-if="fileError" class="mt-3 text-xs text-brand-red" role="alert">{{ fileError }}</p>
-                        </section>
-
-                        <!-- Aksi -->
-                        <div class="flex flex-col gap-3 pt-1 sm:flex-row sm:flex-wrap">
-                            <RouterLink to="/keranjang"
-                                class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-[#171717] px-6 text-sm font-semibold whitespace-nowrap text-white no-underline transition-colors hover:bg-brand-red sm:flex-1">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-                                    stroke-linecap="round" stroke-linejoin="round" class="h-4.5 w-4.5 shrink-0"
-                                    aria-hidden="true">
-                                    <path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 8H6" />
-                                    <circle cx="10" cy="20" r="1" />
-                                    <circle cx="18" cy="20" r="1" />
-                                </svg>
-                                Lanjut belanja
-                            </RouterLink>
 
                             <a :href="whatsapp" target="_blank" rel="noopener noreferrer"
-                                class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-6 text-sm font-semibold whitespace-nowrap text-gray-700 no-underline transition-colors hover:border-green-600 hover:bg-green-50 hover:text-green-700">
-                                Hubungi admin
+                                class="mt-4 inline-flex min-h-12 items-center justify-center rounded-full bg-brand-red px-6 text-sm font-semibold text-white no-underline transition hover:opacity-90"
+                                style="color: #fff">
+                                Lanjutkan di WhatsApp
                             </a>
+                        </section>
 
-                            <button v-if="order.status === 'menunggu_pembayaran'" type="button"
-                                class="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-6 text-sm font-semibold whitespace-nowrap text-gray-700 transition-colors hover:border-brand-red hover:bg-red-50 hover:text-brand-red"
-                                @click="confirmingCancel = true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                                    stroke-linecap="round" class="h-4 w-4" aria-hidden="true">
-                                    <path d="M6 6l12 12M18 6 6 18" />
-                                </svg>
-                                Batalkan pesanan
+                        <section v-else-if="order.status === 'selesai'" class="rounded-2xl border border-gray-200 p-5">
+                            <h2 class="text-base font-semibold">Pesanan selesai</h2>
+                            <p class="mt-1 text-sm leading-6 text-gray-500">
+                                Terima kasih sudah berbelanja di AMAZiNK. Ada kendala dengan pesanan ini? Ceritakan
+                                kendalanya, lalu kami lanjutkan lewat WhatsApp bersama ringkasan pesanan Anda.
+                            </p>
+
+                            <button type="button"
+                                class="mt-4 inline-flex min-h-12 cursor-pointer items-center justify-center rounded-full border border-gray-300 bg-white px-6 text-sm font-semibold text-gray-700 transition-colors hover:border-brand-red hover:bg-red-50 hover:text-brand-red"
+                                @click="issueOpen = true">
+                                Laporkan kendala
                             </button>
-                        </div>
+                        </section>
                     </div>
 
                     <aside>
@@ -547,19 +245,7 @@ useSeo(() => ({
             </template>
         </div>
 
-        <Teleport to="body">
-            <div v-if="previewSrc" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4"
-                role="dialog" aria-modal="true" aria-label="Bukti pembayaran" @click="previewSrc = ''">
-                <img :src="previewSrc" alt="Bukti pembayaran" class="max-h-full max-w-full rounded-xl bg-white" />
-            </div>
-        </Teleport>
-
-        <ConfirmDialog :open="confirmingCancel" danger title="Batalkan pesanan?"
-            description="Pesanan ini tidak akan diproses dan tidak dapat dikembalikan." confirm-label="Ya, batalkan"
-            cancel-label="Tidak" @confirm="onCancelOrder" @cancel="confirmingCancel = false" />
-
-        <p v-if="cancelError" role="alert" class="mx-auto mt-3 max-w-5xl px-5 text-sm text-brand-red sm:px-8">
-            {{ cancelError }}
-        </p>
+        <OrderIssueDialog :open="issueOpen" :order-id="order?.id ?? ''" @close="issueOpen = false"
+            @submit="sendIssue" />
     </main>
 </template>

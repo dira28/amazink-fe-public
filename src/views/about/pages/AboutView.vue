@@ -6,7 +6,7 @@ import AboutValues from '../components/AboutValues.vue'
 import AboutVisionMission from '../components/AboutVisionMission.vue'
 import { usePageSeo } from '@/composables/useSeo'
 
-usePageSeo('aboutus', () => ({
+usePageSeo('about-us', () => ({
     title: 'Tentang AMAZiNK',
     description: 'Kenali PT AMAZiNK Karya Indonesia dan komitmen kami pada kualitas cetak.',
     path: '/tentang-kami',

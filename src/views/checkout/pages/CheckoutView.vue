@@ -6,6 +6,8 @@ import { useCart } from '@/composables/useCart'
 import { useOrders } from '@/composables/useOrders'
 import { useProducts } from '@/composables/useProducts'
 import { useAuth } from '@/stores/auth'
+import { useStoreContact } from '@/composables/useStoreContact'
+import { buildOrderMessage } from '@/utils/orderMessage'
 import { validatePhoneValue } from '@/utils/phone'
 import PageLoader from '@/components/layout/PageLoader.vue'
 import PhoneInput from '@/components/base/PhoneInput.vue'
@@ -21,6 +23,7 @@ const {
 const { createOrder } = useOrders()
 const { products } = useProducts()
 const { user } = useAuth()
+const store = useStoreContact()
 
 // Nama dan nomor diisi dari akun agar tidak perlu diketik ulang.
 const form = reactive({ name: user.value?.name ?? '', phone: user.value?.phone ?? '', address: '', note: '' })
@@ -55,6 +58,11 @@ async function submit() {
 
     if (hasErrors.value || !items.value.length || submitting.value) return
 
+    // Tab WhatsApp dibuka sekarang, saat klik masih dihitung sebagai aksi pengguna; kalau menunggu pesanan selesai dibuat,
+    // browser memblokirnya sebagai pop-up. Alamatnya diisi setelah pesanan tersimpan.
+    const whatsappTab = window.open('', '_blank')
+    if (whatsappTab) whatsappTab.opener = null
+
     submitting.value = true
     submitError.value = ''
 
@@ -67,6 +75,7 @@ async function submit() {
     if (lines.some((line) => !line.id)) {
         submitError.value = 'Sebagian barang di keranjang sudah tidak tersedia. Hapus barang tersebut lalu coba lagi.'
         submitting.value = false
+        whatsappTab?.close()
         return
     }
 
@@ -79,10 +88,19 @@ async function submit() {
         })
 
         removeSelected()
-        router.push({ name: 'order', params: { id: order.id } })
+
+        // WhatsApp terbuka di tab baru, sementara tab ini menampilkan status pesanan.
+        // Bila browser menolak tab baru, WhatsApp dibuka di tab ini; halaman pesanan tetap ada di riwayat.
+        const whatsappUrl = store.link(buildOrderMessage(order))
+
+        await router.replace({ name: 'order', params: { id: order.id } })
+
+        if (whatsappTab) whatsappTab.location.href = whatsappUrl
+        else window.location.href = whatsappUrl
     } catch (e) {
         submitError.value = e.message
         submitting.value = false
+        whatsappTab?.close()
     }
 }
 
@@ -137,9 +155,6 @@ useSeo(() => ({
                                 <PhoneInput id="checkout-phone" v-model="form.phone" :invalid="!!fieldError('phone')" />
                                 <span v-if="fieldError('phone')" class="mt-1 block text-xs text-brand-red">
                                     {{ fieldError('phone') }}
-                                </span>
-                                <span v-else class="mt-1 block text-xs font-normal text-gray-400">
-                                    Format: (+62) 8xxx-xxxx-xxxx
                                 </span>
                             </div>
                         </div>
@@ -206,9 +221,13 @@ useSeo(() => ({
                                 <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3"
                                     stroke-linecap="round" />
                             </svg>
-                            {{ submitting ? 'Memproses...' : 'Buat pesanan' }}
+                            {{ submitting ? 'Memproses...' : 'Pesan via WhatsApp' }}
                         </button>
 
+                        <p class="mt-3 text-center text-xs leading-5 text-gray-500">
+                            Pesanan tercatat di website, lalu Anda diarahkan ke WhatsApp untuk melanjutkan transaksi
+                            dengan tim kami.
+                        </p>
                         <p v-if="attempted && hasErrors" class="mt-3 text-center text-xs text-brand-red">
                             Lengkapi data yang ditandai merah.
                         </p>
