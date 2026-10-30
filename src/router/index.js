@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { usePageLoading } from '@/composables/usePageLoading'
+import { useRouteProgress } from '@/composables/useRouteProgress'
 import { useAuth } from '@/stores/auth'
 import { applySeo } from '@/composables/useSeo'
 import { seoByName } from './seo'
@@ -134,6 +135,7 @@ const router = createRouter({
 })
 
 const { start, stop } = usePageLoading()
+const progress = useRouteProgress()
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const isDetail = (route) => route.name === 'product-detail'
@@ -145,6 +147,8 @@ const isFinder = (route) => route.name === 'finder'
 
 router.beforeEach(async (to, from) => {
     if (to.fullPath === from.fullPath) return
+
+    progress.start()
 
     if (
         isDetail(to) ||
@@ -167,6 +171,9 @@ router.afterEach((to) => {
 
 router.afterEach(stop)
 router.onError(stop)
+
+router.afterEach(progress.done)
+router.onError(progress.done)
 
 router.beforeEach((to) => {
     const { isLoggedIn } = useAuth()

@@ -169,18 +169,3 @@ export async function apiPostAuth(path, payload) {
     return readBody(response, 'Gagal mengirim data ke server.')
 }
 
-export async function apiPostFileAuth(path, file) {
-    const form = new FormData()
-    form.append('file', file)
-
-    return readBody(await authedFetch(path, { method: 'POST', body: form }), 'Gagal mengirim berkas ke server.')
-}
-
-// Berkas pribadi (misalnya bukti transfer) dibuka lewat permintaan berotentikasi, hasilnya berupa alamat sementara.
-export async function apiGetBlobUrl(path) {
-    const response = await authedFetch(path)
-
-    if (!response.ok) throw new Error('Berkas tidak dapat dimuat.')
-
-    return URL.createObjectURL(await response.blob())
-}

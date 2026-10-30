@@ -1,64 +1,61 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-import { useSeo } from '@/composables/useSeo'
+import { computed, ref } from 'vue'
+import { usePageSeo } from '@/composables/useSeo'
+import { pageStatus, usePageSection } from '@/composables/usePage'
 import RentalHero from '../components/RentalHero.vue'
 import RentalBenefit from '../components/RentalBenefit.vue'
 import RentalPriceList from '../components/RentalPriceList.vue'
 import RentalCustomers from '../components/RentalCustomers.vue'
 import RentalCompare from '../components/RentalCompare.vue'
-import RentalForm from '../components/RentalForm.vue'
-import { getCustomers, getRentablePrinters } from '../services/rentalService'
+import RentalRequestDialog from '../components/RentalRequestDialog.vue'
+import { useAuth } from '@/stores/auth'
+import { buildRentalMessage, rentalWhatsappLink, toPrinters } from '../services/rentalService'
 
-useSeo(() => ({
+usePageSeo('sewa-printer', () => ({
     title: 'Sewa Printer',
     description: 'Butuh printer untuk kantor, acara, atau proyek? Ajukan sewa printer bersama AMAZiNK.',
     path: '/sewa-printer',
 }))
 
-const printers = ref([])
-const customers = ref([])
-const loading = ref(true)
-const loadError = ref('')
+// Paket sewa diatur admin di Halaman > Sewa Printer.
+const status = pageStatus('sewa-printer')
+const prices = usePageSection('sewa-printer', 'prices', { packages: [] })
+// Nomor CP tujuan tombol "Ajukan sewa", diatur admin.
+const contact = usePageSection('sewa-printer', 'contact', { phone: '' })
+const { user } = useAuth()
+
+const printers = computed(() => toPrinters(prices.value.packages))
+const loading = computed(() => !status.settled)
+const loadError = computed(() => (status.failed ? 'Daftar printer sewa belum dapat dimuat. Periksa koneksi Anda.' : ''))
 
 const selected = ref(null)
-const formOpen = ref(false)
 const compareOpen = ref(false)
+const requestOpen = ref(false)
 
-async function load() {
-    loading.value = true
-    loadError.value = ''
-    try {
-        printers.value = await getRentablePrinters()
-    } catch (e) {
-        loadError.value = e.message
-    } finally {
-        loading.value = false
-    }
+function retry() {
+    window.location.reload()
 }
 
-async function loadCustomers() {
-    try {
-        customers.value = await getCustomers()
-    } catch {
-        customers.value = []
-    }
-}
-
+// "Ajukan sewa" membuka modal alasan dan lama sewa dulu, lalu pengajuan dilanjutkan di WhatsApp ke CP.
 function openForm(printer) {
     selected.value = printer
     compareOpen.value = false
-    formOpen.value = true
+    requestOpen.value = true
+}
+
+function sendToWhatsapp(details) {
+    requestOpen.value = false
+    window.open(
+        rentalWhatsappLink(contact.value.phone, buildRentalMessage(selected.value, user.value, details)),
+        '_blank',
+        'noopener,noreferrer',
+    )
 }
 
 function openCompare(printer) {
     selected.value = printer
     compareOpen.value = true
 }
-
-onMounted(() => {
-    load()
-    loadCustomers()
-})
 </script>
 
 <template>
@@ -68,12 +65,13 @@ onMounted(() => {
         <RentalBenefit />
 
         <RentalPriceList :printers="printers" :loading="loading" :load-error="loadError" @apply="openForm"
-            @compare="openCompare" @retry="load" />
+            @compare="openCompare" @retry="retry" />
 
-        <RentalCustomers :customers="customers" />
+        <RentalCustomers />
 
         <RentalCompare :open="compareOpen" :printer="selected" @close="compareOpen = false" @apply="openForm" />
 
-        <RentalForm :open="formOpen" :printers="printers" :printer="selected" @close="formOpen = false" />
+        <RentalRequestDialog :open="requestOpen" :printer="selected" @close="requestOpen = false"
+            @submit="sendToWhatsapp" />
     </main>
 </template>

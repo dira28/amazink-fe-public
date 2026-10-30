@@ -121,7 +121,6 @@ useSeo(() => ({
                     <div class="block">
                         <label for="account-phone" class="text-[13px] font-semibold">Nomor WhatsApp</label>
                         <PhoneInput id="account-phone" v-model="form.phone" variant="soft" :invalid="!!phoneProblem" />
-                        <span class="mt-1.5 block text-xs text-[#737373]">Format: (+62) 8xxx-xxxx-xxxx</span>
                     </div>
                     <label class="block sm:col-span-2">
                         <span class="text-[13px] font-semibold">Email</span>
