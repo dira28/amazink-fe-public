@@ -2,6 +2,8 @@
 import { useSeo } from '@/composables/useSeo'
 import { computed, reactive, ref } from 'vue'
 import PasswordInput from '@/components/base/PasswordInput.vue'
+import PhoneInput from '@/components/base/PhoneInput.vue'
+import { validatePhoneValue } from '@/utils/phone'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useAuth } from '@/stores/auth'
 
@@ -15,7 +17,7 @@ const mismatch = computed(() => form.confirm.length > 0 && form.confirm !== form
 const matched = computed(() => form.confirm.length > 0 && form.confirm === form.password)
 const canSubmit = computed(() => form.password.length >= 8 && form.confirm === form.password)
 
-const form = reactive({ name: '', email: '', password: '', confirm: '' })
+const form = reactive({ name: '', email: '', phone: '', password: '', confirm: '' })
 const step = ref('form')
 const code = ref('')
 const error = ref('')
@@ -27,6 +29,11 @@ const input =
 async function submit() {
     error.value = ''
 
+    const phoneProblem = validatePhoneValue(form.phone)
+    if (phoneProblem) {
+        error.value = phoneProblem
+        return
+    }
     if (form.password.length < 8) {
         error.value = 'Kata sandi minimal 8 karakter.'
         return
@@ -38,7 +45,7 @@ async function submit() {
 
     loading.value = true
     try {
-        await register({ name: form.name.trim(), email: form.email.trim(), password: form.password })
+        await register({ name: form.name.trim(), email: form.email.trim(), phone: form.phone, password: form.password })
         step.value = 'otp'
     } catch (e) {
         error.value = e.message
@@ -87,6 +94,13 @@ useSeo(() => ({
                         <span class="text-[13px] font-semibold">Email</span>
                         <input v-model="form.email" type="email" required autocomplete="email" :class="input" />
                     </label>
+                    <div>
+                        <label for="register-phone" class="text-[13px] font-semibold">Nomor WhatsApp</label>
+                        <PhoneInput id="register-phone" v-model="form.phone" variant="soft" />
+                        <span class="mt-1.5 block text-xs text-[#737373]">
+                            Pastikan nomor terhubung ke WhatsApp, kami memakainya untuk informasi dan notifikasi pesanan.
+                        </span>
+                    </div>
                     <label class="block">
                         <span class="text-[13px] font-semibold">Kata sandi</span>
                         <PasswordInput v-model="form.password" autocomplete="new-password"
