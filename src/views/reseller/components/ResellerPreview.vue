@@ -80,7 +80,8 @@ onBeforeUnmount(() => {
             <!-- Header -->
             <header class="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                    <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">{{ section.eyebrow }}</p>
+                    <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">{{ section.eyebrow
+                    }}</p>
                     <h2 class="mt-2.5 text-[clamp(26px,3vw,36px)] font-semibold leading-[1.2] tracking-[-0.045em]">
                         <AccentText :text="section.title" />
                     </h2>
@@ -110,11 +111,9 @@ onBeforeUnmount(() => {
                                 {{ city.region }}
                             </span>
 
-                            <h3 class="mt-2 text-lg font-semibold tracking-[-0.02em]">{{ city.name }}</h3>
-
-                            <p class="mt-2 line-clamp-3 text-[13px] leading-6 text-gray-600">
-                                {{ city.branches[0].address }}
-                            </p>
+                            <h3 class="mt-2 line-clamp-2 text-lg font-semibold leading-snug tracking-[-0.02em]">
+                                {{ city.branches[0].name || city.name }}
+                            </h3>
 
                             <div class="mt-auto pt-4">
                                 <template v-if="city.branches[0].phones.length">
