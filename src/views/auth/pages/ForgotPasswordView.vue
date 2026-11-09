@@ -29,7 +29,6 @@ let timer
 
 const tooShort = computed(() => password.value.length > 0 && password.value.length < 8)
 const mismatch = computed(() => confirm.value.length > 0 && confirm.value !== password.value)
-const matched = computed(() => confirm.value.length > 0 && confirm.value === password.value)
 const canReset = computed(
     () => code.value.length === 6 && password.value.length >= 8 && confirm.value === password.value
 )
@@ -175,8 +174,8 @@ useSeo(() => ({
                         <span class="text-[13px] font-semibold">Ulangi kata sandi baru</span>
                         <PasswordInput v-model="confirm" autocomplete="new-password" :invalid="mismatch" />
                         <span class="mt-1.5 block min-h-4 text-xs" aria-live="polite"
-                            :class="mismatch ? 'text-red-600' : matched ? 'text-green-700' : 'text-transparent'">
-                            {{ mismatch ? 'Kata sandi tidak sama.' : matched ? 'Kata sandi cocok.' : '.' }}
+                            :class="mismatch ? 'text-red-600' : 'text-transparent'">
+                            {{ mismatch ? 'Kata sandi tidak sama.' : '.' }}
                         </span>
                     </label>
 

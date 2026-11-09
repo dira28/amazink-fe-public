@@ -28,16 +28,18 @@ const categories = computed(() => {
     const groups = new Map()
 
     for (const product of products.value) {
-        const group = groups.get(product.categorySlug) ?? { slug: product.categorySlug, name: product.category, count: 0, image: '' }
+        const group = groups.get(product.categorySlug) ?? { slug: product.categorySlug, name: product.category, count: 0, image: '', cover: '' }
 
         group.count += 1
-        // Gambar kartu diambil dari produk pertama di kategori itu yang punya gambar.
+        // Sampul dari admin dipakai bila ada; selain itu gambar produk pertama di kategori itu yang punya gambar.
+        group.cover ||= product.categoryImage
         group.image ||= product.image
         groups.set(product.categorySlug, group)
     }
 
     return [...groups.values()].map((group) => ({
         ...group,
+        image: group.cover || group.image,
         name: prettify(group.name),
         tag: `${group.count} PRODUK`,
         description: `Lihat semua ${prettify(group.name).toLowerCase()}`,
@@ -94,8 +96,15 @@ const categories = computed(() => {
                         <img v-if="category.image" :src="category.image" :alt="category.name" loading="lazy"
                             class="block h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none" />
 
-                        <div v-else class="grid h-full w-full place-items-center bg-[#ebeae5]">
-                            <span class="text-xs font-bold tracking-[0.12em] text-[#111]">AMAZiNK</span>
+                        <!-- Kategori tanpa gambar tetap tampil dengan placeholder. -->
+                        <div v-else class="grid h-full w-full place-items-center bg-[#f1f0ec]" role="img"
+                            :aria-label="`Gambar ${category.name} belum tersedia`">
+                            <svg class="h-14 w-14 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="3" y="4" width="18" height="16" rx="2.5" />
+                                <circle cx="8.5" cy="9.5" r="1.6" />
+                                <path d="m21 16-5.2-5.2a1 1 0 0 0-1.4 0L6 19" />
+                            </svg>
                         </div>
                     </div>
 
