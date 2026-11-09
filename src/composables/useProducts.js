@@ -21,6 +21,7 @@ export const mapProduct = (product) => ({
     sku: product.code,
     category: product.category,
     categorySlug: product.category_slug,
+    categoryImage: product.category_image || '',
     description: summarize(product.description ?? '') || `Produk ${product.category} dari AMAZiNK.`,
     longDescription: (product.description ?? '').trim(),
     specs: product.specifications ?? [],
