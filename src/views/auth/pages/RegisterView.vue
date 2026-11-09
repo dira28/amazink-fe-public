@@ -14,7 +14,6 @@ const { register, verifyEmail } = useAuth()
 
 const tooShort = computed(() => form.password.length > 0 && form.password.length < 8)
 const mismatch = computed(() => form.confirm.length > 0 && form.confirm !== form.password)
-const matched = computed(() => form.confirm.length > 0 && form.confirm === form.password)
 const canSubmit = computed(() => form.password.length >= 8 && form.confirm === form.password)
 
 const form = reactive({ name: '', email: '', phone: '', password: '', confirm: '' })
@@ -115,8 +114,8 @@ useSeo(() => ({
                         <span class="text-[13px] font-semibold">Ulangi kata sandi</span>
                         <PasswordInput v-model="form.confirm" autocomplete="new-password" :invalid="mismatch" />
                         <span class="mt-1.5 block min-h-4 text-xs" aria-live="polite"
-                            :class="mismatch ? 'text-red-600' : matched ? 'text-green-700' : 'text-transparent'">
-                            {{ mismatch ? 'Kata sandi tidak sama.' : matched ? 'Kata sandi cocok.' : '.' }}
+                            :class="mismatch ? 'text-red-600' : 'text-transparent'">
+                            {{ mismatch ? 'Kata sandi tidak sama.' : '.' }}
                         </span>
                     </label>
 
