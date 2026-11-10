@@ -1,48 +1,105 @@
 <script setup>
-// Isi dengan gambar asli, misal '/images/rental/benefit.jpg'
-const benefitImage = ''
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 
-// CONTOH. Sesuaikan dengan layanan sewa yang sebenarnya.
 const benefits = [
     { title: 'Tanpa biaya beli di awal', text: 'Pakai printer sesuai kebutuhan tanpa menyiapkan modal besar.' },
-    { title: 'Servis dan perawatan ditanggung', text: 'Printer bermasalah ditangani tim AMAZiNK tanpa biaya tambahan.' },
     { title: 'Unit pengganti', text: 'Printer rusak diganti supaya pekerjaanmu tidak terhenti.' },
-    { title: 'Tinta atau toner rutin', text: 'Persediaan dikirim berkala sehingga tidak perlu repot menstok.' },
+    { title: 'Tinta atau toner rutin', text: 'Persediaan dikirim berkala, tidak perlu repot menstok.' },
+    { title: 'Satu tagihan pasti', text: 'Biaya bulanan tetap, anggaran mudah diprediksi.' },
 ]
+
+const tanks = [
+    { name: 'Cyan', level: 78, from: '#67d4ff', to: '#0b8fd1' },
+    { name: 'Magenta', level: 62, from: '#ff7ab8', to: '#c71f6e' },
+    { name: 'Kuning', level: 88, from: '#ffe66b', to: '#e0a800' },
+    { name: 'Hitam', level: 70, from: '#6b6b6b', to: '#262626' },
+]
+
+const root = ref(null)
+const filled = ref(false)
+let observer
+
+onMounted(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduced || !('IntersectionObserver' in window)) {
+        filled.value = true
+        return
+    }
+    observer = new IntersectionObserver(
+        ([entry]) => {
+            if (entry.isIntersecting) {
+                filled.value = true
+                observer.disconnect()
+            }
+        },
+        { threshold: 0.35 }
+    )
+    observer.observe(root.value)
+})
+
+onBeforeUnmount(() => observer?.disconnect())
 </script>
 
 <template>
-    <section aria-labelledby="rental-benefit" class="mx-auto max-w-6xl px-5 sm:px-8">
-        <h2 id="rental-benefit" class="m-0 text-[clamp(22px,3vw,30px)] font-semibold tracking-[-0.03em]">
-            Benefit sewa di AMAZiNK
-        </h2>
+    <section ref="root" aria-labelledby="rental-benefit"
+        class="relative overflow-hidden bg-gradient-to-b from-[#1c1c1c] to-[#0d0d0d] py-16 text-white sm:py-24">
+        <div aria-hidden="true"
+            class="pointer-events-none absolute -right-24 -top-32 h-[28rem] w-[28rem] rounded-full bg-brand-red/35 blur-3xl" />
+        <div aria-hidden="true"
+            class="pointer-events-none absolute -bottom-40 -left-24 h-[28rem] w-[28rem] rounded-full bg-brand-red/10 blur-3xl" />
 
-        <div class="mt-6 grid gap-4 rounded-[32px] bg-white p-4 ring-1 ring-black/5 sm:p-6 md:grid-cols-2">
-            <div
-                class="grid min-h-56 place-items-center overflow-hidden rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100">
-                <img v-if="benefitImage" :src="benefitImage" alt="Benefit sewa AMAZiNK"
-                    class="h-full w-full object-cover" />
-                <svg v-else class="h-12 w-12 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect x="3" y="4" width="18" height="16" rx="2" />
-                    <circle cx="8.5" cy="9" r="1.5" />
-                    <path d="m21 15-5-5L5 20" />
-                </svg>
+        <div class="relative mx-auto max-w-6xl px-5 sm:px-8">
+            <div class="relative grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
+                <div>
+                    <h2 id="rental-benefit"
+                        class="mb-0 mt-3 max-w-md text-[clamp(28px,4vw,44px)] font-bold leading-[1.08] tracking-[-0.045em]">
+                        Printer siap pakai. Urusan kami.
+                    </h2>
+                    <p class="mb-0 mt-3 max-w-sm text-sm leading-7 text-white/60">
+                        Pengadaan, tinta, dan servis kami kelola. Tim kamu fokus bekerja.
+                    </p>
+
+                    <p class="m-0 mt-10 flex items-baseline gap-[0.14em] text-[clamp(72px,11vw,128px)] font-semibold leading-[0.9] tracking-[-0.06em]"
+                        aria-label="Rp 0">
+                        <span aria-hidden="true" class="relative z-10 text-white">Rp</span>
+                        <span aria-hidden="true"
+                            class="bg-gradient-to-b from-white to-white/40 bg-clip-text pb-[0.06em] pr-[0.1em] tracking-normal text-transparent">
+                            0
+                        </span>
+                    </p>
+                    <p class="mb-0 mt-4 max-w-xs text-sm leading-7 text-white/60">
+                        Servis dan perawatan ditanggung. Printer bermasalah ditangani tim AMAZiNK tanpa biaya tambahan
+                        selama masa sewa.
+                    </p>
+                </div>
+
+                <div class="flex items-end justify-center gap-4 sm:gap-6" role="img"
+                    aria-label="Tangki tinta cyan, magenta, kuning, dan hitam terisi penuh">
+                    <div v-for="(tank, index) in tanks" :key="tank.name" class="flex flex-col items-center gap-3">
+                        <div class="h-2 w-8 rounded-t-md bg-white/20" />
+                        <div
+                            class="relative h-56 w-14 overflow-hidden rounded-[20px] bg-white/[0.05] shadow-[inset_0_2px_12px_rgba(0,0,0,0.5)] ring-1 ring-white/15 sm:h-64 sm:w-16">
+                            <div class="absolute inset-x-0 bottom-0 transition-[height] duration-[1400ms] ease-out motion-reduce:transition-none"
+                                :style="{
+                                    height: filled ? `${tank.level}%` : '0%',
+                                    transitionDelay: `${index * 140}ms`,
+                                    background: `linear-gradient(to bottom, ${tank.from}, ${tank.to})`,
+                                }">
+                                <span class="absolute inset-x-0 top-0 h-px bg-white/60" />
+                            </div>
+                            <span
+                                class="pointer-events-none absolute bottom-4 left-2 top-4 w-1.5 rounded-full bg-gradient-to-b from-white/30 to-transparent" />
+                        </div>
+                        <span class="text-[11px] text-white/50">{{ tank.name }}</span>
+                    </div>
+                </div>
             </div>
 
-            <ul class="m-0 flex list-none flex-col gap-3 p-0">
-                <li v-for="item in benefits" :key="item.title"
-                    class="flex flex-1 items-start gap-3 rounded-2xl bg-[#f7f7f5] p-4">
-                    <span class="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-red">
-                        <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"
-                            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="m5 12 5 5L20 7" />
-                        </svg>
-                    </span>
-                    <div>
-                        <h3 class="m-0 text-[14px] font-semibold">{{ item.title }}</h3>
-                        <p class="mb-0 mt-1 text-[13px] leading-6 text-[#737373]">{{ item.text }}</p>
-                    </div>
+            <ul
+                class="relative m-0 mt-14 grid list-none gap-x-8 gap-y-8 border-t border-white/10 p-0 pt-8 sm:grid-cols-2 lg:grid-cols-4">
+                <li v-for="item in benefits" :key="item.title">
+                    <h3 class="m-0 text-[15px] font-semibold tracking-[-0.01em]">{{ item.title }}</h3>
+                    <p class="mb-0 mt-1.5 text-[13px] leading-6 text-white/60">{{ item.text }}</p>
                 </li>
             </ul>
         </div>

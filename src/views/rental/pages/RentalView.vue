@@ -1,10 +1,15 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useSeo } from '@/composables/useSeo'
 import RentalHero from '../components/RentalHero.vue'
+import RentalMarquee from '../components/RentalMarquee.vue'
+import RentalProblems from '../components/RentalProblems.vue'
 import RentalBenefit from '../components/RentalBenefit.vue'
 import RentalPriceList from '../components/RentalPriceList.vue'
+import RentalCalculator from '../components/RentalCalculator.vue'
 import RentalCustomers from '../components/RentalCustomers.vue'
+import RentalFaq from '../components/RentalFaq.vue'
+import RentalStickyBar from '../components/RentalStickyBar.vue'
 import RentalCompare from '../components/RentalCompare.vue'
 import RentalForm from '../components/RentalForm.vue'
 import { getCustomers, getRentablePrinters } from '../services/rentalService'
@@ -23,6 +28,7 @@ const loadError = ref('')
 const selected = ref(null)
 const formOpen = ref(false)
 const compareOpen = ref(false)
+const modalOpen = computed(() => formOpen.value || compareOpen.value)
 
 async function load() {
     loading.value = true
@@ -44,7 +50,7 @@ async function loadCustomers() {
     }
 }
 
-function openForm(printer) {
+function openForm(printer = null) {
     selected.value = printer
     compareOpen.value = false
     formOpen.value = true
@@ -62,15 +68,32 @@ onMounted(() => {
 </script>
 
 <template>
-    <main class="space-y-12 bg-[#f7f7f5] pb-16 text-[#171717] sm:space-y-16 sm:pb-24">
+    <main class="text-[#171717]">
         <RentalHero />
+        <RentalMarquee />
+
+        <div class="bg-white py-16 sm:py-24">
+            <RentalProblems @apply="openForm" />
+        </div>
 
         <RentalBenefit />
 
-        <RentalPriceList :printers="printers" :loading="loading" :load-error="loadError" @apply="openForm"
-            @compare="openCompare" @retry="load" />
+        <div id="daftar-harga" class="scroll-mt-20 bg-[#f4f3ef] py-16 sm:py-24">
+            <RentalPriceList :printers="printers" :loading="loading" :load-error="loadError" @apply="openForm"
+                @compare="openCompare" @retry="load" />
+        </div>
 
-        <RentalCustomers :customers="customers" />
+        <RentalCalculator :printers="printers" :loading="loading" @apply="openForm" />
+
+        <div v-if="customers.length" class="bg-white py-16 sm:py-20">
+            <RentalCustomers :customers="customers" />
+        </div>
+
+        <div class="bg-[#141414] py-16 pb-24 sm:py-24 sm:pb-32">
+            <RentalFaq />
+        </div>
+
+        <RentalStickyBar :printers="printers" :hidden="modalOpen" @apply="openForm" />
 
         <RentalCompare :open="compareOpen" :printer="selected" @close="compareOpen = false" @apply="openForm" />
 

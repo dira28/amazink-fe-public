@@ -103,3 +103,14 @@ export async function submitRental(payload) {
     // lalu POST ke endpoint sewa dengan token login.
     throw new Error('Pengajuan sewa belum tersambung ke server.')
 }
+
+// Harga sewa per bulan paling murah dari semua paket (0 jika belum ada data)
+export function cheapestRent(printers) {
+    const rents = (printers ?? []).map((p) => rentalTotals(p).rent).filter(Boolean)
+    return rents.length ? Math.min(...rents) : 0
+}
+
+// GANTI dengan nomor WhatsApp AMAZiNK (format 62..., tanpa + atau spasi).
+export const WA_NUMBER = '6281234567890'
+
+export const waLink = (text) => `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(text)}`

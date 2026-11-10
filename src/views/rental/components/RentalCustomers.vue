@@ -1,4 +1,6 @@
 <script setup>
+import RentalHeading from './RentalHeading.vue'
+
 defineProps({
     customers: { type: Array, default: () => [] },
 })
@@ -14,9 +16,7 @@ const initials = (name) =>
 
 <template>
     <section v-if="customers.length" aria-labelledby="rental-customers" class="mx-auto max-w-6xl px-5 sm:px-8">
-        <h2 id="rental-customers" class="m-0 text-center text-[clamp(22px,3vw,30px)] font-semibold tracking-[-0.03em]">
-            Pelanggan kami
-        </h2>
+        <RentalHeading id="rental-customers" center eyebrow="" title="Pelanggan" accent="kami" />
 
         <ul class="m-0 mt-8 grid list-none grid-cols-4 gap-4 p-0 sm:grid-cols-6 sm:gap-6">
             <li v-for="item in customers" :key="item.id" class="flex justify-center">
