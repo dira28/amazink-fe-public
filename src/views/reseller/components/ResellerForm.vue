@@ -138,9 +138,6 @@ async function submit() {
                         <span v-if="fieldError('phone')" class="mt-1 block text-xs text-brand-red">
                             {{ fieldError('phone') }}
                         </span>
-                        <span v-else class="mt-1 block text-xs font-normal text-gray-400">
-                            Format: (+62) 8xxx-xxxx-xxxx
-                        </span>
                     </div>
 
                     <label class="mt-4 block text-sm font-medium text-gray-700">

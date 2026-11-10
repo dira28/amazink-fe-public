@@ -1,5 +1,5 @@
 // Nomor telepon disimpan dalam format internasional tanpa spasi (+6281234567890) dan
-// ditampilkan sebagai (+62) 8123-4567-8901. Kode negara dipilih terpisah dari nomornya.
+// ditampilkan sebagai +62 812-3456-7890. Kode negara dipilih terpisah dari nomornya.
 
 export const COUNTRIES = [
     { code: '+62', name: 'Indonesia' },
@@ -38,8 +38,9 @@ export function cleanNational(raw, country) {
     return digits.slice(0, MAX_DIGITS)
 }
 
-// 8xxx-xxxx-xxxx: dikelompokkan empat angka.
-export const formatNational = (digits) => (digits ? digits.match(/.{1,4}/g).join('-') : '')
+// 812-3456-7890: tiga angka, empat angka, lalu sisanya.
+export const formatNational = (digits) =>
+    [digits.slice(0, 3), digits.slice(3, 7), digits.slice(7)].filter(Boolean).join('-')
 
 export const toE164 = (country, digits) => (digits ? `${country}${digits}` : '')
 
@@ -76,7 +77,7 @@ export function parsePhone(value) {
 export function formatPhone(value) {
     const { country, national } = parsePhone(value)
 
-    return national ? `(${country}) ${formatNational(national)}` : ''
+    return national ? `${country} ${formatNational(national)}` : ''
 }
 
 export function validatePhoneValue(value) {

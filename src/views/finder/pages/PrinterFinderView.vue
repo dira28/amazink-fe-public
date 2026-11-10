@@ -4,6 +4,7 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { useCart } from '@/composables/useCart'
 import { usePrinters } from '@/composables/usePrinters'
 import { useSeo } from '@/composables/useSeo'
+import BasePagination from '@/components/base/BasePagination.vue'
 
 useSeo(() => ({
     title: 'Cari Tinta yang Cocok untuk Printer Anda',
@@ -13,7 +14,7 @@ useSeo(() => ({
 
 const PHONE = '6282226667233'
 const DETAIL_BASE = '/produk/'
-const LIMIT = 12
+const PER_PAGE = 12
 
 const route = useRoute()
 const router = useRouter()
@@ -35,7 +36,8 @@ const swatchStyle = (color) => ({
 const search = ref('')
 const brand = ref('all')
 const selected = ref(null)
-const showAll = ref(false)
+const page = ref(1)
+const listEl = ref(null)
 const resultEl = ref(null)
 const added = ref({})
 
@@ -48,7 +50,14 @@ const filtered = computed(() => {
     )
 })
 
-const visible = computed(() => (showAll.value ? filtered.value : filtered.value.slice(0, LIMIT)))
+const totalPages = computed(() => Math.max(1, Math.ceil(filtered.value.length / PER_PAGE)))
+const visible = computed(() => filtered.value.slice((page.value - 1) * PER_PAGE, page.value * PER_PAGE))
+
+// Pindah halaman daftar lalu bawa pandangan ke awal daftar, supaya pengguna tidak tertinggal di bawah.
+function goToPage(next) {
+    page.value = next
+    listEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 const isSelected = (item) => selected.value?.id === item.id
 
@@ -95,6 +104,13 @@ function addSet() {
 
 async function select(item, { scroll = true } = {}) {
     selected.value = item
+
+    // Seri yang dipilih dari alamat (?seri=...) mungkin ada di halaman lain dari daftar; pindah ke halaman itu.
+    // Menunggu satu tick supaya pengaturan merek/pencarian dari alamat (yang mengembalikan halaman ke 1) selesai dulu.
+    await nextTick()
+    const position = filtered.value.findIndex((entry) => entry.id === item.id)
+    if (position !== -1) page.value = Math.floor(position / PER_PAGE) + 1
+
     router.replace({ query: { brand: item.brandId, seri: item.model } })
 
     if (scroll) {
@@ -115,8 +131,9 @@ function applyQuery() {
     else search.value = String(q ?? '')
 }
 
-watch(search, () => {
-    showAll.value = false
+// Pencarian atau merek berubah: daftar kembali ke halaman pertama.
+watch([search, brand], () => {
+    page.value = 1
 })
 
 watch(() => route.query.q, (value) => {
@@ -170,7 +187,7 @@ watch(
                         class="h-9 cursor-pointer rounded-full border-0 px-4 transition-colors"
                         :class="brand === item.id ? 'bg-[#171717]' : 'bg-white ring-1 ring-black/5 hover:ring-brand-red/40'"
                         :style="{ color: brand === item.id ? '#fff' : '#374151', fontSize: '13px', fontWeight: 600 }"
-                        @click="brand = item.id; showAll = false">
+                        @click="brand = item.id">
                         {{ item.name }}
                     </button>
                 </div>
@@ -179,7 +196,7 @@ watch(
 
         <div class="mx-auto max-w-5xl px-5 pb-16 sm:px-8 sm:pb-24">
             <!-- Daftar seri -->
-            <div class="flex items-center justify-between gap-3">
+            <div ref="listEl" class="flex scroll-mt-24 items-center justify-between gap-3">
                 <h2 class="m-0 text-sm font-semibold">Pilih seri printer</h2>
                 <span class="text-xs text-[#737373]">{{ filtered.length }} seri</span>
             </div>
@@ -216,12 +233,12 @@ watch(
                 </template>
             </div>
 
-            <div v-if="filtered.length > LIMIT" class="mt-4 text-center">
-                <button type="button"
-                    class="h-10 cursor-pointer rounded-full border-0 bg-white px-5 ring-1 ring-black/10 transition-colors hover:ring-brand-red/40"
-                    style="color: #374151; font-size: 13px; font-weight: 600" @click="showAll = !showAll">
-                    {{ showAll ? 'Tampilkan lebih sedikit' : `Lihat semua ${filtered.length} seri` }}
-                </button>
+            <div v-if="totalPages > 1" class="mt-5 flex flex-col items-center gap-2">
+                <BasePagination dark :model-value="page" :total-pages="totalPages" @update:model-value="goToPage" />
+                <p class="m-0 text-xs text-[#737373]">
+                    Menampilkan {{ (page - 1) * PER_PAGE + 1 }}–{{ Math.min(page * PER_PAGE, filtered.length) }}
+                    dari {{ filtered.length }} seri
+                </p>
             </div>
 
             <!-- Hasil -->

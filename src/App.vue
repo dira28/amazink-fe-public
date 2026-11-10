@@ -2,6 +2,7 @@
 import TheHeader from '@/components/layout/TheHeader.vue'
 import TheFooter from '@/components/layout/TheFooter.vue'
 import PageLoader from '@/components/layout/PageLoader.vue'
+import RouteProgress from '@/components/layout/RouteProgress.vue'
 import { usePageLoading } from '@/composables/usePageLoading'
 import WhatsAppFloat from '@/components/WhatsAppFloat.vue'
 
@@ -11,6 +12,7 @@ const { loading } = usePageLoading()
 
 <template>
   <div class="flex min-h-screen flex-col bg-brand-white text-white">
+    <RouteProgress />
     <PageLoader :show="loading" />
     <TheHeader />
     <main class="flex-1">

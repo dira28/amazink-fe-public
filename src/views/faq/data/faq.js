@@ -13,14 +13,14 @@ export const faqItems = [
         category: 'pemesanan',
         question: 'Bagaimana cara memesan produk di AMAZiNK?',
         answer:
-            'Pilih produk di halaman Katalog Produk, lalu klik tambah ke keranjang. Buka keranjang untuk memeriksa pesanan Anda, lanjutkan ke checkout, isi data pengiriman, dan pilih metode pembayaran. Pesanan mulai diproses setelah pembayaran terkonfirmasi.',
+            'Pilih produk di halaman Katalog Produk, lalu klik tambah ke keranjang. Buka keranjang untuk memeriksa pesanan Anda, lanjutkan ke checkout, lalu isi data pengiriman. Setelah pesanan dibuat, Anda diarahkan ke WhatsApp untuk melanjutkan transaksi dengan tim kami. Status pesanan dapat dipantau di halaman Akun.',
     },
     {
         id: 'metode-pembayaran',
         category: 'pemesanan',
         question: 'Metode pembayaran apa saja yang tersedia?',
         answer:
-            'Pilihan pembayaran yang aktif ditampilkan saat checkout, misalnya transfer bank dan dompet digital. Metode yang tersedia dapat berbeda tergantung nominal pesanan.',
+            'Pembayaran dilakukan lewat WhatsApp. Setelah checkout, tim kami memberikan informasi dan pilihan metode pembayaran yang tersedia untuk pesanan Anda.',
     },
     {
         id: 'lacak-pesanan',

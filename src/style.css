@@ -30,6 +30,16 @@
 
 @media (prefers-reduced-motion: reduce) {
 
+    a[href],
+    button {
+        transition-duration: 0.01ms;
+    }
+
+    a[href][class*='rounded-full']:active,
+    button[class*='rounded-full']:not(:disabled):active {
+        transform: none;
+    }
+
     .page-enter-active,
     .page-leave-active {
         transition: none;
@@ -41,6 +51,21 @@
 }
 
 @layer base {
+
+    /* Semua tautan dan tombol berubah halus saat disorot atau ditekan. Berada di layer base, jadi utilitas Tailwind
+       (mis. transition-colors) tetap menang bila sebuah elemen mengaturnya sendiri. */
+    a[href],
+    button {
+        transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+        transition-duration: 0.2s;
+        transition-timing-function: ease;
+    }
+
+    /* Tombol berbentuk pil memberi umpan balik tekan sebelum halaman berpindah. */
+    a[href][class*='rounded-full']:active,
+    button[class*='rounded-full']:not(:disabled):active {
+        transform: scale(0.97);
+    }
 
     :focus-visible {
         outline: 2px solid var(--color-brand-red);

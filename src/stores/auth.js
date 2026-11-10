@@ -29,7 +29,7 @@ const currentUser = computed(() => {
 
     if (!session) return null
 
-    return { ...session.user, phone: state.phones[session.user.id] ?? '' }
+    return { ...session.user, phone: state.phones[session.user.id] || session.user.phone || '' }
 })
 
 export function useAuth() {

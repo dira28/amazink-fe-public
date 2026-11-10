@@ -1,6 +1,5 @@
 <script setup>
 import { computed, ref } from 'vue'
-import '../css/AboutVisionMission.css'
 import AccentText from '@/components/base/AccentText.vue'
 import { usePageSection } from '@/composables/usePage'
 
@@ -65,6 +64,16 @@ const missions = computed(() => content.value.missions)
 function toggleMission(index) {
     activeMission.value = activeMission.value === index ? -1 : index
 }
+
+// Tinggi kartu misi dibuat tetap supaya bilah penutup di bawahnya tidak naik turun saat akordeon dibuka.
+// Caranya: daftar asli ditumpuk di satu sel grid dengan satu salinan tak terlihat untuk setiap butir misi yang terbuka;
+// tinggi sel mengikuti salinan tertinggi, dan menyesuaikan sendiri saat lebar layar atau teksnya berubah.
+const layers = computed(() => [
+    { ghost: false },
+    ...missions.value.map((_, index) => ({ ghost: true, open: index })),
+])
+
+const isOpen = (layer, index) => (layer.ghost ? layer.open === index : activeMission.value === index)
 </script>
 
 <template>
@@ -166,57 +175,64 @@ function toggleMission(index) {
                         </p>
                     </div>
 
-                    <div class="mt-1">
-                        <div v-for="(mission, index) in missions" :key="mission.id ?? index"
-                            class="border-b border-gray-100 last:border-b-0">
-                            <button type="button"
-                                class="group flex w-full items-start gap-3 rounded-xl py-3 text-left sm:gap-4"
-                                :aria-expanded="activeMission === index" :aria-controls="`mission-panel-${index}`"
-                                @click="toggleMission(index)">
-                                <span
-                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold transition duration-300"
-                                    :class="activeMission === index
-                                        ? 'border-brand-red bg-brand-red text-white'
-                                        : 'border-gray-200 bg-white text-gray-400 group-hover:border-brand-red group-hover:text-brand-red'
-                                        ">
-                                    {{ String(index + 1).padStart(2, '0') }}
-                                </span>
-
-                                <span class="min-w-0 flex-1 pt-1">
-                                    <span class="block text-sm font-semibold leading-6 transition" :class="activeMission === index
-                                        ? 'text-gray-950'
-                                        : 'text-gray-600 group-hover:text-gray-950'
-                                        ">
-                                        {{ mission.title }}
+                    <div class="mt-1 grid">
+                        <div v-for="(layer, layerIndex) in layers" :key="layerIndex" class="[grid-area:1/1]"
+                            :class="layer.ghost ? 'pointer-events-none invisible select-none' : ''"
+                            :aria-hidden="layer.ghost || undefined" :inert="layer.ghost || undefined">
+                            <div v-for="(mission, index) in missions" :key="mission.id ?? index"
+                                class="border-b border-gray-100 last:border-b-0">
+                                <button type="button"
+                                    class="group flex w-full items-start gap-3 rounded-xl py-3 text-left sm:gap-4"
+                                    :aria-expanded="isOpen(layer, index)"
+                                    :aria-controls="layer.ghost ? undefined : `mission-panel-${index}`"
+                                    :tabindex="layer.ghost ? -1 : undefined" @click="toggleMission(index)">
+                                    <span
+                                        class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold transition duration-300"
+                                        :class="isOpen(layer, index)
+                                            ? 'border-brand-red bg-brand-red text-white'
+                                            : 'border-gray-200 bg-white text-gray-400 group-hover:border-brand-red group-hover:text-brand-red'
+                                            ">
+                                        {{ String(index + 1).padStart(2, '0') }}
                                     </span>
 
-                                    <Transition name="mission">
-                                        <span v-if="activeMission === index" :id="`mission-panel-${index}`"
-                                            class="block overflow-hidden">
-                                            <span
-                                                class="mt-2 block text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">
-                                                {{ mission.keyword }}
-                                            </span>
+                                    <span class="min-w-0 flex-1 pt-1">
+                                        <span class="block text-sm font-semibold leading-6 transition" :class="isOpen(layer, index)
+                                            ? 'text-gray-950'
+                                            : 'text-gray-600 group-hover:text-gray-950'
+                                            ">
+                                            {{ mission.title }}
+                                        </span>
 
-                                            <span class="mt-1.5 block text-sm leading-6 text-gray-500">
-                                                {{ mission.description }}
+                                        <!-- Tinggi panel beranimasi dari 0 ke tinggi aslinya (grid-rows 0fr ke 1fr), jadi terbukanya halus. -->
+                                        <span :id="layer.ghost ? undefined : `mission-panel-${index}`"
+                                            class="grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none"
+                                            :class="isOpen(layer, index) ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'">
+                                            <span class="block min-h-0 overflow-hidden">
+                                                <span
+                                                    class="mt-2 block text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">
+                                                    {{ mission.keyword }}
+                                                </span>
+
+                                                <span class="mt-1.5 block pb-1 text-sm leading-6 text-gray-500">
+                                                    {{ mission.description }}
+                                                </span>
                                             </span>
                                         </span>
-                                    </Transition>
-                                </span>
+                                    </span>
 
-                                <span
-                                    class="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition duration-300"
-                                    :class="activeMission === index
-                                        ? 'rotate-180 bg-red-50 text-brand-red'
-                                        : 'text-gray-400 group-hover:text-brand-red'
-                                        " aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor"
-                                        stroke-width="1.8">
-                                        <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
-                                    </svg>
-                                </span>
-                            </button>
+                                    <span
+                                        class="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition duration-300"
+                                        :class="isOpen(layer, index)
+                                            ? 'rotate-180 bg-red-50 text-brand-red'
+                                            : 'text-gray-400 group-hover:text-brand-red'
+                                            " aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor"
+                                            stroke-width="1.8">
+                                            <path d="m6 9 6 6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </article>

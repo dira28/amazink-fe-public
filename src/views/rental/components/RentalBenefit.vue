@@ -1,12 +1,17 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { usePageSection } from '@/composables/usePage'
 
-const benefits = [
-    { title: 'Tanpa biaya beli di awal', text: 'Pakai printer sesuai kebutuhan tanpa menyiapkan modal besar.' },
-    { title: 'Unit pengganti', text: 'Printer rusak diganti supaya pekerjaanmu tidak terhenti.' },
-    { title: 'Tinta atau toner rutin', text: 'Persediaan dikirim berkala, tidak perlu repot menstok.' },
-    { title: 'Satu tagihan pasti', text: 'Biaya bulanan tetap, anggaran mudah diprediksi.' },
-]
+// Defaults are used until the API responds or when it is unreachable.
+const content = usePageSection('sewa-printer', 'benefits', {
+    title: 'Printer siap pakai. Urusan kami.',
+    items: [
+        { id: 'benefit-1', title: 'Tanpa biaya beli di awal', text: 'Pakai printer sesuai kebutuhan tanpa menyiapkan modal besar.' },
+        { id: 'benefit-2', title: 'Servis dan perawatan ditanggung', text: 'Printer bermasalah ditangani tim AMAZiNK tanpa biaya tambahan.' },
+        { id: 'benefit-3', title: 'Unit pengganti', text: 'Printer rusak diganti supaya pekerjaanmu tidak terhenti.' },
+        { id: 'benefit-4', title: 'Tinta atau toner rutin', text: 'Persediaan dikirim berkala sehingga tidak perlu repot menstok.' },
+    ],
+})
 
 const tanks = [
     { name: 'Cyan', level: 78, from: '#67d4ff', to: '#0b8fd1' },
@@ -51,9 +56,13 @@ onBeforeUnmount(() => observer?.disconnect())
         <div class="relative mx-auto max-w-6xl px-5 sm:px-8">
             <div class="relative grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
                 <div>
+                    <p class="m-0 inline-flex items-center gap-2 text-xs font-semibold text-brand-red">
+                        <span class="block h-0.5 w-6 bg-brand-red" aria-hidden="true" />
+                        Kenapa sewa
+                    </p>
                     <h2 id="rental-benefit"
                         class="mb-0 mt-3 max-w-md text-[clamp(28px,4vw,44px)] font-bold leading-[1.08] tracking-[-0.045em]">
-                        Printer siap pakai. Urusan kami.
+                        {{ content.title }}
                     </h2>
                     <p class="mb-0 mt-3 max-w-sm text-sm leading-7 text-white/60">
                         Pengadaan, tinta, dan servis kami kelola. Tim kamu fokus bekerja.
@@ -97,7 +106,7 @@ onBeforeUnmount(() => observer?.disconnect())
 
             <ul
                 class="relative m-0 mt-14 grid list-none gap-x-8 gap-y-8 border-t border-white/10 p-0 pt-8 sm:grid-cols-2 lg:grid-cols-4">
-                <li v-for="item in benefits" :key="item.title">
+                <li v-for="(item, index) in content.items" :key="item.id || index">
                     <h3 class="m-0 text-[15px] font-semibold tracking-[-0.01em]">{{ item.title }}</h3>
                     <p class="mb-0 mt-1.5 text-[13px] leading-6 text-white/60">{{ item.text }}</p>
                 </li>

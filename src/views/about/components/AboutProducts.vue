@@ -144,8 +144,8 @@ function selectCategory(id) {
 
             <div class="mt-5 flex max-w-full gap-2 overflow-x-auto pb-1 sm:justify-center">
                 <button v-for="category in categories" :key="category.id" type="button"
-                    :aria-pressed="activeCategory === category.id" @click="selectCategory(category.id)"
-                    class="shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition duration-200" :class="activeCategory === category.id
+                    :aria-pressed="currentCategory.id === category.id" @click="selectCategory(category.id)"
+                    class="shrink-0 rounded-full border px-4 py-2 text-sm font-semibold transition duration-200" :class="currentCategory.id === category.id
                         ? 'border-brand-red bg-brand-red text-white'
                         : 'border-gray-300 bg-white text-gray-600 hover:border-gray-500 hover:text-gray-950'">
                     {{ category.label }}
@@ -217,15 +217,15 @@ function selectCategory(id) {
                 </div>
 
                 <div
-                    class="relative flex min-h-65 flex-col items-center justify-center overflow-hidden bg-[#f5f5f5] p-6 lg:min-h-105">
-                    <div aria-hidden="true"
-                        class="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand-red/[0.08] blur-3xl">
-                    </div>
-
+                    class="relative flex min-h-65 flex-col items-center justify-center overflow-hidden bg-white p-6 lg:min-h-105">
                     <div class="product-stage relative flex w-full max-w-sm items-center justify-center">
                         <Transition name="visual" mode="out-in">
-                            <div :key="currentCategory.visual" class="flex h-full w-full items-center justify-center">
-                                <div v-if="currentCategory.visual === 'ink'"
+                            <div :key="currentCategory.id" class="flex h-full w-full items-center justify-center">
+                                <img v-if="currentCategory.image" :src="currentCategory.image"
+                                    :alt="currentCategory.title" loading="lazy"
+                                    class="max-h-64 w-full object-contain" />
+
+                                <div v-else-if="currentCategory.visual === 'ink'"
                                     class="flex items-end justify-center gap-2 sm:gap-3">
                                     <div v-for="ink in [
                                         { name: 'BLACK', color: 'ink-black' },
@@ -280,7 +280,7 @@ function selectCategory(id) {
                     <div class="absolute bottom-5 right-5 flex gap-1.5">
                         <span v-for="category in categories" :key="category.id"
                             class="h-1.5 rounded-full transition-all duration-300"
-                            :class="activeCategory === category.id ? 'w-7 bg-brand-red' : 'w-1.5 bg-gray-300'"></span>
+                            :class="currentCategory.id === category.id ? 'w-7 bg-brand-red' : 'w-1.5 bg-gray-300'"></span>
                     </div>
                 </div>
             </div>

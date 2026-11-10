@@ -1,36 +1,29 @@
 <script setup>
+import { computed } from 'vue'
 import RentalHeading from './RentalHeading.vue'
+import { usePageSection } from '@/composables/usePage'
 
-defineProps({
-    customers: { type: Array, default: () => [] },
-})
+const content = usePageSection('sewa-printer', 'customers', { title: 'Pelanggan kami', items: [] })
 
-const initials = (name) =>
-    name
-        .split(' ')
-        .map((word) => word.charAt(0))
-        .join('')
-        .slice(0, 2)
-        .toUpperCase()
+// Pelanggan tanpa nama diabaikan; tanpa logo, yang tampil namanya.
+const customers = computed(() => content.value.items.filter((item) => item.name?.trim()))
 </script>
 
 <template>
-    <section v-if="customers.length" aria-labelledby="rental-customers" class="mx-auto max-w-6xl px-5 sm:px-8">
-        <RentalHeading id="rental-customers" center eyebrow="" title="Pelanggan" accent="kami" />
+    <section v-if="customers.length" aria-labelledby="rental-customers" class="bg-white py-16 sm:py-20">
+        <div class="mx-auto max-w-6xl px-5 sm:px-8">
+            <RentalHeading id="rental-customers" center :title="content.title" />
 
-        <ul class="m-0 mt-8 grid list-none grid-cols-4 gap-4 p-0 sm:grid-cols-6 sm:gap-6">
-            <li v-for="item in customers" :key="item.id" class="flex justify-center">
-                <span
-                    class="grid aspect-square w-full max-w-[96px] place-items-center overflow-hidden rounded-full bg-white ring-1 ring-black/10"
-                    :title="item.name">
-                    <img v-if="item.logo" :src="item.logo" :alt="item.name" loading="lazy"
-                        class="h-full w-full object-contain p-3" />
-                    <span v-else class="text-sm font-semibold text-gray-400" aria-hidden="true">
-                        {{ initials(item.name) }}
-                    </span>
-                    <span v-if="!item.logo" class="sr-only">{{ item.name }}</span>
-                </span>
-            </li>
-        </ul>
+            <!-- Logo tampil apa adanya tanpa bingkai: berjajar di tengah dan turun baris sesuai lebar layar. -->
+            <ul class="m-0 mt-8 flex list-none select-none flex-wrap items-center justify-center gap-x-8 gap-y-6 p-0 sm:gap-x-12 sm:gap-y-8 [-webkit-touch-callout:none]"
+                @contextmenu.prevent>
+                <li v-for="(item, index) in customers" :key="item.id || index" class="flex items-center justify-center">
+                    <!-- Logo tidak dapat diseleksi, diseret, atau diklik kanan: pointer-events-none membuat semua itu melewati gambar. -->
+                    <img v-if="item.logo" :src="item.logo" :alt="item.name" draggable="false" loading="lazy"
+                        class="pointer-events-none h-12 w-auto max-w-[140px] object-contain select-none sm:h-14 sm:max-w-[170px] [-webkit-user-drag:none]" />
+                    <span v-else class="text-sm font-semibold text-gray-400">{{ item.name }}</span>
+                </li>
+            </ul>
+        </div>
     </section>
 </template>
