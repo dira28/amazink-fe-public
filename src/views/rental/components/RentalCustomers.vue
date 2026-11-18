@@ -14,7 +14,6 @@ const customers = computed(() => content.value.items.filter((item) => item.name?
         <div class="mx-auto max-w-6xl px-5 sm:px-8">
             <RentalHeading id="rental-customers" center :title="content.title" />
 
-            <!-- Logo tampil apa adanya tanpa bingkai: berjajar di tengah dan turun baris sesuai lebar layar. -->
             <ul class="m-0 mt-8 flex list-none select-none flex-wrap items-center justify-center gap-x-8 gap-y-6 p-0 sm:gap-x-12 sm:gap-y-8 [-webkit-touch-callout:none]"
                 @contextmenu.prevent>
                 <li v-for="(item, index) in customers" :key="item.id || index" class="flex items-center justify-center">

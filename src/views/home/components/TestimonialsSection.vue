@@ -105,7 +105,6 @@ const initial = (name) => name.trim().charAt(0).toUpperCase()
                 </div>
             </header>
 
-            <!-- Mobile: geser menyamping. Desktop: grid -->
             <ul
                 class="-mx-5 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 [scrollbar-width:none] sm:mx-0 sm:mt-10 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
                 <li v-for="item in testimonials" :key="item.id"

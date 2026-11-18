@@ -9,7 +9,6 @@ const props = defineProps({
     currentSlug: { type: String, default: '' },
 })
 
-// Replace href with AMAZiNK social accounts
 const socialIcons = [
     {
         label: 'YouTube',
@@ -52,7 +51,6 @@ const socials = computed(() =>
     })),
 )
 
-// Dummy products
 const products = [
     { name: 'Kertas Label untuk Brother DK-22210', price: 185000 },
     { name: 'Ribbon Cartridge Epson LX310', price: 56000 },

@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { waLink } from '@/utils/whatsapp'
 
@@ -22,11 +22,44 @@ const message = computed(() => {
 })
 
 const href = computed(() => waLink(message.value))
+
+// Tombol kembali ke atas muncul setelah halaman digulir cukup jauh.
+const SHOW_AFTER = 400
+const showTop = ref(false)
+
+const onScroll = () => {
+    showTop.value = window.scrollY > SHOW_AFTER
+}
+
+function backToTop() {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' })
+}
+
+onMounted(() => {
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+})
+onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <template>
+    <div
+        class="fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-40 flex flex-col items-end gap-3 sm:right-6 sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
+        <Transition name="to-top">
+            <button v-if="showTop" type="button" aria-label="Kembali ke atas"
+                class="mr-1 grid h-10 w-10 cursor-pointer place-items-center rounded-full border-0 bg-white shadow-lg ring-1 ring-black/10 transition-colors hover:bg-brand-red hover:text-white text-[#171717] hover:ring-brand-red sm:mr-2"
+                @click="backToTop">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 19V5" />
+                    <path d="m5 12 7-7 7 7" />
+                </svg>
+            </button>
+        </Transition>
+
     <a :href="href" target="_blank" rel="noopener noreferrer" aria-label="Chat WhatsApp AMAZiNK"
-        class="group fixed right-4 bottom-[calc(5rem+env(safe-area-inset-bottom,0px))] z-40 flex items-center gap-3 no-underline sm:right-6 sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))]">
+        class="group flex items-center gap-3 no-underline">
         <span
             class="pointer-events-none hidden translate-x-2 whitespace-nowrap rounded-full bg-white px-4 py-2 text-[13px] font-semibold opacity-0 shadow-lg ring-1 ring-black/5 transition duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 sm:block"
             style="color: #171717">
@@ -45,4 +78,24 @@ const href = computed(() => waLink(message.value))
             </svg>
         </span>
     </a>
+    </div>
 </template>
+
+<style scoped>
+.to-top-enter-active,
+.to-top-leave-active {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.to-top-enter-from,
+.to-top-leave-to {
+    opacity: 0;
+    transform: translateY(8px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .to-top-enter-active,
+    .to-top-leave-active {
+        transition: none;
+    }
+}
+</style>

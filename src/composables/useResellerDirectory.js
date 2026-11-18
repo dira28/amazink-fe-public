@@ -32,7 +32,6 @@ function group(list) {
         .sort(byName)
 }
 
-// Dipakai bersama oleh semua tampilan; data diambil sekali lalu dibagikan.
 const regions = ref(USE_MOCK ? resellerRegions : [])
 const loading = ref(!USE_MOCK)
 const failed = ref(false)

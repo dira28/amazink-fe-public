@@ -1,6 +1,7 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { formatRupiah, rentalTotals } from '../services/rentalService'
+import { usePageSection } from '@/composables/usePage'
+import { formatRupiah, printerLabel, rentalTotals } from '../services/rentalService'
 
 const props = defineProps({
     printers: { type: Array, default: () => [] },
@@ -13,7 +14,19 @@ const MONTH_OPTIONS = [1, 3, 6, 12]
 const MAX_UNITS = 20
 const TICKS = [1, 5, 10, 15, 20]
 const THUMB = 24
-const INCLUDED = ['Unit printer siap pakai', 'Tinta atau toner termasuk', 'Servis dan maintenance', 'Dukungan teknis']
+
+const content = usePageSection('sewa-printer', 'calculator', {
+    eyebrow: 'Kalkulator',
+    title: 'Hitung biaya sewa',
+    description: 'Atur jumlah printer dan lama sewa, hasilnya langsung terlihat. Penawaran final dari tim kami.',
+    button_label: 'Ajukan sewa paket ini',
+    included: [
+        { id: 'calc-1', text: 'Unit printer siap pakai' },
+        { id: 'calc-2', text: 'Tinta atau toner termasuk' },
+        { id: 'calc-3', text: 'Servis dan maintenance' },
+        { id: 'calc-4', text: 'Dukungan teknis' },
+    ],
+})
 
 const printerId = ref('')
 const units = ref(1)
@@ -35,6 +48,44 @@ const totals = computed(() => rentalTotals(printer.value))
 const monthly = computed(() => totals.value.rent * units.value)
 const periodTotal = computed(() => monthly.value * months.value)
 const buyCost = computed(() => totals.value.asset * units.value)
+
+// Angka berjalan ke nilai baru (seperti hitung naik/turun) dengan gerak yang melambat lembut di akhir,
+// sambil memudar masuk. Bila pengguna memilih "kurangi gerakan", angka langsung berganti.
+const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+function useTween(source, duration = 900) {
+    const shown = ref(source.value)
+    let frame = 0
+
+    watch(source, (to) => {
+        cancelAnimationFrame(frame)
+        if (reduceMotion) {
+            shown.value = to
+            return
+        }
+
+        const from = shown.value
+        // Bila nilai lama dan baru sama-sama kelipatan 1.000, angka berjalan per 1.000 sehingga "000" di belakang
+        // tidak ikut berubah; selain itu berjalan per rupiah.
+        const unit = from % 1000 === 0 && to % 1000 === 0 ? 1000 : 1
+        const start = performance.now()
+        const step = (now) => {
+            const t = Math.min((now - start) / duration, 1)
+            const eased = 1 - Math.pow(1 - t, 5)
+            shown.value = Math.round((from + (to - from) * eased) / unit) * unit
+            if (t < 1) frame = requestAnimationFrame(step)
+        }
+        frame = requestAnimationFrame(step)
+    })
+
+    onBeforeUnmount(() => cancelAnimationFrame(frame))
+
+    return shown
+}
+
+const monthlyShown = useTween(monthly)
+const periodShown = useTween(periodTotal)
+const buyShown = useTween(buyCost)
 
 const position = (value) => `calc(${THUMB / 2}px + (100% - ${THUMB}px) * ${(value - 1) / (MAX_UNITS - 1)})`
 const fill = computed(() => position(units.value))
@@ -97,21 +148,6 @@ const onOutside = (event) => {
 
 onMounted(() => document.addEventListener('pointerdown', onOutside))
 onBeforeUnmount(() => document.removeEventListener('pointerdown', onOutside))
-
-
-const rangeClass =
-    'h-1.5 w-full cursor-pointer appearance-none rounded-full text-brand-red outline-none ' +
-    'bg-[linear-gradient(to_right,currentColor_var(--fill),#e7e5e4_var(--fill))] ' +
-    '[&::-webkit-slider-thumb]:box-border [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 ' +
-    '[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full ' +
-    '[&::-webkit-slider-thumb]:border-[3px] [&::-webkit-slider-thumb]:border-solid ' +
-    '[&::-webkit-slider-thumb]:border-current [&::-webkit-slider-thumb]:bg-white ' +
-    '[&::-webkit-slider-thumb]:shadow-[0_3px_10px_rgba(0,0,0,0.2)] [&::-webkit-slider-thumb]:transition-transform ' +
-    'hover:[&::-webkit-slider-thumb]:scale-110 ' +
-    '[&::-moz-range-thumb]:box-border [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 ' +
-    '[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-[3px] [&::-moz-range-thumb]:border-solid ' +
-    '[&::-moz-range-thumb]:border-current [&::-moz-range-thumb]:bg-white ' +
-    '[&::-moz-range-thumb]:shadow-[0_3px_10px_rgba(0,0,0,0.2)]'
 </script>
 
 <template>
@@ -130,37 +166,41 @@ const rangeClass =
                 Kalkulator tersedia setelah daftar paket sewa dimuat.
             </p>
 
-            <div v-else class="grid items-center gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-14">
+            <div v-else class="grid items-center gap-10 md:grid-cols-[0.95fr_1.05fr] md:gap-14">
                 <div>
+                    <p class="m-0 inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-red">
+                        <span class="block h-0.5 w-6 bg-brand-red" aria-hidden="true" />
+                        {{ content.eyebrow }}
+                    </p>
                     <h2 id="rental-calc"
-                        class="m-0 text-[clamp(24px,3.4vw,34px)] font-bold leading-[1.1] tracking-[-0.04em]">
-                        Hitung biaya sewa
+                        class="mb-0 mt-3 whitespace-nowrap text-[clamp(26px,3.3vw,40px)] font-bold leading-[1.05] tracking-[-0.045em]">
+                        {{ content.title }}
                     </h2>
-                    <p class="mb-0 mt-2 text-[13px] leading-6 text-white/60">
-                        Estimasi cepat. Penawaran final dari tim kami.
+                    <p class="mb-0 mt-3 max-w-sm text-sm leading-7 text-white/65">
+                        {{ content.description }}
                     </p>
 
-                    <p class="mb-0 mt-8 text-[13px] text-white/60">{{ printer.brand }} {{ printer.name }}</p>
-                    <p class="m-0 mt-1 text-[clamp(28px,3.4vw,38px)] font-semibold leading-none tracking-[-0.04em]">
-                        {{ formatRupiah(totals.rent) }}
+                    <p class="mb-0 mt-7 inline-flex flex-wrap items-center gap-x-2 rounded-full bg-white/10 px-4 py-2 text-[13px] text-white/70 ring-1 ring-white/10">
+                        {{ printerLabel(printer) }}
+                        <span class="font-semibold text-white">{{ formatRupiah(totals.rent) }}</span>
+                        <span class="text-white/50">/ unit / bulan</span>
                     </p>
-                    <p class="m-0 mt-1.5 text-[13px] text-white/60">per unit, per bulan</p>
 
-                    <ul class="m-0 mt-6 list-none space-y-2 p-0 text-[13px]">
-                        <li v-for="item in INCLUDED" :key="item" class="flex items-center gap-2.5 text-white/85">
+                    <ul class="m-0 mt-6 list-none space-y-2.5 p-0 text-[13px]">
+                        <li v-for="item in content.included" :key="item.id || item.text" class="flex items-center gap-2.5 text-white/80">
                             <svg class="h-4 w-4 shrink-0 text-brand-red" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"
                                 aria-hidden="true">
                                 <path d="m5 12 5 5 9-10" />
                             </svg>
-                            {{ item }}
+                            {{ item.text }}
                         </li>
                     </ul>
 
                     <button type="button"
-                        class="mt-7 h-11 cursor-pointer rounded-full border-0 bg-white px-7 transition-colors hover:bg-gray-200"
-                        style="color: #171717; font-size: 13px; font-weight: 600" @click="emit('apply', printer)">
-                        Ajukan sewa paket ini
+                        class="mt-8 h-12 cursor-pointer rounded-full border-0 bg-brand-red px-8 shadow-[0_18px_36px_-14px_rgba(225,29,46,0.75)] transition-opacity hover:opacity-90"
+                        style="color: #fff; font-size: 14px; font-weight: 700" @click="emit('apply', printer, { units, months })">
+                        {{ content.button_label }}
                     </button>
                 </div>
 
@@ -174,10 +214,7 @@ const rangeClass =
                                 class="mt-2 flex h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-xl border-0 pl-4 pr-3.5 text-left text-sm outline-none transition focus-visible:ring-2 focus-visible:ring-brand-red"
                                 :class="open ? 'bg-white ring-2 ring-brand-red' : 'bg-[#f6f5f2] ring-1 ring-black/5 hover:bg-[#f1efeb]'"
                                 @click="open ? closeList() : openList()" @keydown="onPickerKey">
-                                <span class="truncate">
-                                    <span class="font-normal text-[#737373]">{{ printer.brand }}</span>
-                                    <span class="font-semibold">{{ printer.name }}</span>
-                                </span>
+                                <span class="truncate font-semibold">{{ printerLabel(printer) }}</span>
                                 <svg class="h-4 w-4 shrink-0 text-gray-500 transition-transform duration-200"
                                     :class="open ? 'rotate-180' : ''" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -199,10 +236,10 @@ const rangeClass =
                                         :class="index === activeIndex ? 'bg-[#f6f5f2]' : ''"
                                         @mouseenter="activeIndex = index" @click="choose(item)">
                                         <span class="min-w-0">
-                                            <span class="block text-xs text-[#737373]">{{ item.brand }}</span>
+                                            <span v-if="item.categoryName" class="block text-xs text-[#737373]">{{ item.categoryName }}</span>
                                             <span class="block truncate text-sm"
                                                 :class="item.id === printerId ? 'font-semibold' : 'font-medium'">
-                                                {{ item.name }}
+                                                {{ [item.brandName, item.name].filter(Boolean).join(' ') }}
                                             </span>
                                         </span>
                                         <span class="flex shrink-0 items-center gap-2.5">
@@ -226,8 +263,19 @@ const rangeClass =
                                     {{ units }} unit
                                 </span>
                             </div>
-                            <input id="rental-units" v-model.number="units" type="range" min="1" :max="MAX_UNITS"
-                                step="1" :class="rangeClass" class="mt-3" :style="{ '--fill': fill }" />
+                            <div class="relative mt-3 h-6">
+                                <input id="rental-units" v-model.number="units" type="range" min="1" :max="MAX_UNITS"
+                                    step="1"
+                                    class="peer absolute inset-0 z-10 m-0 h-full w-full cursor-pointer opacity-0" />
+                                <span aria-hidden="true"
+                                    class="pointer-events-none absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-[#e7e5e4]">
+                                    <span class="absolute inset-y-0 left-0 rounded-full bg-brand-red transition-[width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none"
+                                        :style="{ width: fill }" />
+                                </span>
+                                <span aria-hidden="true"
+                                    class="pointer-events-none absolute top-1/2 box-border h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-solid border-brand-red bg-white shadow-[0_3px_10px_rgba(0,0,0,0.2)] transition-[left,transform,box-shadow] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] peer-hover:scale-110 peer-active:scale-110 peer-focus-visible:ring-4 peer-focus-visible:ring-brand-red/25 motion-reduce:transition-none"
+                                    :style="{ left: fill }" />
+                            </div>
                             <div class="relative mt-1.5 h-4 text-[11px] text-[#a3a3a3]" aria-hidden="true">
                                 <span v-for="tick in TICKS" :key="tick" class="absolute top-0 -translate-x-1/2"
                                     :class="{ 'font-semibold text-brand-red': tick === units }"
@@ -258,32 +306,35 @@ const rangeClass =
                         </div>
                     </div>
 
-                    <div class="rounded-b-3xl border-t border-black/5 bg-[#faf9f7] px-6 py-5 sm:px-8"
-                        aria-live="polite">
-                        <p class="m-0 text-xs font-medium text-[#737373]">Total biaya per bulan</p>
-                        <p class="mb-0 mt-1 text-[clamp(26px,3vw,34px)] font-extrabold leading-none tracking-[-0.04em]">
-                            {{ formatRupiah(monthly) }}
+                    <div class="rounded-b-3xl bg-[#b3141f] px-6 py-6 text-white sm:px-8">
+                        <!-- Angka di bawah bergerak tiap frame, jadi pembaca layar hanya diberi nilai akhirnya. -->
+                        <span class="sr-only" aria-live="polite">Total biaya per bulan {{ formatRupiah(monthly) }}</span>
+                        <p class="m-0 text-xs font-semibold uppercase tracking-[0.12em] text-white/80">Total biaya per bulan</p>
+                        <p class="mb-0 mt-1 text-[clamp(38px,4.6vw,56px)] font-extrabold leading-none tracking-[-0.045em] tabular-nums" aria-hidden="true">
+                            <span :key="monthly" class="num-fade block">{{ formatRupiah(monthlyShown) }}</span>
                         </p>
 
-                        <dl class="m-0 mt-4 grid gap-3 border-t border-black/5 pt-4 text-[13px] sm:grid-cols-3">
+                        <dl class="m-0 mt-4 grid gap-3 border-t border-white/25 pt-4 text-[13px] sm:grid-cols-3">
                             <div>
-                                <dt class="text-[#737373]">Total {{ months }} bulan</dt>
-                                <dd class="m-0 mt-0.5 font-semibold tabular-nums">{{ formatRupiah(periodTotal) }}</dd>
+                                <dt class="text-white/75">Total {{ months }} bulan</dt>
+                                <dd class="m-0 mt-0.5 font-semibold tabular-nums">
+                                    <span :key="periodTotal" class="num-fade block">{{ formatRupiah(periodShown) }}</span>
+                                </dd>
                             </div>
                             <div>
-                                <dt class="text-[#737373]">Modal awal</dt>
+                                <dt class="text-white/75">Modal awal</dt>
                                 <dd class="m-0 mt-0.5 font-semibold">Rp0</dd>
                             </div>
                             <div>
-                                <dt class="text-[#737373]">Jika dibeli sendiri</dt>
+                                <dt class="text-white/75">Jika dibeli sendiri</dt>
                                 <dd
-                                    class="m-0 mt-0.5 font-semibold tabular-nums text-[#a3a3a3] line-through decoration-black/20">
-                                    {{ formatRupiah(buyCost) }}
+                                    class="m-0 mt-0.5 font-semibold tabular-nums text-white/60 line-through decoration-white/50">
+                                    <span :key="buyCost" class="num-fade block">{{ formatRupiah(buyShown) }}</span>
                                 </dd>
                             </div>
                         </dl>
 
-                        <p class="mb-0 mt-3 text-xs text-[#a3a3a3]">Perkiraan saja. Harga akhir dikonfirmasi tim
+                        <p class="mb-0 mt-3 text-xs text-white/70">Hanya perkiraan. Harga akhir dikonfirmasi tim
                             AMAZiNK.</p>
                     </div>
                 </div>
@@ -291,3 +342,17 @@ const rangeClass =
         </div>
     </section>
 </template>
+
+<style scoped>
+/* Tiap nilai baru memudar masuk dari agak redup; elemen dibuat ulang lewat :key sehingga animasinya mulai lagi. */
+.num-fade {
+    animation: num-fade 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes num-fade {
+    from { opacity: 0.35; }
+    to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .num-fade { animation: none; }
+}
+</style>

@@ -35,7 +35,6 @@ function checkout() {
     router.push({ name: 'checkout' })
 }
 
-/* ---------- Konfirmasi hapus ---------- */
 const confirmState = ref(null)
 const dialogEl = ref(null)
 const cancelBtn = ref(null)

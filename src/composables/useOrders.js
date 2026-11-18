@@ -4,7 +4,6 @@ import { createOrderRequest, fetchOrder, fetchOrders } from '@/services/orderSer
 
 const STORAGE_KEY = 'amazink-orders'
 
-// Transaksi dilakukan lewat WhatsApp; status diperbarui admin.
 export const ORDER_STATUS = {
     diproses: { label: 'Sedang diproses', tone: 'amber' },
     selesai: { label: 'Selesai', tone: 'green' },

@@ -33,7 +33,6 @@ export const mapProduct = (product) => ({
     badge: '',
 })
 
-// Daftar produk diambil sekali, lalu dipakai bersama oleh semua halaman.
 const products = ref(USE_MOCK ? shopProducts : [])
 const loading = ref(!USE_MOCK)
 const failed = ref(false)

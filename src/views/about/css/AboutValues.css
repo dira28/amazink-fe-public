@@ -1,3 +1,8 @@
+/* Kartu awalnya digeser keluar sisi layar; dipotong agar halaman tidak dapat digulir ke samping sebelum animasi berjalan. */
+.values-section {
+    overflow-x: clip;
+}
+
 /* Animasi awal: kartu masuk dari luar sisi layar */
 .values-section .value-card {
     opacity: 0;

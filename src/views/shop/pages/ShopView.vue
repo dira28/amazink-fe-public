@@ -131,13 +131,10 @@ watch(
 
 <template>
     <div class="min-h-screen overflow-clip bg-white text-[#171717] antialiased">
-        <!-- Hero -->
         <ShopHero />
 
-        <!-- Catalog -->
         <section id="daftar-produk" class="scroll-mt-18 sm:scroll-mt-22">
             <div class="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14 lg:py-16">
-                <!-- Heading -->
                 <header class="mb-8 text-center">
                     <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">
                         {{ list.eyebrow }}
@@ -148,13 +145,11 @@ watch(
                     </h2>
                 </header>
 
-                <!-- Categories -->
                 <div class="mb-5 min-w-0 max-w-full sm:mb-6">
                     <ProductCategories :categories="categories" :active-category="activeCategory"
                         @select="activeCategory = $event" />
                 </div>
 
-                <!-- Search and color filter -->
                 <div
                     class="mt-5 flex flex-col gap-1 rounded-3xl bg-white p-1.5 shadow-[0_2px_14px_rgba(0,0,0,0.05)] ring-1 ring-black/5 sm:mt-6 sm:flex-row sm:items-center sm:rounded-full">
                     <label
@@ -199,7 +194,6 @@ watch(
                     </label>
                 </div>
 
-                <!-- Results bar -->
                 <div
                     class="mt-3.5 flex min-h-10.5 items-center justify-between gap-3 border-b border-[#e7e5e4] sm:mt-4.5 sm:min-h-11.5">
                     <p class="m-0 text-[11px] text-[#737373] sm:text-xs">
@@ -215,16 +209,15 @@ watch(
                     </button>
                 </div>
 
-                <!-- Products -->
-                <div v-if="filteredProducts.length"
+                <div v-if="filteredProducts.length" :key="`${activeCategory}-${activeColor}`"
                     class="mt-3.5 grid grid-cols-2 items-stretch gap-3 sm:mt-5 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-4.5">
-                    <ProductCard v-for="product in visibleProducts" :key="product.id" :product="{
+                    <ProductCard v-for="(product, index) in visibleProducts" :key="product.id" class="product-in"
+                        :style="{ animationDelay: `${(index % initialProductCount) * 0.05}s` }" :product="{
                         ...product,
                         priceLabel: formatPrice(product.price),
                     }" />
                 </div>
 
-                <!-- Empty state -->
                 <div v-else
                     class="flex min-h-65 flex-col items-center justify-center px-3 py-12 text-center sm:min-h-75 sm:px-5">
                     <div class="grid h-13.5 w-13.5 place-items-center rounded-full border border-[#e7e5e4] bg-[#f7f7f5] text-[#737373]"
@@ -254,7 +247,6 @@ watch(
                     </button>
                 </div>
 
-                <!-- Show more -->
                 <div v-if="filteredProducts.length > initialProductCount" class="mt-7 flex justify-center sm:mt-9">
                     <button type="button" :aria-expanded="showAllProducts"
                         class="inline-flex min-h-10.75 w-full max-w-75 cursor-pointer items-center justify-center gap-3 rounded-full border border-[#d6d3d1] bg-white px-5.5 text-xs font-semibold text-[#292524] transition-colors hover:border-[#171717] hover:bg-[#171717] hover:text-white focus-visible:outline focus-visible:outline-offset-[3px] focus-visible:outline-brand-red sm:min-h-11 sm:w-auto"
@@ -273,7 +265,6 @@ watch(
             </div>
         </section>
 
-        <!-- Pemilih printer -->
         <section id="cari-tinta" class="scroll-mt-18 px-5 py-9 sm:scroll-mt-22 sm:px-6 sm:py-16"
             aria-labelledby="shop-promo-title">
             <div class="mx-auto max-w-295 border-y border-[#e7e5e4] py-7.5 sm:py-10">
@@ -308,3 +299,21 @@ watch(
         </section>
     </div>
 </template>
+
+<style scoped>
+/* Ganti kategori atau warna memasang ulang daftar, sehingga kartu naik sedikit sambil memudar masuk berurutan. */
+.product-in {
+    animation: product-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes product-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .product-in {
+        animation: none;
+    }
+}
+</style>

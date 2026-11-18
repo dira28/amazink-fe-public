@@ -1,7 +1,6 @@
 import { computed, reactive, ref } from 'vue'
 import { fetchPage } from '@/services/pageService'
 
-// Satu halaman hanya diambil sekali, lalu dipakai bersama oleh semua komponen.
 const pages = new Map()
 const requests = new Map()
 

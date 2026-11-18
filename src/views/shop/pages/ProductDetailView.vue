@@ -51,7 +51,6 @@ const formatPrice = (price) =>
         maximumFractionDigits: 0,
     }).format(price)
 
-/* ---------- Keranjang ---------- */
 const qty = ref(1)
 const added = ref(false)
 let addedTimer
@@ -96,7 +95,6 @@ function buyNow() {
     if (addToCart()) router.push('/keranjang')
 }
 
-/* ---------- Tab, zoom, bagikan ---------- */
 const tab = ref('deskripsi')
 const zoomOpen = ref(false)
 const copied = ref(false)
@@ -122,7 +120,6 @@ const waShareUrl = computed(
         )}`
 )
 
-/* ---------- Spesifikasi ---------- */
 const swatches = {
     Black: 'bg-black',
     Cyan: 'bg-cyan-400',
@@ -145,7 +142,6 @@ const specs = computed(() => {
     ].filter(Boolean)
 })
 
-/* ---------- Produk terkait ---------- */
 const detailBase = computed(() => route.path.replace(/\/$/, '').replace(/[^/]+$/, ''))
 
 const related = computed(() => {
@@ -157,7 +153,6 @@ const related = computed(() => {
     return [...same, ...rest].slice(0, 4)
 })
 
-/* ---------- Efek samping ---------- */
 watch(
     () => route.params.slug,
     () => {
@@ -189,7 +184,6 @@ onBeforeUnmount(() => {
 
 <template>
     <main class="min-h-screen bg-[#fafaf9] text-gray-950">
-        <!-- Breadcrumb -->
         <div class="border-b border-gray-200/70 bg-white">
             <div class="mx-auto max-w-7xl px-5 py-4 sm:px-8">
                 <nav class="flex flex-wrap items-center gap-2 text-xs text-gray-500" aria-label="Breadcrumb">
@@ -206,10 +200,8 @@ onBeforeUnmount(() => {
             </div>
         </div>
 
-        <!-- Detail Produk -->
         <section v-if="product" class="mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12">
             <div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
-                <!-- Gambar -->
                 <div class="min-w-0">
                     <div
                         class="group relative flex aspect-square max-h-160 items-center justify-center overflow-hidden rounded-3xl border border-gray-200/70 bg-white p-8 sm:p-12">
@@ -259,7 +251,6 @@ onBeforeUnmount(() => {
                     </p>
                 </div>
 
-                <!-- Informasi -->
                 <div class="min-w-0 lg:pt-2">
                     <p class="m-0 text-xs font-bold uppercase tracking-[0.22em] text-brand-red">
                         {{ product.category }}
@@ -274,7 +265,6 @@ onBeforeUnmount(() => {
                         {{ product.description }}
                     </p>
 
-                    <!-- Kartu beli -->
                     <div class="mt-6 max-w-md rounded-2xl border border-gray-200 bg-white p-4">
                         <div class="flex items-center justify-between gap-3">
                             <p class="m-0 text-2xl font-bold tracking-tight text-gray-950">
@@ -379,7 +369,6 @@ onBeforeUnmount(() => {
                         </p>
                     </div>
 
-                    <!-- Bagikan -->
                     <div class="mt-4 flex flex-wrap items-center gap-2">
                         <span class="mr-1 text-xs font-medium text-gray-500">Bagikan</span>
 
@@ -424,7 +413,6 @@ onBeforeUnmount(() => {
                 </div>
             </div>
 
-            <!-- Tab -->
             <div class="mt-10 overflow-hidden rounded-3xl border border-gray-200/70 bg-white sm:mt-14">
                 <div class="flex gap-1 border-b border-gray-100 px-3 sm:px-6" role="tablist">
                     <button
@@ -462,7 +450,6 @@ onBeforeUnmount(() => {
                 </div>
             </div>
 
-            <!-- Produk terkait -->
             <div class="mt-12 sm:mt-16">
                 <div class="mb-5 flex items-end justify-between gap-4">
                     <h2 class="m-0 text-xl font-bold tracking-tight sm:text-2xl">Produk lainnya</h2>
@@ -508,7 +495,6 @@ onBeforeUnmount(() => {
             </div>
         </section>
 
-        <!-- Produk tidak ditemukan -->
         <section v-else-if="!loading"
             class="mx-auto flex min-h-[65vh] max-w-7xl flex-col items-center justify-center px-5 py-16 text-center">
             <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-gray-100 text-gray-400">
@@ -536,7 +522,6 @@ onBeforeUnmount(() => {
             </RouterLink>
         </section>
 
-        <!-- Zoom gambar -->
         <Teleport to="body">
             <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0"
                 enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in"
