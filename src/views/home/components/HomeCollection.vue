@@ -47,7 +47,6 @@ function nextSlide() {
     currentSlide.value = (currentSlide.value + 1) % slideCount.value
 }
 
-// Daftar produk bisa berubah setelah data dari API tiba.
 watch(slideCount, (count) => {
     if (currentSlide.value >= count) currentSlide.value = 0
 })
@@ -64,16 +63,42 @@ function stopAutoSlide() {
     }
 }
 
-onMounted(startAutoSlide)
-onUnmounted(stopAutoSlide)
+// Bagian muncul (naik sambil memudar masuk) saat pertama kali terlihat di layar.
+const sectionRef = ref(null)
+const shown = ref(false)
+let observer
+
+onMounted(() => {
+    startAutoSlide()
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduced || !sectionRef.value || !('IntersectionObserver' in window)) {
+        shown.value = true
+        return
+    }
+
+    observer = new IntersectionObserver(
+        ([entry]) => {
+            if (!entry.isIntersecting) return
+            shown.value = true
+            observer.disconnect()
+        },
+        { threshold: 0.15 },
+    )
+    observer.observe(sectionRef.value)
+})
+
+onUnmounted(() => {
+    stopAutoSlide()
+    observer?.disconnect()
+})
 </script>
 
 <template>
-    <section v-if="products.length"
+    <section v-if="products.length" ref="sectionRef" :class="{ shown }"
         class="w-full overflow-hidden bg-[#111] px-4.5 pb-7.5 pt-8.5 text-[#f7f7f5] sm:px-6 sm:pb-9 sm:pt-10.5 lg:pb-11 lg:pt-13">
         <div class="mx-auto w-full max-w-320">
-            <!-- Header -->
-            <header class="mb-5 flex items-end justify-between gap-3 sm:mb-6 sm:gap-6">
+            <header class="reveal mb-5 flex items-end justify-between gap-3 sm:mb-6 sm:gap-6">
                 <h2 class="m-0 text-[38px] font-semibold leading-none tracking-[-0.06em] sm:text-5xl lg:text-6xl">
                     <AccentText :text="section.title" /><span class="text-brand-red"></span>
                 </h2>
@@ -89,16 +114,15 @@ onUnmounted(stopAutoSlide)
                 </RouterLink>
             </header>
 
-            <!-- Carousel -->
             <div class="w-full overflow-hidden" @mouseenter="stopAutoSlide" @mouseleave="startAutoSlide">
                 <div class="flex items-stretch transition-transform duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform motion-reduce:transition-none"
                     :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
                     <div v-for="slide in slideCount" :key="slide"
                         class="grid min-w-0 flex-[0_0_100%] grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-7 lg:grid-cols-4 lg:gap-5">
-                        <RouterLink v-for="product in slideProducts(slide)" :key="product.id"
+                        <RouterLink v-for="(product, position) in slideProducts(slide)" :key="product.id"
                             :to="{ name: 'product-detail', params: { slug: product.slug } }"
-                            class="group flex min-w-0 flex-col rounded-2xl bg-[#f4f3ee] p-2 text-[#111] no-underline transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(0,0,0,0.35)] sm:rounded-[22px] sm:p-3">
-                            <!-- Image -->
+                            :style="{ animationDelay: `${0.15 + position * 0.08}s` }"
+                            class="reveal group flex min-w-0 flex-col rounded-2xl bg-[#f4f3ee] p-2 text-[#111] no-underline transition duration-200 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(0,0,0,0.35)] sm:rounded-[22px] sm:p-3">
                             <div
                                 class="relative flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-white sm:rounded-2xl">
                                 <img v-if="product.image" :src="product.image" :alt="product.name" loading="lazy"
@@ -116,7 +140,6 @@ onUnmounted(stopAutoSlide)
                                 </span>
                             </div>
 
-                            <!-- Info -->
                             <div class="px-1 pb-1 pt-3 sm:px-1.5 sm:pt-4">
                                 <span
                                     class="mb-1.5 block text-[8px] font-semibold uppercase tracking-[0.08em] text-brand-red sm:mb-2 sm:text-[9px] sm:tracking-[0.13em]">
@@ -137,8 +160,7 @@ onUnmounted(stopAutoSlide)
                 </div>
             </div>
 
-            <!-- Pagination -->
-            <div class="mt-5.5 flex items-center justify-between sm:mt-6.5">
+            <div class="reveal mt-5.5 flex items-center justify-between sm:mt-6.5" style="animation-delay: 0.45s">
                 <div class="flex items-center gap-2" aria-label="Pilih halaman produk">
                     <button v-for="(_, index) in slideCount" :key="index" type="button"
                         class="h-1.75 cursor-pointer rounded-full border-0 p-0 transition-all duration-300"
@@ -156,3 +178,28 @@ onUnmounted(stopAutoSlide)
         </div>
     </section>
 </template>
+
+<style scoped>
+/* Sebelum terlihat, isi disembunyikan; begitu bagian masuk layar, judul lalu kartu produk naik berurutan. */
+.reveal {
+    opacity: 0;
+}
+.shown .reveal {
+    opacity: 1;
+    animation: collection-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes collection-rise {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+    }
+    .shown .reveal {
+        animation: none;
+    }
+}
+</style>

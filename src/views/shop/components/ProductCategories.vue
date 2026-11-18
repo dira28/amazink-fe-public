@@ -15,7 +15,6 @@ const emit = defineEmits(['select'])
 
 <template>
     <section aria-labelledby="product-categories-title">
-        <!-- Category Buttons -->
         <div class="flex gap-2 overflow-x-auto pb-3" aria-label="Filter kategori produk">
             <button v-for="category in categories" :key="category.slug" type="button" class="shrink-0 rounded-full border px-5 py-2.5
                        text-sm font-medium transition-all duration-200

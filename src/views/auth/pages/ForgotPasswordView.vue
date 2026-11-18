@@ -115,7 +115,6 @@ useSeo(() => ({
             class="w-full max-w-md rounded-3xl bg-white p-7 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5 sm:p-9">
             <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">AMAZiNK</p>
 
-            <!-- Langkah 1: email -->
             <template v-if="step === 'email'">
                 <h1 class="mt-2 text-3xl font-semibold tracking-[-0.04em]">Lupa kata sandi?</h1>
 
@@ -145,7 +144,6 @@ useSeo(() => ({
                 </form>
             </template>
 
-            <!-- Langkah 2: kode OTP dan kata sandi baru -->
             <template v-else>
                 <h1 class="mt-2 text-3xl font-semibold tracking-[-0.04em]">Buat kata sandi baru</h1>
                 <p class="mt-2 text-sm leading-6 text-[#737373]">

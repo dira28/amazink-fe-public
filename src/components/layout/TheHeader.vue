@@ -128,17 +128,15 @@ onBeforeUnmount(() => {
 
 <template>
     <header
-        class="sticky top-0 z-50 border-b border-gray-200/70 bg-white/90 text-gray-900 backdrop-blur-xl transition-transform duration-300 ease-in-out"
+        class="sticky top-0 z-50 border-b border-gray-200/70 bg-white/95 text-gray-900 transition-transform duration-300 ease-in-out"
         :class="isHeaderVisible ? 'translate-y-0' : '-translate-y-full'">
         <div class="mx-auto flex h-18 max-w-7xl items-center justify-between gap-6 px-5 lg:px-8">
-            <!-- Logo -->
             <RouterLink to="/" class="shrink-0 transition-opacity hover:opacity-75" aria-label="Amazink Beranda"
                 @click="closeMenu">
                 <img :src="logo" alt="Amazink" width="1703" height="227" class="block h-6 w-auto sm:h-5" />
             </RouterLink>
 
-            <!-- Navigasi Desktop -->
-            <nav class="hidden items-center gap-1 md:flex" aria-label="Navigasi utama">
+            <nav class="hidden items-center gap-1 min-[860px]:flex" aria-label="Navigasi utama">
                 <RouterLink v-for="item in navItems" :key="item.label" :to="item.to"
                     class="whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-medium transition-colors duration-200"
                     :class="isActive(item)
@@ -148,7 +146,6 @@ onBeforeUnmount(() => {
                     {{ item.label }}
                 </RouterLink>
 
-                <!-- Dropdown Info -->
                 <div ref="infoRef" class="relative" @pointerenter="onInfoEnter" @pointerleave="onInfoLeave">
                     <button type="button"
                         class="flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border-0 px-4 py-2 text-[13px] font-medium transition-colors duration-200"
@@ -183,9 +180,7 @@ onBeforeUnmount(() => {
                 </div>
             </nav>
 
-            <!-- Aksi Kanan -->
             <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
-                <!-- Akun -->
                 <RouterLink :to="accountTo"
                     class="group flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-gray-100 hover:text-brand-red"
                     :class="accountActive ? 'bg-gray-100 text-brand-red' : 'text-gray-800'"
@@ -204,7 +199,6 @@ onBeforeUnmount(() => {
                     </svg>
                 </RouterLink>
 
-                <!-- Keranjang -->
                 <RouterLink to="/keranjang"
                     class="relative flex h-10 w-10 items-center justify-center rounded-full transition-colors hover:bg-gray-100 hover:text-brand-red"
                     :class="cartActive ? 'bg-gray-100 text-brand-red' : 'text-gray-800'"
@@ -224,9 +218,8 @@ onBeforeUnmount(() => {
                     </span>
                 </RouterLink>
 
-                <!-- Hamburger Mobile -->
                 <button type="button"
-                    class="ml-1 flex h-10 w-10 items-center justify-center rounded-full text-gray-900 transition hover:bg-gray-100 md:hidden"
+                    class="ml-1 flex h-10 w-10 items-center justify-center rounded-full text-gray-900 transition hover:bg-gray-100 min-[860px]:hidden"
                     :aria-expanded="menuOpen" aria-controls="mobile-navigation"
                     :aria-label="menuOpen ? 'Tutup menu' : 'Buka menu'" @click="menuOpen = !menuOpen">
                     <svg class="h-5.5 w-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
@@ -238,12 +231,11 @@ onBeforeUnmount(() => {
             </div>
         </div>
 
-        <!-- Navigasi Mobile -->
         <Transition enter-active-class="transition duration-200 ease-out" enter-from-class="opacity-0 -translate-y-2"
             enter-to-class="opacity-100 translate-y-0" leave-active-class="transition duration-150 ease-in"
             leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
             <nav v-if="menuOpen" id="mobile-navigation"
-                class="flex flex-col gap-1 border-t border-gray-100 bg-white px-5 pb-5 pt-3 md:hidden"
+                class="flex flex-col gap-1 border-t border-gray-100 bg-white px-5 pb-5 pt-3 min-[860px]:hidden"
                 aria-label="Navigasi mobile">
                 <RouterLink v-for="item in navItems" :key="item.label" :to="item.to"
                     class="flex items-center justify-between rounded-xl px-3.5 py-3.5 text-sm font-medium transition-colors"
@@ -260,7 +252,6 @@ onBeforeUnmount(() => {
                     </svg>
                 </RouterLink>
 
-                <!-- Accordion Info -->
                 <div>
                     <button type="button"
                         class="flex w-full cursor-pointer items-center justify-between rounded-xl border-0 px-3.5 py-3.5 text-sm font-medium transition-colors"
@@ -287,7 +278,6 @@ onBeforeUnmount(() => {
                     </div>
                 </div>
 
-                <!-- Akses Akun dan Keranjang di Mobile -->
                 <div class="mt-4 grid grid-cols-2 gap-3">
                     <RouterLink :to="accountTo"
                         class="flex items-center justify-center gap-2 rounded-xl border px-3 py-3 text-sm font-semibold transition hover:border-brand-red hover:text-brand-red"

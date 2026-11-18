@@ -44,7 +44,6 @@ const fromMock = () =>
         }))
     )
 
-// Daftar printer diambil sekali, lalu dipakai bersama oleh halaman Cari Tinta dan pemilih di katalog.
 const printers = ref(USE_MOCK ? fromMock() : [])
 const loading = ref(!USE_MOCK)
 const failed = ref(false)

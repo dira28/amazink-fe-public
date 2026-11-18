@@ -6,7 +6,6 @@ import { usePageSection } from '@/composables/usePage'
 
 const activeStory = ref(0)
 
-// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
 const content = usePageSection('about-us', 'story', {
     eyebrow: 'The AMAZiNK Story',
     title: 'Kami percaya, [[printing]] dapat lebih baik',
@@ -58,7 +57,6 @@ const currentStory = computed(
 <template>
     <section id="cerita-amazink" class="overflow-hidden bg-white py-20 sm:py-24 lg:py-28">
         <div class="mx-auto max-w-7xl px-5 sm:px-8">
-            <!-- Intro -->
             <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-red">
@@ -83,9 +81,7 @@ const currentStory = computed(
                 </div>
             </div>
 
-            <!-- Interactive story -->
             <div class="mt-14 grid overflow-hidden rounded-3xl border border-gray-200 lg:grid-cols-[0.85fr_1.15fr]">
-                <!-- Timeline selector -->
                 <div class="bg-[#f7f7f8] p-6 sm:p-9 lg:p-10">
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
                         Our Journey
@@ -135,7 +131,6 @@ const currentStory = computed(
                     </div>
                 </div>
 
-                <!-- Active story panel -->
                 <div
                     class="relative flex min-h-100 flex-col justify-between overflow-hidden bg-[#171717] p-7 text-white sm:p-10 lg:p-12">
                     <div
@@ -192,7 +187,6 @@ const currentStory = computed(
                 </div>
             </div>
 
-            <!-- Brand statement -->
             <div
                 class="mt-8 grid gap-6 rounded-3xl border border-gray-200 p-7 sm:p-9 md:grid-cols-[1fr_auto] md:items-center lg:p-10">
                 <div>

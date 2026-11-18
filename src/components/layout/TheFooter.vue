@@ -42,7 +42,6 @@ const menus = [
 <template>
     <footer id="kontak" class="border-t border-white/10 bg-brand-black text-white">
         <div class="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-2 lg:grid-cols-4 lg:gap-8 lg:py-16">
-            <!-- BRAND -->
             <div>
                 <RouterLink to="/" class="inline-block" aria-label="AMAZiNK Beranda">
                     <!-- Logo berwarna gelap; dijadikan putih agar terbaca di latar hitam. -->
@@ -59,7 +58,6 @@ const menus = [
                 </p>
             </div>
 
-            <!-- MENU -->
             <nav aria-label="Menu footer">
                 <h2 class="text-sm font-bold uppercase tracking-wider">
                     Menu
@@ -78,7 +76,6 @@ const menus = [
                 </ul>
             </nav>
 
-            <!-- CONTACT -->
             <div>
                 <h2 class="text-sm font-bold uppercase tracking-wider">
                     Hubungi Kami
@@ -106,7 +103,6 @@ const menus = [
                 </ul>
             </div>
 
-            <!-- OFFICE & HOURS -->
             <div>
                 <h2 class="text-sm font-bold uppercase tracking-wider">
                     Kantor Kami
@@ -129,7 +125,6 @@ const menus = [
             </div>
         </div>
 
-        <!-- COPYRIGHT -->
         <div class="border-t border-white/10 px-5 py-5 sm:px-8">
             <div
                 class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 text-center text-xs text-muted sm:flex-row sm:text-left">

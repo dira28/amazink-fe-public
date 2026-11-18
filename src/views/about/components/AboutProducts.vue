@@ -37,7 +37,6 @@ onBeforeUnmount(() => {
     observer?.disconnect()
 })
 
-// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
 const content = usePageSection('about-us', 'products', {
     title: 'Solusi cetak untuk [[berbagai kebutuhan]]',
     description: 'Kenali kategori consumables AMAZiNK dalam satu tampilan. Pilih kategori untuk melihat keunggulannya.',

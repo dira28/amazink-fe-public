@@ -25,7 +25,6 @@ function loadItems() {
     }
 }
 
-// Module-level state: shared by every component that calls useCart()
 const items = ref(loadItems())
 
 watch(

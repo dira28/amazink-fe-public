@@ -73,7 +73,6 @@ watch([search, brand], () => {
 <template>
     <div
         class="grid gap-5 rounded-3xl bg-[#f7f7f5] p-4 ring-1 ring-black/5 sm:p-6 lg:grid-cols-[1fr_1.05fr] lg:gap-8 lg:p-8">
-        <!-- Kiri: cari dan pilih seri -->
         <div class="min-w-0">
             <p class="m-0 flex items-center gap-2 text-[13px] font-semibold">
                 <span class="grid h-5 w-5 place-items-center rounded-full bg-[#171717] text-[11px]"
@@ -141,7 +140,6 @@ watch([search, brand], () => {
             </button>
         </div>
 
-        <!-- Kanan: hasil -->
         <div class="min-w-0" aria-live="polite">
             <div v-if="!selected"
                 class="flex h-full min-h-55 flex-col items-center justify-center rounded-2xl border border-dashed border-black/15 bg-white/60 p-6 text-center">

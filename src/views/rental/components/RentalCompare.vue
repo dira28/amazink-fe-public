@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
-import { formatRupiah, rentalTotals } from '../services/rentalService'
+import { formatRupiah, printerLabel, rentalTotals } from '../services/rentalService'
 
 const props = defineProps({
     open: { type: Boolean, default: false },
@@ -36,16 +36,17 @@ onBeforeUnmount(() => {
             enter-to-class="opacity-100" leave-active-class="transition duration-150 ease-in"
             leave-from-class="opacity-100" leave-to-class="opacity-0">
             <div v-if="open && printer"
-                class="fixed inset-0 z-[60] grid place-items-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm"
+                class="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4"
                 role="dialog" aria-modal="true" aria-labelledby="compare-title" @click.self="emit('close')">
-                <div class="w-full max-w-4xl rounded-3xl bg-white p-5 shadow-2xl sm:p-7">
+                <div class="max-h-[92dvh] w-full max-w-4xl overflow-y-auto rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-3xl sm:p-7"
+                    style="padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px))">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <h2 id="compare-title" class="m-0 text-xl font-semibold tracking-[-0.02em]">
                                 Rincian paket sewa
                             </h2>
                             <p class="mb-0 mt-1 text-[13px] text-[#737373]">
-                                {{ printer.brand }} {{ printer.name }}. Aset adalah nilai jika dibeli, sewa adalah
+                                {{ printerLabel(printer) }}. Aset adalah nilai jika dibeli, sewa adalah
                                 biaya per bulan.
                             </p>
                         </div>
@@ -60,7 +61,37 @@ onBeforeUnmount(() => {
                         </button>
                     </div>
 
-                    <div class="mt-5 overflow-x-auto rounded-2xl ring-1 ring-black/10">
+                    <!-- HP: tiap komponen jadi kartu, supaya tidak perlu menggeser tabel ke samping -->
+                    <ul class="m-0 mt-5 flex list-none flex-col gap-2 p-0 sm:hidden">
+                        <li v-for="item in printer.components" :key="item.name"
+                            class="rounded-2xl bg-[#f7f7f5] p-4 ring-1 ring-black/5">
+                            <p class="m-0 flex items-baseline justify-between gap-3 text-[14px] font-semibold">
+                                {{ item.name }}
+                                <span class="shrink-0 text-xs font-bold text-brand-red">{{ item.qty }}x</span>
+                            </p>
+                            <dl class="m-0 mt-2 grid grid-cols-2 gap-3 text-xs">
+                                <div>
+                                    <dt class="text-[#737373]">Aset</dt>
+                                    <dd class="m-0 mt-0.5 text-[13px] font-semibold">{{ money(item.asset * item.qty) }}</dd>
+                                </div>
+                                <div>
+                                    <dt class="text-[#737373]">Sewa / bulan</dt>
+                                    <dd class="m-0 mt-0.5 text-[13px] font-semibold">{{ money(item.rent * item.qty) }}</dd>
+                                </div>
+                            </dl>
+                            <ul v-if="item.benefits.length" class="m-0 mt-2 list-disc space-y-0.5 pl-4 text-xs text-[#525252]">
+                                <li v-for="benefit in item.benefits" :key="benefit">{{ benefit }}</li>
+                            </ul>
+                        </li>
+
+                        <li class="rounded-2xl bg-[#171717] p-4 text-white">
+                            <p class="m-0 text-xs text-white/60">Total sewa per bulan</p>
+                            <p class="m-0 mt-0.5 text-xl font-bold tracking-[-0.02em]">{{ money(totals.rent) }}</p>
+                            <p class="m-0 mt-1 text-xs text-white/60">Total aset: {{ money(totals.asset) }}</p>
+                        </li>
+                    </ul>
+
+                    <div class="mt-5 hidden overflow-x-auto rounded-2xl ring-1 ring-black/10 sm:block">
                         <table class="w-full min-w-[640px] border-collapse text-left text-[13px]">
                             <caption class="sr-only">Rincian komponen, aset, dan sewa per bulan</caption>
                             <thead>
@@ -100,9 +131,15 @@ onBeforeUnmount(() => {
                         </table>
                     </div>
 
-                    <div class="mt-5 flex justify-end">
+                    <dl class="m-0 mt-4 grid gap-x-6 gap-y-1.5 text-xs leading-5 text-[#737373] sm:grid-cols-3">
+                        <div><dt class="inline font-semibold text-[#171717]">Qty: </dt><dd class="m-0 inline">jumlah unit komponen dalam paket.</dd></div>
+                        <div><dt class="inline font-semibold text-[#171717]">Aset: </dt><dd class="m-0 inline">nilai komponen jika dibeli.</dd></div>
+                        <div><dt class="inline font-semibold text-[#171717]">Sewa / bulan: </dt><dd class="m-0 inline">biaya yang dibayar tiap bulan.</dd></div>
+                    </dl>
+
+                    <div class="mt-5 flex sm:justify-end">
                         <button type="button"
-                            class="h-11 cursor-pointer rounded-full border-0 bg-brand-red px-6 transition-opacity hover:opacity-90"
+                            class="h-11 w-full cursor-pointer rounded-full border-0 bg-brand-red px-6 transition-opacity hover:opacity-90 sm:w-auto"
                             style="color: #fff; font-size: 13px; font-weight: 600" @click="emit('apply', printer)">
                             Ajukan sewa paket ini
                         </button>
