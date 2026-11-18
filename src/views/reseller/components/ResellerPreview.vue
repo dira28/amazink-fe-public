@@ -77,7 +77,6 @@ onBeforeUnmount(() => {
 <template>
     <section v-if="cities.length" id="daftar-reseller" class="scroll-mt-24 bg-[#f7f7f5] px-5 py-14 sm:px-8 sm:py-20">
         <div class="mx-auto max-w-7xl">
-            <!-- Header -->
             <header class="flex flex-wrap items-end justify-between gap-4">
                 <div>
                     <p class="m-0 text-[10px] font-bold uppercase tracking-[0.18em] text-brand-red">{{ section.eyebrow
@@ -98,7 +97,6 @@ onBeforeUnmount(() => {
                 </RouterLink>
             </header>
 
-            <!-- Carousel -->
             <div class="mt-8 overflow-hidden" @mouseenter="stop" @mouseleave="start" @focusin="stop" @focusout="start">
                 <div class="flex items-stretch transition-transform duration-[650ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform motion-reduce:transition-none"
                     :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
@@ -134,7 +132,6 @@ onBeforeUnmount(() => {
                 </div>
             </div>
 
-            <!-- Pagination -->
             <div class="mt-6 flex items-center justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-2" aria-label="Pilih halaman reseller">
                     <button v-for="(_, index) in slides" :key="index" type="button"

@@ -152,7 +152,6 @@ watch(
 
 <template>
     <main class="min-h-screen bg-[#f7f7f5] text-[#171717]">
-        <!-- Hero + pencarian -->
         <section class="relative overflow-hidden bg-gradient-to-b from-white to-[#f7f7f5]">
             <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-red/10 blur-3xl">
             </div>
@@ -195,7 +194,6 @@ watch(
         </section>
 
         <div class="mx-auto max-w-5xl px-5 pb-16 sm:px-8 sm:pb-24">
-            <!-- Daftar seri -->
             <div ref="listEl" class="flex scroll-mt-24 items-center justify-between gap-3">
                 <h2 class="m-0 text-sm font-semibold">Pilih seri printer</h2>
                 <span class="text-xs text-[#737373]">{{ filtered.length }} seri</span>
@@ -241,7 +239,6 @@ watch(
                 </p>
             </div>
 
-            <!-- Hasil -->
             <section v-if="selected" ref="resultEl" class="mt-12 grid scroll-mt-24 gap-5 lg:grid-cols-[340px_1fr]"
                 aria-live="polite">
                 <aside class="lg:sticky lg:top-24 lg:self-start">

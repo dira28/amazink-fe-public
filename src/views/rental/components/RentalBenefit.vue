@@ -2,9 +2,10 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { usePageSection } from '@/composables/usePage'
 
-// Defaults are used until the API responds or when it is unreachable.
 const content = usePageSection('sewa-printer', 'benefits', {
+    eyebrow: 'Kenapa sewa',
     title: 'Printer siap pakai. Urusan kami.',
+    highlight_note: 'Printer bermasalah ditangani tim AMAZiNK tanpa biaya tambahan selama masa sewa.',
     items: [
         { id: 'benefit-1', title: 'Tanpa biaya beli di awal', text: 'Pakai printer sesuai kebutuhan tanpa menyiapkan modal besar.' },
         { id: 'benefit-2', title: 'Servis dan perawatan ditanggung', text: 'Printer bermasalah ditangani tim AMAZiNK tanpa biaya tambahan.' },
@@ -58,15 +59,12 @@ onBeforeUnmount(() => observer?.disconnect())
                 <div>
                     <p class="m-0 inline-flex items-center gap-2 text-xs font-semibold text-brand-red">
                         <span class="block h-0.5 w-6 bg-brand-red" aria-hidden="true" />
-                        Kenapa sewa
+                        {{ content.eyebrow }}
                     </p>
                     <h2 id="rental-benefit"
                         class="mb-0 mt-3 max-w-md text-[clamp(28px,4vw,44px)] font-bold leading-[1.08] tracking-[-0.045em]">
                         {{ content.title }}
                     </h2>
-                    <p class="mb-0 mt-3 max-w-sm text-sm leading-7 text-white/60">
-                        Pengadaan, tinta, dan servis kami kelola. Tim kamu fokus bekerja.
-                    </p>
 
                     <p class="m-0 mt-10 flex items-baseline gap-[0.14em] text-[clamp(72px,11vw,128px)] font-semibold leading-[0.9] tracking-[-0.06em]"
                         aria-label="Rp 0">
@@ -77,8 +75,7 @@ onBeforeUnmount(() => observer?.disconnect())
                         </span>
                     </p>
                     <p class="mb-0 mt-4 max-w-xs text-sm leading-7 text-white/60">
-                        Servis dan perawatan ditanggung. Printer bermasalah ditangani tim AMAZiNK tanpa biaya tambahan
-                        selama masa sewa.
+                        {{ content.highlight_note }}
                     </p>
                 </div>
 

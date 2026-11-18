@@ -1,9 +1,9 @@
 <script setup>
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AccentText from '@/components/base/AccentText.vue'
 import BaseButton from '@/components/base/BaseButton.vue'
 import { usePageSection } from '@/composables/usePage'
 
-// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
 const hero = usePageSection('home', 'hero', {
     badge: 'Print Amazing.',
     title: 'Tinta dan toner yang\n[[pas untuk printer Anda.]]',
@@ -18,8 +18,43 @@ const hero = usePageSection('home', 'hero', {
         { id: 'benefit-2', text: 'Pengiriman cepat' },
         { id: 'benefit-3', text: 'Harga kompetitif' },
     ],
-    image: '',
+    images: [],
 })
+
+const FALLBACK_IMAGE = '/images/home/amazink-hero-home.png'
+const SLIDE_MS = 5000
+
+// Gambar dari admin tampil bergantian; bila belum ada, dipakai gambar bawaan.
+const images = computed(() => {
+    const list = (hero.value.images ?? []).map((item) => item.image).filter(Boolean)
+    if (list.length) return list
+
+    return [hero.value.image || FALLBACK_IMAGE]
+})
+
+const current = ref(0)
+let timer
+
+function stop() {
+    clearInterval(timer)
+}
+
+function start() {
+    stop()
+    if (images.value.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    timer = setInterval(() => {
+        if (!document.hidden) current.value = (current.value + 1) % images.value.length
+    }, SLIDE_MS)
+}
+
+watch(images, () => {
+    if (current.value >= images.value.length) current.value = 0
+    start()
+})
+
+onMounted(start)
+onBeforeUnmount(stop)
 </script>
 
 <template>
@@ -29,10 +64,9 @@ const hero = usePageSection('home', 'hero', {
             class="pointer-events-none absolute inset-0 -z-10 hidden md:block md:bg-linear-to-r md:from-black/85 md:via-black/55 md:via-40% md:to-transparent md:to-72%">
         </div>
 
-        <!-- Konten teks -->
         <div
             class="relative mx-auto w-full max-w-400 px-5 pb-6 pt-6 sm:px-8 sm:pt-9.5 lg:px-[clamp(24px,4vw,68px)] md:py-9.5 lg:py-11">
-            <div class="relative z-10 min-w-0 md:max-w-[min(48%,40rem)]">
+            <div class="hero-copy relative z-10 min-w-0 md:max-w-[min(48%,40rem)]">
                 <div
                     class="mb-3.5 inline-flex items-center gap-2 rounded-full border border-red-200 bg-white/90 px-2.5 py-1.5 text-[9px] font-bold uppercase tracking-[0.12em] text-[#e91d2d] sm:mb-5 sm:px-3.5 sm:py-2.25 sm:text-[11px]">
                     <span class="h-1.5 w-1.5 rounded-full bg-brand-red sm:h-2 sm:w-2" />
@@ -72,10 +106,19 @@ const hero = usePageSection('home', 'hero', {
         </div>
 
         <!-- Gambar: di bawah teks (mobile), jadi latar penuh (layar lebar) -->
-        <div class="relative order-2 md:contents">
-            <img :src="hero.image || '/images/home/amazink-hero-home.png'" alt="" aria-hidden="true"
-                fetchpriority="high"
-                class="block aspect-[5/4] w-full object-cover object-[72%_center] md:pointer-events-none md:absolute md:inset-0 md:-z-20 md:aspect-auto md:h-full md:object-right" />
+        <div class="relative order-2 aspect-[5/4] md:contents">
+            <img v-for="(src, index) in images" :key="src + index" :src="src" alt="" aria-hidden="true"
+                :fetchpriority="index === 0 ? 'high' : undefined" :loading="index === 0 ? undefined : 'lazy'"
+                class="hero-zoom pointer-events-none absolute inset-0 h-full w-full object-cover object-[72%_center] transition-opacity duration-1000 motion-reduce:transition-none md:-z-20 md:object-right"
+                :class="index === current ? 'opacity-100' : 'opacity-0'" />
+
+            <div v-if="images.length > 1" class="absolute bottom-4 left-5 z-10 flex items-center gap-2.5 sm:left-8 md:bottom-6 md:left-auto md:right-8">
+                <button v-for="(src, index) in images" :key="src + index" type="button"
+                    :aria-label="`Tampilkan gambar ${index + 1}`" :aria-current="index === current ? 'true' : undefined"
+                    class="h-1.5 cursor-pointer rounded-full border-0 p-0 transition-all duration-300"
+                    :class="index === current ? 'w-8 bg-brand-red' : 'w-3 bg-white/50 hover:bg-white/80'"
+                    @click="current = index; start()" />
+            </div>
 
             <!-- Pemudar di tepi atas gambar supaya menyatu dengan latar teks (mobile saja) -->
             <div aria-hidden="true"
@@ -84,3 +127,34 @@ const hero = usePageSection('home', 'hero', {
         </div>
     </section>
 </template>
+<style scoped>
+/* Teks naik sedikit sambil memudar masuk berurutan; foto latar turun pelan dari sedikit diperbesar. */
+.hero-copy > * {
+    animation: hero-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.hero-copy > *:nth-child(2) { animation-delay: 0.1s; }
+.hero-copy > *:nth-child(3) { animation-delay: 0.2s; }
+.hero-copy > *:nth-child(4) { animation-delay: 0.3s; }
+.hero-copy > *:nth-child(5) { animation-delay: 0.4s; }
+
+.hero-zoom {
+    animation: hero-zoom 2.4s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes hero-rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes hero-zoom {
+    from { transform: scale(1.08); }
+    to { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-copy > *,
+    .hero-late,
+    .hero-zoom {
+        animation: none;
+    }
+}
+</style>

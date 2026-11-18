@@ -65,7 +65,6 @@ const frame = computed(() =>
 
 <template>
     <div class="mt-1.5 flex items-stretch overflow-hidden rounded-xl transition" :class="frame">
-        <!-- Pilihan kode negara: tampilannya "+62", daftar lengkap memuat nama negara -->
         <div class="relative flex shrink-0 items-center border-r border-black/10">
             <span class="pointer-events-none flex items-center gap-1 pl-4 pr-3 text-sm font-medium text-gray-700">
                 {{ country }}

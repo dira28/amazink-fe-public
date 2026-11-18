@@ -22,14 +22,12 @@ const router = createRouter({
     },
 
     routes: [
-        // Halaman Home
         {
             path: '/',
             name: 'home',
             component: () => import('@/views/home/pages/HomeView.vue'),
         },
 
-        // Halaman About Us
         {
             path: '/tentang-kami',
             name: 'about',

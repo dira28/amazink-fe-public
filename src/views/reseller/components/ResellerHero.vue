@@ -34,6 +34,9 @@ const orderOf = (name) => (ORDER.includes(name) ? ORDER.indexOf(name) : ORDER.le
 
 const sortedRegions = computed(() => [...regions.value].sort((a, b) => orderOf(a.name) - orderOf(b.name)))
 
+// Jeda muncul tiap wilayah (detik); dibatasi agar urutan tidak terlalu panjang saat wilayahnya banyak.
+const delay = (index) => `${(0.25 + Math.min(index * 0.035, 0.9)).toFixed(3)}s`
+
 const totalCities = computed(() => sortedRegions.value.reduce((sum, region) => sum + region.cities.length, 0))
 const maxCities = computed(() => Math.max(0, ...sortedRegions.value.map((region) => region.cities.length)))
 
@@ -70,19 +73,20 @@ const stats = computed(() => {
 <template>
     <section class="flex min-h-[calc(100svh-73px)] flex-col bg-[#f4f3ee] text-[#171717]">
         <div class="mx-auto flex w-full max-w-320 flex-1 flex-col px-5 pt-8 sm:px-8">
-            <!-- Visualisasi jaringan -->
             <div class="relative min-h-52.5 flex-1">
                 <svg :viewBox="`0 0 ${W} ${H}`" preserveAspectRatio="xMidYMid meet"
-                    class="absolute inset-0 h-full w-full" role="img"
+                    class="absolute inset-0 h-full w-full overflow-visible" role="img"
                     :aria-label="`Jaringan reseller AMAZiNK di ${totalCities} kota`">
-                    <!-- Garis penghubung -->
-                    <line v-for="node in nodes" :key="`line-${node.name}`" :x1="hub.x" :y1="hub.y" :x2="node.x"
-                        :y2="node.y" stroke="#cfccc2" stroke-width="2" stroke-dasharray="3 7" stroke-linecap="round" />
+                    <line v-for="(node, index) in nodes" :key="`line-${node.name}`" :x1="hub.x" :y1="hub.y"
+                        :x2="node.x" :y2="node.y" stroke="#cfccc2" stroke-width="2" stroke-dasharray="3 7"
+                        stroke-linecap="round" class="hero-line" :style="{ '--d': delay(index) }" />
 
-                    <!-- Wilayah -->
-                    <g v-for="node in nodes" :key="node.name">
+                    <g v-for="(node, index) in nodes" :key="node.name" class="hero-node"
+                        :style="{ '--d': delay(index) }">
+                        <circle v-if="node.biggest" :cx="node.x" :cy="node.y" :r="node.r" fill="#e51e2a"
+                            class="hero-pulse" />
                         <circle :cx="node.x" :cy="node.y" :r="node.r" :fill="node.biggest ? '#e51e2a' : '#ffffff'"
-                            stroke="#e51e2a" stroke-width="2" />
+                            stroke="#e51e2a" stroke-width="2" class="hero-dot" />
                         <text :x="node.x" :y="node.y" text-anchor="middle" dominant-baseline="central" font-size="22"
                             font-weight="700" :fill="node.biggest ? '#ffffff' : '#171717'">
                             {{ node.count }}
@@ -94,32 +98,34 @@ const stats = computed(() => {
                         </text>
                     </g>
 
-                    <!-- Pusat -->
-                    <circle :cx="hub.x" :cy="hub.y" r="52" fill="#171717" />
-                    <text :x="hub.x" :y="hub.y" text-anchor="middle" dominant-baseline="central" font-size="15"
-                        font-weight="800" letter-spacing="0.5" fill="#ffffff">
-                        AMAZ<tspan fill="#e51e2a">I</tspan>NK
-                    </text>
+                    <g class="hero-hub">
+                        <circle :cx="hub.x" :cy="hub.y" r="52" fill="#e51e2a" class="hero-pulse hero-pulse-hub" />
+                        <circle :cx="hub.x" :cy="hub.y" r="52" fill="#171717" />
+                        <text :x="hub.x" :y="hub.y" text-anchor="middle" dominant-baseline="central" font-size="15"
+                            font-weight="800" letter-spacing="0.5" fill="#ffffff">
+                            AMAZ<tspan fill="#e51e2a">I</tspan>NK
+                        </text>
+                    </g>
                 </svg>
             </div>
 
-            <!-- Teks -->
             <div class="mx-auto flex max-w-3xl flex-col items-center py-7 text-center sm:py-9">
-                <p class="m-0 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-red">
-                    <span class="block h-0.5 w-6 bg-brand-red" />
+                <p class="hero-rise m-0 flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-red"
+                    style="--d: 0.7s">
+                    <span class="hero-bar block h-0.5 w-6 bg-brand-red" />
                     {{ hero.eyebrow }}
-                    <span class="block h-0.5 w-6 bg-brand-red" />
+                    <span class="hero-bar block h-0.5 w-6 bg-brand-red" />
                 </p>
 
-                <h1 class="mt-4 text-[clamp(34px,4.6vw,64px)] font-bold leading-[1.04] tracking-[-0.055em]">
+                <h1 class="hero-rise mt-4 text-[clamp(34px,4.6vw,64px)] font-bold leading-[1.04] tracking-[-0.055em]" style="--d: 0.8s">
                     <AccentText :text="hero.title" /><span class="text-brand-red"></span>
                 </h1>
 
-                <p class="mt-3 max-w-lg text-[15px] leading-[1.75] text-[#626a76]">
+                <p class="hero-rise mt-3 max-w-lg text-[15px] leading-[1.75] text-[#626a76]" style="--d: 0.9s">
                     {{ hero.description }}
                 </p>
 
-                <div class="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+                <div class="hero-rise mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-3" style="--d: 1s">
                     <a href="#daftar"
                         class="inline-flex min-h-12 items-center justify-center rounded-full bg-[#171717] px-7 text-sm font-semibold text-white no-underline transition-colors hover:bg-brand-red">
                         {{ hero.primary_button_label }}
@@ -134,11 +140,11 @@ const stats = computed(() => {
             </div>
         </div>
 
-        <!-- Strip angka -->
         <dl class="bg-brand-red text-white">
             <div class="mx-auto grid w-full max-w-320 grid-cols-3 px-5 sm:px-8">
-                <div v-for="(stat, index) in stats" :key="stat.label" class="py-4 sm:py-5"
-                    :class="index > 0 ? 'border-l border-white/25 pl-4 sm:pl-8' : ''">
+                <div v-for="(stat, index) in stats" :key="stat.label" class="hero-rise py-4 sm:py-5"
+                    :class="index > 0 ? 'border-l border-white/25 pl-4 sm:pl-8' : ''"
+                    :style="{ '--d': `${1.1 + index * 0.1}s` }">
                     <dd class="m-0 text-lg font-semibold tracking-[-0.03em] sm:text-2xl">{{ stat.value }}</dd>
                     <dt class="mt-0.5 text-[11px] leading-4 text-white/80 sm:text-xs">{{ stat.label }}</dt>
                 </div>
@@ -146,3 +152,72 @@ const stats = computed(() => {
         </dl>
     </section>
 </template>
+
+<style scoped>
+/* Semua gerak memakai transform dan opacity saja (ringan), berjalan sekali saat halaman dibuka,
+   lalu hanya dua denyut pelan pada pusat dan wilayah terbesar. */
+.hero-hub,
+.hero-node,
+.hero-bar,
+.hero-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+}
+.hero-hub {
+    animation: hero-pop 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.hero-line {
+    animation: hero-fade 0.8s ease-out both;
+    animation-delay: var(--d);
+}
+.hero-node {
+    animation: hero-pop 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--d);
+}
+.hero-dot {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.hero-node:hover .hero-dot {
+    transform: scale(1.12);
+}
+.hero-pulse {
+    opacity: 0;
+    animation: hero-ring 3.2s ease-out 1.4s infinite;
+}
+.hero-pulse-hub {
+    animation-delay: 1s;
+}
+.hero-rise {
+    animation: hero-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--d);
+}
+.hero-bar {
+    animation: hero-bar 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.9s both;
+}
+@keyframes hero-pop {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: scale(1); }
+}
+@keyframes hero-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes hero-ring {
+    0% { opacity: 0.3; transform: scale(1); }
+    70%, 100% { opacity: 0; transform: scale(1.45); }
+}
+@keyframes hero-rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-bar {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .hero-hub, .hero-line, .hero-node, .hero-rise, .hero-bar { animation: none; }
+    .hero-pulse { display: none; }
+}
+</style>

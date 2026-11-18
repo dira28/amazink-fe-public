@@ -1,31 +1,45 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { usePageSection } from '@/composables/usePage'
 import RentalHeading from './RentalHeading.vue'
 import { waLink } from '../services/rentalService'
 
-// CONTOH. Sesuaikan jawaban dengan ketentuan sewa AMAZiNK yang sebenarnya.
-const faqs = [
-    {
-        q: 'Apa saja yang termasuk dalam biaya sewa?',
-        a: 'Biaya sewa sudah mencakup printer, tinta atau toner, serta servis dan perawatan. Rincian tiap paket bisa dilihat lewat tombol Lihat perbandingan.',
-    },
-    {
-        q: 'Apakah ada biaya di awal?',
-        a: 'Kamu tidak perlu membeli printer. Untuk ketentuan lain seperti deposit atau biaya pemasangan, tim kami akan menjelaskan saat mengonfirmasi pengajuanmu.',
-    },
-    {
-        q: 'Berapa lama minimal masa sewa?',
-        a: 'Lama sewa menyesuaikan paket dan kebutuhanmu. Tulis lama sewa yang diinginkan di form pengajuan, lalu tim kami akan mengonfirmasinya.',
-    },
-    {
-        q: 'Bagaimana jika printer rusak?',
-        a: 'Servis ditanggung tim AMAZiNK. Jika perlu, printer akan diganti dengan unit pengganti supaya pekerjaanmu tidak terhenti.',
-    },
-    {
-        q: 'Bagaimana cara mengajukan sewa?',
-        a: 'Pilih paket di daftar harga, klik Ajukan sewa, isi formulirnya, lalu tim AMAZiNK akan menghubungimu untuk langkah berikutnya.',
-    },
-]
+const content = usePageSection('sewa-printer', 'faq', {
+    eyebrow: 'FAQ',
+    title: 'Pertanyaan seputar',
+    accent: 'sewa printer',
+    help_title: 'Masih ada pertanyaan?',
+    help_text: 'Tim kami siap menjawab langsung lewat WhatsApp.',
+    items: [
+        {
+            id: 'faq-1',
+            q: 'Apa saja yang termasuk dalam biaya sewa?',
+            a: 'Biaya sewa sudah mencakup printer, tinta atau toner, serta servis dan perawatan. Rincian tiap paket bisa dilihat lewat tombol Lihat perbandingan.',
+        },
+        {
+            id: 'faq-2',
+            q: 'Apakah ada biaya di awal?',
+            a: 'Kamu tidak perlu membeli printer. Untuk ketentuan lain seperti deposit atau biaya pemasangan, tim kami akan menjelaskan saat mengonfirmasi pengajuanmu.',
+        },
+        {
+            id: 'faq-3',
+            q: 'Berapa lama minimal masa sewa?',
+            a: 'Lama sewa menyesuaikan paket dan kebutuhanmu. Tulis lama sewa yang diinginkan di form pengajuan, lalu tim kami akan mengonfirmasinya.',
+        },
+        {
+            id: 'faq-4',
+            q: 'Bagaimana jika printer rusak?',
+            a: 'Servis ditanggung tim AMAZiNK. Jika perlu, printer akan diganti dengan unit pengganti supaya pekerjaanmu tidak terhenti.',
+        },
+        {
+            id: 'faq-5',
+            q: 'Bagaimana cara mengajukan sewa?',
+            a: 'Pilih paket di daftar harga, klik Ajukan sewa, isi formulirnya, lalu tim AMAZiNK akan menghubungimu untuk langkah berikutnya.',
+        },
+    ],
+})
+
+const faqs = computed(() => content.value.items.filter((item) => item.q?.trim()))
 
 const open = ref(0)
 const toggle = (index) => {
@@ -39,12 +53,12 @@ const waUrl = waLink('Halo AMAZiNK, saya ingin bertanya soal sewa printer.')
     <section aria-labelledby="rental-faq" class="mx-auto max-w-6xl px-5 sm:px-8">
         <div class="grid gap-8 md:grid-cols-[0.8fr_1.2fr] md:gap-14">
             <div>
-                <RentalHeading id="rental-faq" dark eyebrow="FAQ" title="Pertanyaan seputar" accent="sewa printer" />
+                <RentalHeading id="rental-faq" dark :eyebrow="content.eyebrow" :title="content.title" :accent="content.accent" />
 
                 <div class="mt-6 rounded-3xl bg-white p-5 ring-1 ring-black/5">
-                    <p class="m-0 text-[15px] font-semibold text-[#14161b]">Masih ada pertanyaan?</p>
+                    <p class="m-0 text-[15px] font-semibold text-[#14161b]">{{ content.help_title }}</p>
                     <p class="mb-0 mt-1 text-[13px] leading-6 text-[#737373]">
-                        Tim kami siap menjawab langsung lewat WhatsApp.
+                        {{ content.help_text }}
                     </p>
                     <a :href="waUrl" target="_blank" rel="noopener noreferrer"
                         class="mt-4 inline-flex h-11 items-center gap-2 rounded-full bg-[#25d366] px-6 no-underline transition hover:brightness-95"
@@ -59,7 +73,7 @@ const waUrl = waLink('Halo AMAZiNK, saya ingin bertanya soal sewa printer.')
             </div>
 
             <ul class="m-0 flex list-none flex-col gap-3 p-0">
-                <li v-for="(item, index) in faqs" :key="item.q" class="rounded-2xl bg-white ring-1 ring-black/5">
+                <li v-for="(item, index) in faqs" :key="item.id || index" class="rounded-2xl bg-white ring-1 ring-black/5">
                     <h3 class="m-0">
                         <button type="button" :id="`faq-btn-${index}`" :aria-expanded="open === index"
                             :aria-controls="`faq-panel-${index}`"

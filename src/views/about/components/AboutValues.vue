@@ -50,7 +50,6 @@ onBeforeUnmount(() => {
     observer?.disconnect()
 })
 
-// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
 const content = usePageSection('about-us', 'values', {
     eyebrow: 'What We Stand For',
     title: 'Prinsip yang membawa kami [[lebih jauh]]',
@@ -97,7 +96,6 @@ const values = computed(() =>
     <section ref="sectionRef" class="values-section bg-white py-20 sm:py-24 lg:py-28"
         :class="{ 'is-visible': isVisible }">
         <div class="mx-auto max-w-7xl px-5 sm:px-8">
-            <!-- Heading -->
             <div class="grid gap-6 lg:grid-cols-[1fr_0.65fr] lg:items-end">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-[0.25em] text-brand-red">
@@ -115,12 +113,10 @@ const values = computed(() =>
                 </p>
             </div>
 
-            <!-- Values grid -->
             <div class="values-grid mt-14 grid border-l border-t border-gray-200 sm:grid-cols-2">
                 <article v-for="(value, index) in values" :key="value.number"
                     class="value-card group relative flex min-h-72.5 flex-col overflow-hidden border-b border-r border-gray-200 p-7 transition-colors duration-300 hover:bg-gray-50 sm:p-9 lg:min-h-80 lg:p-10"
                     :style="{ '--card-index': index }">
-                    <!-- Accent line -->
                     <div
                         class="absolute left-0 top-0 h-0.75 w-0 bg-brand-red transition-all duration-500 group-hover:w-full">
                     </div>
@@ -149,7 +145,6 @@ const values = computed(() =>
                 </article>
             </div>
 
-            <!-- Closing statement -->
             <div
                 class="mt-10 flex flex-col gap-4 border-b border-gray-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
                 <p class="max-w-xl text-sm leading-6 text-gray-500">

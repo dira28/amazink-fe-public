@@ -41,7 +41,6 @@ export async function apiPost(path, payload) {
     return body?.data ?? null
 }
 
-// --- Permintaan yang memerlukan login ---
 
 // Beberapa permintaan bisa kedaluwarsa bersamaan; semuanya menunggu satu pembaruan yang sama,
 // karena refresh token hanya berlaku sekali pakai.

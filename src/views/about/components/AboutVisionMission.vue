@@ -2,10 +2,10 @@
 import { computed, ref } from 'vue'
 import AccentText from '@/components/base/AccentText.vue'
 import { usePageSection } from '@/composables/usePage'
+import { scrollToSection } from '@/utils/scrollToSection'
 
 const activeMission = ref(0)
 
-// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
 const content = usePageSection('about-us', 'vision-mission', {
     eyebrow: 'Our Direction',
     title: 'Punya arah [[Punya tujuan]]',
@@ -244,7 +244,7 @@ const isOpen = (layer, index) => (layer.ghost ? layer.open === index : activeMis
                     {{ content.closing }}
                 </p>
 
-                <a href="#cerita-amazink"
+                <a href="#cerita-amazink" @click="scrollToSection"
                     class="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-gray-950 transition hover:text-brand-red">
                     {{ content.closing_link_label }}
                 </a>

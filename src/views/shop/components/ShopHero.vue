@@ -1,11 +1,11 @@
 <script setup>
 import { computed, ref, unref } from 'vue'
+import { scrollToSection } from '@/utils/scrollToSection'
 import AccentText from '@/components/base/AccentText.vue'
 import { usePageSection } from '@/composables/usePage'
 
 const DEFAULT_IMAGE = '/images/home/bg-hero.png'
 
-// Teks bawaan dipakai selama data dari API belum ada atau API tidak bisa dihubungi.
 const hero = usePageSection('catalog', 'hero', {
     eyebrow: 'AMAZiNK · Product Catalogue',
     title: 'PRINTING\n[[REIMAGINED]]',
@@ -33,7 +33,7 @@ function onImageError() {
 <template>
     <section class="relative isolate overflow-hidden bg-gray-950" aria-labelledby="shop-hero-title">
         <img v-if="imageSrc" :key="imageSrc" :src="imageSrc" alt="" aria-hidden="true" fetchpriority="high"
-            class="absolute inset-0 -z-20 h-full w-full object-cover object-center" @error="onImageError" />
+            class="hero-zoom absolute inset-0 -z-20 h-full w-full object-cover object-center" @error="onImageError" />
 
         <!-- Lapisan gelap: pekat di atas (tempat teks), terang di tengah supaya foto terlihat -->
         <div class="absolute inset-0 -z-10 bg-gradient-to-b from-black/75 via-black/30 to-black/45" aria-hidden="true">
@@ -41,8 +41,7 @@ function onImageError() {
 
         <div
             class="mx-auto flex min-h-[clamp(520px,calc(100svh-72px),880px)] max-w-7xl flex-col items-center justify-between px-5 pb-8 pt-[clamp(56px,13vh,150px)] text-center sm:px-8 sm:pb-10">
-            <!-- Teks di atas -->
-            <div class="flex flex-col items-center">
+            <div class="hero-copy flex flex-col items-center">
                 <p class="m-0 text-[10px] font-semibold uppercase tracking-[0.24em] sm:text-xs"
                     style="color: rgba(255, 255, 255, 0.85)">
                     {{ hero.eyebrow }}
@@ -60,9 +59,8 @@ function onImageError() {
                 </p>
             </div>
 
-            <!-- Tombol di bawah -->
-            <a href="#daftar-produk"
-                class="group mt-10 inline-flex h-14 items-center gap-4 rounded-full bg-white py-2 pl-7 pr-2 text-sm font-semibold no-underline shadow-[0_12px_32px_-8px_rgba(0,0,0,0.55)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_-8px_rgba(0,0,0,0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black motion-reduce:transition-none motion-reduce:hover:transform-none"
+            <a href="#daftar-produk" @click="scrollToSection"
+                class="hero-late group mt-10 inline-flex h-14 items-center gap-4 rounded-full bg-white py-2 pl-7 pr-2 text-sm font-semibold no-underline shadow-[0_12px_32px_-8px_rgba(0,0,0,0.55)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_-8px_rgba(0,0,0,0.6)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black motion-reduce:transition-none motion-reduce:hover:transform-none"
                 style="color: #171717">
                 {{ hero.button_label }}
 
@@ -80,3 +78,36 @@ function onImageError() {
         </div>
     </section>
 </template>
+<style scoped>
+/* Teks naik sedikit sambil memudar masuk berurutan; foto latar turun pelan dari sedikit diperbesar. */
+.hero-copy > * {
+    animation: hero-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.hero-copy > *:nth-child(2) { animation-delay: 0.1s; }
+.hero-copy > *:nth-child(3) { animation-delay: 0.2s; }
+.hero-copy > *:nth-child(4) { animation-delay: 0.3s; }
+.hero-copy > *:nth-child(5) { animation-delay: 0.4s; }
+.hero-late {
+    animation: hero-rise 0.8s 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.hero-zoom {
+    animation: hero-zoom 2.4s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes hero-rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+}
+@keyframes hero-zoom {
+    from { transform: scale(1.08); }
+    to { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-copy > *,
+    .hero-late,
+    .hero-zoom {
+        animation: none;
+    }
+}
+</style>

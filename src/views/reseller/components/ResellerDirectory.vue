@@ -110,7 +110,6 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                 </p>
             </header>
 
-            <!-- Filter bar -->
             <div ref="listTop"
                 class="mt-8 flex scroll-mt-24 flex-col gap-1 rounded-3xl bg-white p-2 shadow-[0_2px_14px_rgba(0,0,0,0.05)] ring-1 ring-black/5 lg:flex-row lg:items-center lg:rounded-full lg:p-1.5">
                 <label
@@ -161,7 +160,6 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                 </label>
             </div>
 
-            <!-- Ringkasan hasil -->
             <div class="mt-5 flex min-h-8 items-center justify-between gap-3 px-1">
                 <p class="m-0 text-xs text-[#737373]">
                     <template v-if="filtered.length">
@@ -181,11 +179,9 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                 </button>
             </div>
 
-            <!-- Daftar kartu -->
             <ul v-if="paged.length" class="mt-3 space-y-3">
                 <li v-for="city in paged" :key="`${city.region}-${city.name}`"
                     class="grid gap-4 rounded-3xl bg-white p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5 transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(0,0,0,0.07)] motion-reduce:transition-none motion-reduce:hover:transform-none sm:p-6 md:grid-cols-[230px_1fr] md:gap-8">
-                    <!-- Kota -->
                     <div class="flex items-center gap-3.5">
                         <span
                             class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#f4f3ee] text-lg font-semibold text-[#171717]"
@@ -202,7 +198,6 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                         </div>
                     </div>
 
-                    <!-- Cabang -->
                     <div class="min-w-0 space-y-4">
                         <div v-for="branch in city.branches" :key="branch.address"
                             class="border-t border-gray-100 pt-4 first:border-0 first:pt-0">
@@ -226,7 +221,6 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                 </li>
             </ul>
 
-            <!-- Kosong -->
             <div v-else
                 class="mt-3 rounded-3xl bg-white px-5 py-14 text-center shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
                 <p class="m-0 text-sm font-semibold">
@@ -240,7 +234,6 @@ watch([activeRegion, activeCity, query, pageSize], () => {
                 </button>
             </div>
 
-            <!-- Pagination -->
             <div v-if="filtered.length" class="mt-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
                 <label
                     class="relative flex items-center gap-2.5 rounded-full bg-white py-1 pl-4 pr-1 text-xs text-[#737373] shadow-[0_1px_2px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
